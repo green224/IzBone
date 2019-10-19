@@ -11,6 +11,7 @@ namespace IzBone.Controller {
 	 * 平面的な布のようなものを再現する際に使用する
 	 */
 	[ExecuteInEditMode]
+	[AddComponentMenu("IzBone/Plain")]
 	unsafe sealed class Plain : Base {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
@@ -30,17 +31,20 @@ namespace IzBone.Controller {
 		}
 		[SerializeField] BoneInfo[] _boneInfos = null;
 
+		[Space]
+		[UnityEngine.Serialization.FormerlySerializedAs("cmpl_direct")]
+		[Compliance][SerializeField] float _cmpl_direct = 0.000000001f;		//!< Compliance値 直接接続
+		[UnityEngine.Serialization.FormerlySerializedAs("cmpl_diag")]
+		[Compliance][SerializeField] float _cmpl_diag = 0.0000001f;			//!< Compliance値 捻じれ用の対角線接続
+		[UnityEngine.Serialization.FormerlySerializedAs("cmpl_bend")]
+		[Compliance][SerializeField] float _cmpl_bend = 0.00002f;			//!< Compliance値 曲げ用の１つ飛ばし接続
+
 
 		// --------------------------------------- publicメンバ -------------------------------------
 
-		public Vector3 g = new Vector3(0,-1,0);
-
-		public float cmpl_direct = 0.000000001f;
-		public float cmpl_diag = 0.0000001f;
-		public float cmpl_bend = 0.00002f;
-
+		[Space]
+		public Vector3 g = new Vector3(0,-1,0);			//!< 重力加速度
 		[Range(0.01f,5)] public float airHL = 0.1f;		//!< 空気抵抗による半減期
-
 		[Range(1,50)] public int iterationNum = 15;		//!< 1frame当たりの計算イテレーション回数
 
 
@@ -87,12 +91,14 @@ namespace IzBone.Controller {
 			var constraints = new List<Constraint>();
 			Action<Point, Point, int> addCstr =
 				(p0, p1, type) => {
-					constraints.Add( new Constraint() {
-						mode = Constraint.Mode.Distance,
-						srcPointIdx = p0.idx,
-						dstPointIdx = p1.idx,
-						compliance = type==0 ? cmpl_direct : (type==1?cmpl_diag:cmpl_bend),
-					} );
+					var compliance = type==0 ? _cmpl_direct : (type==1?_cmpl_diag:_cmpl_bend);
+					if (compliance < 1)
+						constraints.Add( new Constraint() {
+							mode = Constraint.Mode.Distance,
+							srcPointIdx = p0.idx,
+							dstPointIdx = p1.idx,
+							compliance = compliance,
+						} );
 				};
 			for (int i=0; i<_boneInfos.Length; ++i) {
 				var bc = _boneInfos[i];
@@ -181,6 +187,7 @@ namespace IzBone.Controller {
 		void Update() {
 			if (Application.isPlaying) return;
 
+			if (_boneInfos == null) return;
 			foreach ( var i in _boneInfos ) {
 				// Depthを有効範囲に丸める
 				if ( i.boneTop == null ) {
@@ -220,6 +227,7 @@ namespace IzBone.Controller {
 			base.OnDrawGizmos();
 			if ( !UnityEditor.Selection.Contains( gameObject.GetInstanceID() ) ) return;
 
+			if (_boneInfos == null) return;
 			for (int i=0; i<_boneInfos.Length; ++i) {
 				var b = _boneInfos[i];
 				if (b.boneTop == null) continue;

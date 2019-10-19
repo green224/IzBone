@@ -9,6 +9,7 @@ using UnityEditor;
 namespace IzBone.Controller {
 
 	/** IzBone専用のコライダー */
+	[AddComponentMenu("IzBone/IzCollider")]
 	sealed class IzCollider : MonoBehaviour {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
@@ -82,11 +83,11 @@ namespace IzBone.Controller {
 #if UNITY_EDITOR
 		void OnDrawGizmos() {
 			if ( !UnityEditor.Selection.Contains( gameObject.GetInstanceID() ) ) return;
-			if ( !Application.isPlaying ) checkRebuildL2GMat();
 			DEBUG_drawGizmos();
 		}
 
 		public void DEBUG_drawGizmos() {
+			if ( !Application.isPlaying ) checkRebuildL2GMat();
 			Gizmos.color = new Color(0.3f,1f,0.2f);
 
 			if (_mode == Mode.Sphere) {
