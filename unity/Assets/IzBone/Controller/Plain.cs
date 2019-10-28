@@ -12,7 +12,7 @@ namespace IzBone.Controller {
 	 */
 	[ExecuteInEditMode]
 	[AddComponentMenu("IzBone/Plain")]
-	unsafe sealed class Plain : Base {
+	public unsafe sealed class Plain : Base {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 		/** 骨の情報 */

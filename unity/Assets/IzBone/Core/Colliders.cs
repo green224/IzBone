@@ -7,7 +7,7 @@ using System.Linq;
 namespace IzBone.Core {
 
 	/** 複数のコライダをまとめて保持するコンテナ */
-	unsafe class Colliders {
+	public unsafe class Colliders {
 		public const int Capacity_S = 128;
 		public const int Capacity_C = 64;
 		public const int Capacity_B = 32;
@@ -88,7 +88,7 @@ namespace IzBone.Core {
 	
 	/** 球形コライダ [16bytes] */
 	[StructLayout(LayoutKind.Explicit)]
-	unsafe struct Collider_Sphere {
+	public unsafe struct Collider_Sphere {
 		[FieldOffset(0)] public Vector3 pos;
 		[FieldOffset(12)] public float r;
 
@@ -105,7 +105,7 @@ namespace IzBone.Core {
 
 	/** カプセル形状コライダ [32bytes] */
 	[StructLayout(LayoutKind.Explicit)]
-	unsafe struct Collider_Capsule {
+	public unsafe struct Collider_Capsule {
 		[FieldOffset(0)] public Vector3 pos;	//!< 中央位置
 		[FieldOffset(12)] public float r_s;		//!< 横方向の半径
 		[FieldOffset(16)] public Vector3 dir;	//!< 縦方向の向き
@@ -138,7 +138,7 @@ namespace IzBone.Core {
 
 	/** 直方体コライダ[64bytes] */
 	[StructLayout(LayoutKind.Explicit)]
-	unsafe struct Collider_Box {
+	public unsafe struct Collider_Box {
 		[FieldOffset(0)] public Vector3 pos;			//!< 中心位置
 		[FieldOffset(12)] public Vector3 xAxis;			//!< X軸方向
 		[FieldOffset(24)] public Vector3 yAxis;			//!< Y軸方向
@@ -213,7 +213,7 @@ namespace IzBone.Core {
 
 	/** 無限平面コライダ [24bytes] */
 	[StructLayout(LayoutKind.Explicit)]
-	unsafe struct Collider_Plane {
+	public unsafe struct Collider_Plane {
 		[FieldOffset(0)] public Vector3 pos;			//!< 平面上の位置
 		[FieldOffset(12)] public Vector3 dir;			//!< 各ローカル軸方向の半径
 

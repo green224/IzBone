@@ -6,7 +6,7 @@ using UnityEngine;
 namespace IzBone.Controller {
 
 	/** IzBoneを使用するオブジェクトにつけるコンポーネントの基底クラス */
-	unsafe abstract class Base : MonoBehaviour {
+	public unsafe abstract class Base : MonoBehaviour {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 		[SerializeField] protected IzCollider[] _izColliders = null;

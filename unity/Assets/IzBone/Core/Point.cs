@@ -8,7 +8,7 @@ namespace IzBone.Core {
 	
 	/** シミュレート単位となるパーティクル1粒子分の情報 [32bytes] */
 	[StructLayout(LayoutKind.Explicit)]
-	struct Point {
+	public struct Point {
 		[FieldOffset(0)] public Vector3 pos;
 		[FieldOffset(12)] public Vector3 v;
 		[FieldOffset(24)] public float invM;
