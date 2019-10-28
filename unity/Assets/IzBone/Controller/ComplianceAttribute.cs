@@ -10,7 +10,7 @@ namespace IzBone.Controller {
 	 * IzBoneを使用するオブジェクトにつけるコンポーネント。
 	 * 平面的な布のようなものを再現する際に使用する
 	 */
-	sealed class ComplianceAttribute : PropertyAttribute {
+	public sealed class ComplianceAttribute : PropertyAttribute {
 		public ComplianceAttribute() {}
 
 		[CustomPropertyDrawer(typeof(ComplianceAttribute))]

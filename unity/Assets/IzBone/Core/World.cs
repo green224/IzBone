@@ -7,7 +7,7 @@ using System.Linq;
 namespace IzBone.Core {
 	
 	/** シミュレーション系本体 */
-	unsafe sealed class World {
+	public unsafe sealed class World {
 		// --------------------------------------- publicメンバ -------------------------------------
 
 		public Vector3 g = new Vector3(0,-1,0);		//!< 重力加速度
@@ -21,28 +21,18 @@ namespace IzBone.Core {
 			var points = mngPoints.Select(i=>new Point(i.trans.position, i.m, i.r)).ToArray();
 			_points.reset(points);
 
-			var cstrDist = mngConstraints
-				.Where(i=>i.mode==Controller.Constraint.Mode.Distance)
-				.Select(i=>{
-					var a = new Constraint_Distance(){ compliance = i.compliance };
-					a.reset(
-						_points.ptr + i.srcPointIdx,
-						_points.ptr + i.dstPointIdx
-					);
-					return a;
-				}).ToArray();
-			_constraints_distance.reset(cstrDist);
+			_constraints.reset(mngConstraints, _points);
+			var cnstTtlLen = _constraints.distance.length + _constraints.axis.length;
 
-			if ( _lambdas.array==null || _lambdas.length<cstrDist.Length ) {
-				_lambdas.reset(new float[cstrDist.Length]);
-			}
+			if (_lambdas.array==null || _lambdas.length < cnstTtlLen )
+				_lambdas.reset( new float[cnstTtlLen] );
 		}
 
 		/** 破棄する。必ず最後に呼ぶこと */
 		public void release() {
 			_points.reset( null );
-			_constraints_distance.reset( null );
 			_lambdas.reset( null );
+			_constraints.release();
 		}
 
 		/** 更新する */
@@ -93,8 +83,13 @@ namespace IzBone.Core {
 
 					var lamdbda = _lambdas.ptr;
 					for (
-						var p=_constraints_distance.ptr;
-						p!=_constraints_distance.ptrEnd;
+						var p=_constraints.distance.ptr;
+						p!=_constraints.distance.ptrEnd;
+						++p, ++lamdbda
+					) *lamdbda += p->solve( sqDt, *lamdbda );
+					for (
+						var p=_constraints.axis.ptr;
+						p!=_constraints.axis.ptrEnd;
 						++p, ++lamdbda
 					) *lamdbda += p->solve( sqDt, *lamdbda );
 				}
@@ -151,7 +146,7 @@ namespace IzBone.Core {
 
 		const float MinimumM = 0.00000001f;
 		PinnedArray<Point> _points = new PinnedArray<Point>();
-		PinnedArray<Constraint_Distance> _constraints_distance = new PinnedArray<Constraint_Distance>();
+		Constraints _constraints = new Constraints();
 		PinnedArray<float> _lambdas = new PinnedArray<float>();
 
 

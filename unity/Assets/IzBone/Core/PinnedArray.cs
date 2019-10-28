@@ -7,7 +7,7 @@ using System.Linq;
 namespace IzBone.Core {
 
 	/** ポインタアクセスが簡単にできるように配列をラップしたもの */
-	unsafe sealed class PinnedArray<T> where T:unmanaged {
+	public unsafe sealed class PinnedArray<T> where T:unmanaged {
 		// --------------------------------------- publicメンバ -------------------------------------
 
 		// 高速化のために、実機ではフィールドアクセスに変化させる

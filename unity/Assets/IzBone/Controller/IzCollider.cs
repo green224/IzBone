@@ -10,7 +10,7 @@ namespace IzBone.Controller {
 
 	/** IzBone専用のコライダー */
 	[AddComponentMenu("IzBone/IzCollider")]
-	sealed class IzCollider : MonoBehaviour {
+	public sealed class IzCollider : MonoBehaviour {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 		public enum Mode { Sphere, Capsule, Box, Plane, }
