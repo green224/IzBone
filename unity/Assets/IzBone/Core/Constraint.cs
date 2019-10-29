@@ -14,7 +14,7 @@ namespace IzBone.Core {
 		public PinnedArray<Constraint_Axis>		axis     = new PinnedArray<Constraint_Axis>();
 		
 		/** 初期化する。最初に一度だけ呼ぶこと */
-		public void reset( Controller.Constraint[] src, PinnedArray<Point> points ) {
+		public void reset( List<Controller.Constraint> src, PinnedArray<Point> points ) {
 			var d = new List<Constraint_Distance>();
 			var a = new List<Constraint_Axis>();
 			foreach (var i in src) {

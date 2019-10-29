@@ -37,17 +37,7 @@ namespace IzBone.Controller {
 
 		// --------------------------------------- publicメンバ -------------------------------------
 
-		[Space]
-		public Vector3 g = new Vector3(0,-1,0);			//!< 重力加速度
-		[Range(0.01f,5)] public float airHL = 0.1f;		//!< 空気抵抗による半減期
-		[Range(1,50)] public int iterationNum = 15;		//!< 1frame当たりの計算イテレーション回数
-
-
 		// ----------------------------------- private/protected メンバ -------------------------------
-
-		Point[] _points = null;
-		Constraint[] _constraints = null;
-		Core.World _world = null;
 
 		override protected void Start() {
 			base.Start();
@@ -82,18 +72,7 @@ namespace IzBone.Controller {
 			_points = points.ToArray();
 
 			// 制約リストを構築
-			var constraints = new List<Constraint>();
-			Action<Point, Point, int> addCstr =
-				(p0, p1, type) => {
-					var compliance = type==0 ? _cmpl_direct : (type==1?_cmpl_bend:_cmpl_roll);
-					if (compliance < 1)
-						constraints.Add( new Constraint() {
-							mode = Constraint.Mode.Distance,
-							srcPointIdx = p0.idx,
-							dstPointIdx = p1.idx,
-							compliance = compliance,
-						} );
-				};
+			_constraints.Clear();
 			{
 				var c = _boneInfo.point;
 				var d0 = c.child;
@@ -101,8 +80,8 @@ namespace IzBone.Controller {
 
 				int depth=0;
 				while (c!=null) {
-					if (d0!=null) addCstr(c,d0,0);
-					if (d1!=null) addCstr(c,d1,1);
+					if (d0!=null) addCstr(_cmpl_direct, c, d0);
+					if (d1!=null) addCstr(_cmpl_bend,   c, d1);
 
 					c=c.child;
 					d0=d0?.child;
@@ -110,11 +89,8 @@ namespace IzBone.Controller {
 					++depth;
 				}
 			}
-			_constraints = constraints.ToArray();
 
-			// シミュレーション系を作成
-			_world = new Core.World();
-			_world.setup( _points, _constraints );
+			begin();
 		}
 
 	#if UNITY_EDITOR
@@ -141,21 +117,6 @@ namespace IzBone.Controller {
 			coreUpdate(Time.deltaTime);
 		}
 
-		override protected void OnDestroy() {
-			base.OnDestroy();
-			if (!Application.isPlaying) return;
-			_world.release();
-		}
-
-		override protected void coreUpdate(float dt) {
-			base.coreUpdate(dt);
-			_world.g = g;
-			_world.airHL = airHL;
-			for (int i=0; i<iterationNum; ++i)
-				_world.update(dt/iterationNum, iterationNum, _points, _coreColliders);
-		}
-
-
 	#if UNITY_EDITOR
 		override protected void OnDrawGizmos() {
 			base.OnDrawGizmos();
@@ -176,23 +137,6 @@ namespace IzBone.Controller {
 
 					if ( trans.childCount==0 ) break; else trans=trans.GetChild(0);
 				}
-			}
-
-			Gizmos.color = new Color(1,1,0);
-			if (_constraints != null) foreach (var i in _constraints) {
-				var p0 = _world.DEBUG_getPos( i.srcPointIdx );
-				var p1 = _world.DEBUG_getPos( i.dstPointIdx );
-				Gizmos.DrawLine( p0, p1 );
-			}
-
-			Gizmos.color = Color.blue;
-			if (_points != null) foreach (var i in _points) {
-				if (i.m < 0.000001f) continue;
-				var v = _world.DEBUG_getV( i.idx );
-				var p = _world.DEBUG_getPos( i.idx );
-//				var p = i.trans.position;
-				Gizmos.DrawLine( p, p+v*0.03f );
-//				Gizmos.DrawLine( p, v );
 			}
 		}
 	#endif
