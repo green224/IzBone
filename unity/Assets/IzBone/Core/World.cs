@@ -2,6 +2,7 @@
 using UnityEngine;
 
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace IzBone.Core {
@@ -16,7 +17,7 @@ namespace IzBone.Core {
 		/** 初期化する。最初に一度だけ呼ぶこと */
 		public void setup(
 			Controller.Point[] mngPoints,
-			Controller.Constraint[] mngConstraints
+			List<Controller.Constraint> mngConstraints
 		) {
 			var points = mngPoints.Select(i=>new Point(i.trans.position, i.m, i.r)).ToArray();
 			_points.reset(points);

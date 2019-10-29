@@ -32,27 +32,14 @@ namespace IzBone.Controller {
 		[SerializeField] BoneInfo[] _boneInfos = null;
 
 		[Space]
-		[UnityEngine.Serialization.FormerlySerializedAs("cmpl_direct")]
 		[Compliance][SerializeField] float _cmpl_direct = 0.000000001f;		//!< Compliance値 直接接続
-		[UnityEngine.Serialization.FormerlySerializedAs("cmpl_diag")]
 		[Compliance][SerializeField] float _cmpl_diag = 0.0000001f;			//!< Compliance値 捻じれ用の対角線接続
-		[UnityEngine.Serialization.FormerlySerializedAs("cmpl_bend")]
 		[Compliance][SerializeField] float _cmpl_bend = 0.00002f;			//!< Compliance値 曲げ用の１つ飛ばし接続
 
 
 		// --------------------------------------- publicメンバ -------------------------------------
 
-		[Space]
-		public Vector3 g = new Vector3(0,-1,0);			//!< 重力加速度
-		[Range(0.01f,5)] public float airHL = 0.1f;		//!< 空気抵抗による半減期
-		[Range(1,50)] public int iterationNum = 15;		//!< 1frame当たりの計算イテレーション回数
-
-
 		// ----------------------------------- private/protected メンバ -------------------------------
-
-		Point[] _points = null;
-		Constraint[] _constraints = null;
-		Core.World _world = null;
 
 		override protected void Start() {
 			base.Start();
@@ -88,18 +75,7 @@ namespace IzBone.Controller {
 			_points = points.ToArray();
 
 			// 制約リストを構築
-			var constraints = new List<Constraint>();
-			Action<Point, Point, int> addCstr =
-				(p0, p1, type) => {
-					var compliance = type==0 ? _cmpl_direct : (type==1?_cmpl_diag:_cmpl_bend);
-					if (compliance < 1)
-						constraints.Add( new Constraint() {
-							mode = Constraint.Mode.Distance,
-							srcPointIdx = p0.idx,
-							dstPointIdx = p1.idx,
-							compliance = compliance,
-						} );
-				};
+			_constraints.Clear();
 			for (int i=0; i<_boneInfos.Length; ++i) {
 				var bc = _boneInfos[i];
 				var bl0 = (i+1<_boneInfos.Length ? _boneInfos[i+1] : null);
@@ -115,14 +91,14 @@ namespace IzBone.Controller {
 
 				int depth=0;
 				while (c!=null) {
-					if (d0 !=null && isChain(4,i,depth)) addCstr(c,d0,0);
-					if (d1 !=null && isChain(5,i,depth)) addCstr(c,d1,2);
-					if (l0 !=null && isChain(0,i,depth)) addCstr(c,l0,0);
-					if (l1 !=null && isChain(1,i,depth)) addCstr(c,l1,2);
-					if (ld0!=null && isChain(2,i,depth)) addCstr(c,ld0,1);
-					if (ld1!=null && isChain(3,i,depth)) addCstr(c,ld1,2);
-					if (rd0!=null && isChain(6,i,depth)) addCstr(c,rd0,1);
-					if (rd1!=null && isChain(7,i,depth)) addCstr(c,rd1,2);
+					if (d0 !=null && isChain(4,i,depth)) addCstr(_cmpl_direct, c, d0);
+					if (d1 !=null && isChain(5,i,depth)) addCstr(_cmpl_bend,   c, d1);
+					if (l0 !=null && isChain(0,i,depth)) addCstr(_cmpl_direct, c, l0);
+					if (l1 !=null && isChain(1,i,depth)) addCstr(_cmpl_bend,   c, l1);
+					if (ld0!=null && isChain(2,i,depth)) addCstr(_cmpl_diag,   c, ld0);
+					if (ld1!=null && isChain(3,i,depth)) addCstr(_cmpl_bend,   c, ld1);
+					if (rd0!=null && isChain(6,i,depth)) addCstr(_cmpl_diag,   c, rd0);
+					if (rd1!=null && isChain(7,i,depth)) addCstr(_cmpl_bend,   c, rd1);
 
 					c=c.child;
 					l0=l0?.child;
@@ -136,11 +112,8 @@ namespace IzBone.Controller {
 					++depth;
 				}
 			}
-			_constraints = constraints.ToArray();
 
-			// シミュレーション系を作成
-			_world = new Core.World();
-			_world.setup( _points, _constraints );
+			begin();
 		}
 
 		/** dir:0上,1上x2,2右上,2右上x2,2右,2右x2,3右下,3右下x2 */
@@ -207,21 +180,6 @@ namespace IzBone.Controller {
 			coreUpdate(Time.deltaTime);
 		}
 
-		override protected void OnDestroy() {
-			base.OnDestroy();
-			if (!Application.isPlaying) return;
-			_world.release();
-		}
-
-		override protected void coreUpdate(float dt) {
-			base.coreUpdate(dt);
-			_world.g = g;
-			_world.airHL = airHL;
-			for (int i=0; i<iterationNum; ++i)
-				_world.update(dt/iterationNum, iterationNum, _points, _coreColliders);
-		}
-
-
 	#if UNITY_EDITOR
 		override protected void OnDrawGizmos() {
 			base.OnDrawGizmos();
@@ -252,23 +210,6 @@ namespace IzBone.Controller {
 
 					if ( trans.childCount==0 ) break; else trans=trans.GetChild(0);
 				}
-			}
-
-			Gizmos.color = new Color(1,1,0);
-			if (_constraints != null) foreach (var i in _constraints) {
-				var p0 = _world.DEBUG_getPos( i.srcPointIdx );
-				var p1 = _world.DEBUG_getPos( i.dstPointIdx );
-				Gizmos.DrawLine( p0, p1 );
-			}
-
-			Gizmos.color = Color.blue;
-			if (_points != null) foreach (var i in _points) {
-				if (i.m < 0.000001f) continue;
-				var v = _world.DEBUG_getV( i.idx );
-				var p = _world.DEBUG_getPos( i.idx );
-//				var p = i.trans.position;
-				Gizmos.DrawLine( p, p+v*0.03f );
-//				Gizmos.DrawLine( p, v );
 			}
 		}
 	#endif
