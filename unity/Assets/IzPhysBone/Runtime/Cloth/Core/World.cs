@@ -16,7 +16,7 @@ namespace IzPhysBone.Cloth.Core {
 	{
 		// --------------------------------------- publicメンバ -------------------------------------
 
-		public Vector3 g = new Vector3(0,-1,0);		//!< 重力加速度
+		public float3 g = float3(0,-1,0);		//!< 重力加速度
 		public float airHL = 0.1f;					//!< 空気抵抗による半減期
 
 		public World(
@@ -60,14 +60,14 @@ namespace IzPhysBone.Cloth.Core {
 				for (var p=pntsPtr0; p!=pntsPtrEnd; ++p, ++i) {
 					if ( p->invM < MinimumM ) {
 						p->col.pos = mngPoints[i].trans.position;
-						p->v = new Vector3(0,0,0);
+						p->v = default;
 					} else {
 //						var a = p->pos;
 //						p->pos += (a - p->oldPos)*airResRate + sqDt*g;
 //						p->oldPos = a;
 //						var v = p->pos - p->v;
 						var v = p->v * dt;
-						var vNrom = v.magnitude;
+						var vNrom = length(v);
 						v *= ( Mathf.Min(vNrom,0.006f) / (vNrom+0.0000001f) );
 						
 						p->v = p->col.pos;
@@ -127,10 +127,13 @@ namespace IzPhysBone.Cloth.Core {
 					for (j=j.child; j!=null; j=j.child) {
 						var point = pntsPtr0 + j.idx;
 
-						j.trans.parent.localRotation = Quaternion.identity;
-						var q = Quaternion.FromToRotation(
-							j.trans.localPosition.normalized,
-							j.trans.parent.worldToLocalMatrix.MultiplyPoint( point->col.pos ).normalized
+						j.trans.parent.localRotation = Unity.Mathematics.quaternion.identity;
+						var q = Math8.Math8.FromToRotation(
+							j.trans.localPosition,
+							mul(
+								j.trans.parent.worldToLocalMatrix,
+								float4( point->col.pos, 1 )
+							).xyz
 						);
 						j.trans.parent.localRotation = q;
 //						j.trans.position = point.pos;
@@ -145,11 +148,11 @@ namespace IzPhysBone.Cloth.Core {
 		}
 
 	#if UNITY_EDITOR
-		public Vector3 DEBUG_getPos(int idx) {
+		public float3 DEBUG_getPos(int idx) {
 			if (!_points.IsCreated || _points.Length<=idx) return default;
 			return _points[idx].col.pos;
 		}
-		public Vector3 DEBUG_getV(int idx) {
+		public float3 DEBUG_getV(int idx) {
 			if (!_points.IsCreated || _points.Length<=idx) return default;
 			return _points[idx].v;
 		}

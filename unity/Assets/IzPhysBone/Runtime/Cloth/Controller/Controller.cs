@@ -22,7 +22,7 @@ namespace IzPhysBone.Cloth.Controller {
 		public int srcPointIdx, dstPointIdx;
 		public float compliance;
 
-		public Vector3 axis = new Vector3(1,0,0);
+		public float3 axis = float3(1,0,0);
 	}
 
 }

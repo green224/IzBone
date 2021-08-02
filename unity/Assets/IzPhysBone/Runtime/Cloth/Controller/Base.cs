@@ -19,7 +19,7 @@ namespace IzPhysBone.Cloth.Controller {
 		// --------------------------------------- publicメンバ -------------------------------------
 
 		[Space]
-		public Vector3 g = new Vector3(0,-1,0);			//!< 重力加速度
+		public float3 g = float3(0,-1,0);				//!< 重力加速度
 		[Range(0.01f,5)] public float airHL = 0.1f;		//!< 空気抵抗による半減期
 		[Range(1,50)] public int iterationNum = 15;		//!< 1frame当たりの計算イテレーション回数
 
@@ -50,6 +50,8 @@ namespace IzPhysBone.Cloth.Controller {
 		}
 
 		virtual protected void coreUpdate(float dt) {
+			if (dt < 0.000001f) return;
+
 			_coreColliders.update();
 
 			_world.g = g;

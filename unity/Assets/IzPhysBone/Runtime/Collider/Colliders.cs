@@ -75,25 +75,25 @@ namespace IzPhysBone.Collider {
 				switch (i.mode) {
 				case IzCollider.Mode.Sphere :
 					spheres[++idx_s] = new Collider_Sphere() {
-						pos = new Vector3(l2gMat.m03,l2gMat.m13,l2gMat.m23),
+						pos = l2gMat.c3.xyz,
 						r = i.l2gMatClmNorm.x * i.r.x
 					};
 					break;
 				case IzCollider.Mode.Capsule :
 					capsules[++idx_c] = new Collider_Capsule() {
-						pos = new Vector3(l2gMat.m03,l2gMat.m13,l2gMat.m23),
+						pos = l2gMat.c3.xyz,
 						r_s = i.l2gMatClmNorm.x * i.r.x,
 						r_h = i.l2gMatClmNorm.y * i.r.y,
-						dir = new Vector3(l2gMat.m01, l2gMat.m11, l2gMat.m21) / i.l2gMatClmNorm.y
+						dir = l2gMat.c1.xyz / i.l2gMatClmNorm.y
 					};
 					break;
 				case IzCollider.Mode.Box :
 					boxes[++idx_b] = new Collider_Box() {
-						pos = new Vector3(l2gMat.m03,l2gMat.m13,l2gMat.m23),
-						xAxis = new Vector3(l2gMat.m00, l2gMat.m10, l2gMat.m20) / i.l2gMatClmNorm.x,
-						yAxis = new Vector3(l2gMat.m01, l2gMat.m11, l2gMat.m21) / i.l2gMatClmNorm.y,
-						zAxis = new Vector3(l2gMat.m02, l2gMat.m12, l2gMat.m22) / i.l2gMatClmNorm.z,
-						r = new Vector3(
+						pos = l2gMat.c3.xyz,
+						xAxis = l2gMat.c0.xyz / i.l2gMatClmNorm.x,
+						yAxis = l2gMat.c1.xyz / i.l2gMatClmNorm.y,
+						zAxis = l2gMat.c2.xyz / i.l2gMatClmNorm.z,
+						r = float3(
 							i.l2gMatClmNorm.x * i.r.x,
 							i.l2gMatClmNorm.y * i.r.y,
 							i.l2gMatClmNorm.z * i.r.z
@@ -102,8 +102,8 @@ namespace IzPhysBone.Collider {
 					break;
 				case IzCollider.Mode.Plane :
 					planes[++idx_p] = new Collider_Plane() {
-						pos = new Vector3(l2gMat.m03,l2gMat.m13,l2gMat.m23),
-						dir = new Vector3(l2gMat.m02, l2gMat.m12, l2gMat.m22) / i.l2gMatClmNorm.z
+						pos = l2gMat.c3.xyz,
+						dir = l2gMat.c2.xyz / i.l2gMatClmNorm.z
 					};
 					break;
 				default : throw new InvalidProgramException();
@@ -134,13 +134,13 @@ namespace IzPhysBone.Collider {
 	/** 球形コライダ [16bytes] */
 	[StructLayout(LayoutKind.Explicit)]
 	public unsafe struct Collider_Sphere : ICollider {
-		[FieldOffset(0)] public Vector3 pos;
+		[FieldOffset(0)] public float3 pos;
 		[FieldOffset(12)] public float r;
 
 		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
 		public bool solve(Collider_Sphere* s) {
 			var d = s->pos - pos;
-			var dSqLen = d.sqrMagnitude;
+			var dSqLen = lengthsq(d);
 			var sumR = r + s->r;
 			if ( sumR*sumR < dSqLen ) return false;
 			s->pos = pos + d * (sumR / Mathf.Sqrt(dSqLen+0.0000001f));
@@ -151,9 +151,9 @@ namespace IzPhysBone.Collider {
 	/** カプセル形状コライダ [32bytes] */
 	[StructLayout(LayoutKind.Explicit)]
 	public unsafe struct Collider_Capsule : ICollider {
-		[FieldOffset(0)] public Vector3 pos;	//!< 中央位置
+		[FieldOffset(0)] public float3 pos;		//!< 中央位置
 		[FieldOffset(12)] public float r_s;		//!< 横方向の半径
-		[FieldOffset(16)] public Vector3 dir;	//!< 縦方向の向き
+		[FieldOffset(16)] public float3 dir;	//!< 縦方向の向き
 		[FieldOffset(28)] public float r_h;		//!< 縦方向の長さ
 
 		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
@@ -161,20 +161,20 @@ namespace IzPhysBone.Collider {
 			var d = s->pos - pos;
 
 			// まずはバウンダリー球で衝突判定
-			var dSqLen = d.sqrMagnitude;
+			var dSqLen = lengthsq(d);
 			var sumR_s = r_s + s->r;
 			var sumR_h = r_h + s->r;
 			if (sumR_s*sumR_s < dSqLen && sumR_h*sumR_h < dSqLen) return false;
 
 			// 縦方向の位置により距離を再計算
-			var len_h = Vector3.Dot(d, dir);
+			var len_h = dot(d, dir);
 //			if (len_h < -sumR_h || sumR_h < len_h) return false;		// バウンダリー球で判定する場合はこれはいらない
 			if (len_h < -r_h+r_s)		d += dir * (r_h-r_s);			// 下側の球との衝突可能性がある場合
 			else if (len_h < r_h-r_s)	d -= dir * len_h;				// 中央との衝突可能性がある場合
 			else						d += dir * (r_s-r_h);			// 上側の球との衝突可能性がある場合
 
 			// 押し出し処理
-			dSqLen = d.sqrMagnitude;
+			dSqLen = lengthsq(d);
 			if ( sumR_s*sumR_s < dSqLen ) return false;
 			s->pos += d * (sumR_s/Mathf.Sqrt(dSqLen+0.0000001f) - 1);
 			return true;
@@ -184,11 +184,11 @@ namespace IzPhysBone.Collider {
 	/** 直方体コライダ[64bytes] */
 	[StructLayout(LayoutKind.Explicit)]
 	public unsafe struct Collider_Box : ICollider {
-		[FieldOffset(0)] public Vector3 pos;			//!< 中心位置
-		[FieldOffset(12)] public Vector3 xAxis;			//!< X軸方向
-		[FieldOffset(24)] public Vector3 yAxis;			//!< Y軸方向
-		[FieldOffset(36)] public Vector3 zAxis;			//!< Z軸方向
-		[FieldOffset(52)] public Vector3 r;				//!< 各ローカル軸方向の半径
+		[FieldOffset(0)] public float3 pos;			//!< 中心位置
+		[FieldOffset(12)] public float3 xAxis;			//!< X軸方向
+		[FieldOffset(24)] public float3 yAxis;			//!< Y軸方向
+		[FieldOffset(36)] public float3 zAxis;			//!< Z軸方向
+		[FieldOffset(52)] public float3 r;				//!< 各ローカル軸方向の半径
 
 		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
 		public bool solve(Collider_Sphere* s) {
@@ -196,17 +196,17 @@ namespace IzPhysBone.Collider {
 			var pr = s->r;
 
 			// まずはバウンダリー球で衝突判定
-			var dSqLen = d.sqrMagnitude;
+			var dSqLen = lengthsq(d);
 			var sumR_x = r.x + pr;
 			var sumR_y = r.y + pr;
 			var sumR_z = r.z + pr;
 			if (sumR_x*sumR_x + sumR_y*sumR_y + sumR_z*sumR_z < dSqLen) return false;
 
 			// 各軸ごとに、内側かどうか、境目からの距離を計算
-			var a = new Vector3(
-				Vector3.Dot(d, xAxis),
-				Vector3.Dot(d, yAxis),
-				Vector3.Dot(d, zAxis)
+			var a = new float3(
+				dot(d, xAxis),
+				dot(d, yAxis),
+				dot(d, zAxis)
 			) + r;
 			bool xInner = false, yInner = false, zInner = false;
 			if (0 < a.x) { a.x -= r.x*2; xInner = a.x<0; }
@@ -248,7 +248,7 @@ namespace IzPhysBone.Collider {
 			if (xInner) a.x=0;
 			if (yInner) a.y=0;
 			if (zInner) a.z=0;
-			var sqrA = a.sqrMagnitude;
+			var sqrA = lengthsq(a);
 			if ( pr*pr < sqrA ) return false;
 			a *= pr/Mathf.Sqrt(sqrA+0.0000001f) - 1;
 			s->pos += a.x*xAxis + a.y*yAxis + a.z*zAxis;
@@ -259,14 +259,14 @@ namespace IzPhysBone.Collider {
 	/** 無限平面コライダ [24bytes] */
 	[StructLayout(LayoutKind.Explicit)]
 	public unsafe struct Collider_Plane : ICollider {
-		[FieldOffset(0)] public Vector3 pos;			//!< 平面上の位置
-		[FieldOffset(12)] public Vector3 dir;			//!< 各ローカル軸方向の半径
+		[FieldOffset(0)] public float3 pos;			//!< 平面上の位置
+		[FieldOffset(12)] public float3 dir;		//!< 各ローカル軸方向の半径
 
 		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
 		public bool solve(Collider_Sphere* s) {
 			var d = s->pos - pos;
 
-			var dLen = Vector3.Dot(d, dir);
+			var dLen = dot(d, dir);
 			if (s->r < dLen) return false;
 
 			s->pos += dir * (s->r - dLen);

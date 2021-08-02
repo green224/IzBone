@@ -83,7 +83,7 @@ namespace IzPhysBone.Cloth.Core {
 		public void reset(Point* src, Point* dst) {
 			this.src = src;
 			this.dst = dst;
-			defLen = (src->col.pos - dst->col.pos).magnitude;
+			defLen = length(src->col.pos - dst->col.pos);
 		}
 		public float solve(float sqDt, float lambda) {
 			var sumInvM = src->invM + dst->invM;
@@ -103,7 +103,7 @@ namespace IzPhysBone.Cloth.Core {
 			// また
 			//   ∇Cj・∇Cj = 1
 			var p = src->col.pos - dst->col.pos;
-			var pLen = p.magnitude;
+			var pLen = length(p);
 
 			var dlambda = (defLen - pLen - at * lambda) / (sumInvM + at);	// eq.18
 			var correction = dlambda * p / (pLen + 0.0000001f);				// eq.17
@@ -123,7 +123,7 @@ namespace IzPhysBone.Cloth.Core {
 		[FieldOffset(0)] public Point* src;
 		[FieldOffset(16)] public Point* dst;
 		[FieldOffset(32)] public float compliance;
-		[FieldOffset(36)] public Vector3 axis;
+		[FieldOffset(36)] public float3 axis;
 
 		public void reset(Point* src, Point* dst) {
 			this.src = src;
@@ -141,11 +141,11 @@ namespace IzPhysBone.Cloth.Core {
 			// であるので、計算すると
 			//   ∇Cj = -( B × A ) / |B|
 			var p = src->col.pos - dst->col.pos;
-			var b = Vector3.Cross( p, axis );
-			var bLen = b.magnitude;
-			var dCj = -Vector3.Cross(b, axis) / (bLen + 0.0000001f);
+			var b = cross( p, axis );
+			var bLen = length(b);
+			var dCj = -cross(b, axis) / (bLen + 0.0000001f);
 
-			var dlambda = (-bLen - at * lambda) / (Vector3.Dot(dCj,dCj)*sumInvM + at);	// eq.18
+			var dlambda = (-bLen - at * lambda) / (dot(dCj,dCj)*sumInvM + at);	// eq.18
 			var correction = dlambda * dCj;			// eq.17
 
 			src->col.pos += +src->invM * correction;
