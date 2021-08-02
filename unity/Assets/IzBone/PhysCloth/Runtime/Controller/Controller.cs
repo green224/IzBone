@@ -5,7 +5,7 @@ using Unity.Mathematics;
 using static Unity.Mathematics.math;
 
 
-namespace IzBone.BonePhysics.Cloth.Controller {
+namespace IzBone.PhysCloth.Controller {
 	
 	public sealed class Point {
 		public readonly int idx;

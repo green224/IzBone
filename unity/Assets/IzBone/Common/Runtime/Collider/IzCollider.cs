@@ -9,10 +9,10 @@ using UnityEditor;
 #endif
 
 
-namespace IzBone.BonePhysics.Collider {
+namespace IzBone.Common.Collider {
 
 	/** IzBone専用のコライダー */
-	[AddComponentMenu("IzBone/BonePhysics_Collider")]
+	[AddComponentMenu("IzBone/IzBone_Collider")]
 	public sealed class IzCollider : MonoBehaviour {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 

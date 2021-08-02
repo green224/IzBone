@@ -1,5 +1,5 @@
 {
-    "name": "IzBone.BonePhysics",
+    "name": "IzBone.PhysCloth",
     "rootNamespace": "",
     "references": [
         "Unity.Mathematics",

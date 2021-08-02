@@ -8,7 +8,7 @@ using Unity.Collections;
 using System.Runtime.InteropServices;
 using System.Linq;
 
-namespace IzBone.BonePhysics.Collider {
+namespace IzBone.Common.Collider {
 
 	/** 複数のコライダをまとめて保持するコンテナ */
 	public unsafe class Colliders : IDisposable

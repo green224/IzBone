@@ -9,7 +9,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace IzBone.BonePhysics.Cloth.Core {
+namespace IzBone.PhysCloth.Core {
 	using Common;
 
 	/** シミュレーション系本体 */
@@ -46,7 +46,7 @@ namespace IzBone.BonePhysics.Cloth.Core {
 			float dt,
 			int iterationNum,
 			Controller.Point[] mngPoints,
-			Collider.Colliders colliders
+			Common.Collider.Colliders colliders
 		) {
 			// 各種バッファのポインタを取得しておく
 			var pntsPtr0 = (Point*)_points.GetUnsafePtr();
@@ -106,7 +106,7 @@ namespace IzBone.BonePhysics.Cloth.Core {
 
 			{// XPBDによるフィッティング処理
 				static void solveCollider<T>(Point* p, NativeArray<T> colliders)
-				where T : struct, Collider.ICollider {
+				where T : struct, Common.Collider.ICollider {
 					if (!colliders.IsCreated) return;
 					for (int i=0; i<colliders.Length; ++i) colliders[i].solve(&p->col);
 				}

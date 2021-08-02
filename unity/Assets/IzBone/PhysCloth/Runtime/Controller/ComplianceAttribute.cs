@@ -10,7 +10,7 @@ using UnityEditor;
 
 
 
-namespace IzBone.BonePhysics.Cloth.Controller {
+namespace IzBone.PhysCloth.Controller {
 
 	/**
 	 * Compliance値として使用するfloatにつける属性。

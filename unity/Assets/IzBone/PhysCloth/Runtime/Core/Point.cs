@@ -7,12 +7,12 @@ using static Unity.Mathematics.math;
 using System.Runtime.InteropServices;
 
 
-namespace IzBone.BonePhysics.Cloth.Core {
+namespace IzBone.PhysCloth.Core {
 	
 	/** シミュレート単位となるパーティクル1粒子分の情報 [32bytes] */
 	[StructLayout(LayoutKind.Explicit)]
 	public struct Point {
-		[FieldOffset(0)] public Collider.Collider_Sphere col;
+		[FieldOffset(0)] public Common.Collider.Collider_Sphere col;
 		[FieldOffset(16)] public float3 v;
 		[FieldOffset(28)] public float invM;
 

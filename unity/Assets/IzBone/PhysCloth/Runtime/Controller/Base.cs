@@ -7,13 +7,13 @@ using static Unity.Mathematics.math;
 using System.Collections.Generic;
 
 
-namespace IzBone.BonePhysics.Cloth.Controller {
+namespace IzBone.PhysCloth.Controller {
 
 	/** IzBoneを使用するオブジェクトにつけるコンポーネントの基底クラス */
 	public unsafe abstract class Base : MonoBehaviour {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
-		[SerializeField] protected Collider.IzCollider[] _izColliders = null;
+		[SerializeField] protected Common.Collider.IzCollider[] _izColliders = null;
 
 
 		// --------------------------------------- publicメンバ -------------------------------------
@@ -30,14 +30,14 @@ namespace IzBone.BonePhysics.Cloth.Controller {
 
 		// ----------------------------------- private/protected メンバ -------------------------------
 
-		protected Collider.Colliders _coreColliders;
+		protected Common.Collider.Colliders _coreColliders;
 		protected List<Constraint> _constraints = new List<Constraint>();
 		protected Point[] _points;
 		protected Core.World _world;
 
 		virtual protected void Start() {
 			if (!Application.isPlaying) return;
-			_coreColliders = new Collider.Colliders(_izColliders);
+			_coreColliders = new Common.Collider.Colliders(_izColliders);
 		}
 
 		virtual protected void OnDestroy() {
@@ -88,7 +88,7 @@ namespace IzBone.BonePhysics.Cloth.Controller {
 		/** 配下のIzColliderを全登録する */
 		[ContextMenu("Collect child IzColliders")]
 		void collectChildIzCol() {
-			_izColliders = GetComponentsInChildren< Collider.IzCollider >();
+			_izColliders = GetComponentsInChildren< Common.Collider.IzCollider >();
 		}
 
 		virtual protected void OnDrawGizmos() {

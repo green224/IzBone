@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("IzBone.BonePhysics")]
+[assembly: InternalsVisibleTo("IzBone.PhysCloth")]
 
 

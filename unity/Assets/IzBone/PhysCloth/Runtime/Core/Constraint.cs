@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace IzBone.BonePhysics.Cloth.Core {
+namespace IzBone.PhysCloth.Core {
 	
 	/** 複数の拘束条件をまとめて保持するコンテナ */
 	public unsafe class Constraints : IDisposable

@@ -7,7 +7,7 @@ using static Unity.Mathematics.math;
 using System.Collections.Generic;
 
 
-namespace IzBone.BonePhysics.Cloth.Controller {
+namespace IzBone.PhysCloth.Controller {
 
 	/**
 	 * IzBoneを使用するオブジェクトにつけるコンポーネント。
