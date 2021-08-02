@@ -128,7 +128,7 @@ namespace IzPhysBone.Cloth.Core {
 						var point = pntsPtr0 + j.idx;
 
 						j.trans.parent.localRotation = Unity.Mathematics.quaternion.identity;
-						var q = Math8.Math8.FromToRotation(
+						var q = Math8.FromToRotation(
 							j.trans.localPosition,
 							mul(
 								j.trans.parent.worldToLocalMatrix,
