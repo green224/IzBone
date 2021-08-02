@@ -1,9 +1,11 @@
 ﻿using System;
 using UnityEngine;
 
-using System.Runtime.InteropServices;
+using Unity.Mathematics;
+using static Unity.Mathematics.math;
 
-namespace IzBone.Controller {
+
+namespace IzPhysBone.Cloth.Controller {
 	
 	public sealed class Point {
 		public int idx;

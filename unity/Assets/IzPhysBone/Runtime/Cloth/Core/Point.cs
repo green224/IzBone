@@ -1,10 +1,13 @@
 ﻿using System;
 using UnityEngine;
 
+using Unity.Mathematics;
+using static Unity.Mathematics.math;
+
 using System.Runtime.InteropServices;
 using System.Linq;
 
-namespace IzBone.Core {
+namespace IzPhysBone.Cloth.Core {
 	
 	/** シミュレート単位となるパーティクル1粒子分の情報 [32bytes] */
 	[StructLayout(LayoutKind.Explicit)]

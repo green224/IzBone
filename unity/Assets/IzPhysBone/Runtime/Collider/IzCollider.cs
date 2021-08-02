@@ -1,12 +1,15 @@
 ﻿using System;
 using UnityEngine;
 
+using Unity.Mathematics;
+using static Unity.Mathematics.math;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 
-namespace IzBone.Controller {
+namespace IzPhysBone.Cloth.Controller {
 
 	/** IzBone専用のコライダー */
 	[AddComponentMenu("IzBone/IzCollider")]

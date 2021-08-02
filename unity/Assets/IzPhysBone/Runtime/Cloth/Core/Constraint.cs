@@ -1,30 +1,35 @@
 ﻿using System;
 using UnityEngine;
 
+using Unity.Mathematics;
+using static Unity.Mathematics.math;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace IzBone.Core {
+namespace IzPhysBone.Cloth.Core {
 	
 	/** 複数の拘束条件をまとめて保持するコンテナ */
-	public unsafe class Constraints {
-
-		public PinnedArray<Constraint_Distance>	distance = new PinnedArray<Constraint_Distance>();
-		public PinnedArray<Constraint_Axis>		axis     = new PinnedArray<Constraint_Axis>();
+	public unsafe class Constraints : IDisposable
+	{
+		public NativeArray<Constraint_Distance>	distance;
+		public NativeArray<Constraint_Axis>		axis;
 		
-		/** 初期化する。最初に一度だけ呼ぶこと */
-		public void reset( List<Controller.Constraint> src, PinnedArray<Point> points ) {
+		public Constraints( List<Controller.Constraint> src, NativeArray<Point> points ) {
 			var d = new List<Constraint_Distance>();
 			var a = new List<Constraint_Axis>();
+			var pntsPtr = (Point*)points.GetUnsafePtr();
 			foreach (var i in src) {
 				switch (i.mode) {
 				case Controller.Constraint.Mode.Distance:
 					{
 						var b = new Constraint_Distance(){ compliance = i.compliance };
 						b.reset(
-							points.ptr + i.srcPointIdx,
-							points.ptr + i.dstPointIdx
+							pntsPtr + i.srcPointIdx,
+							pntsPtr + i.dstPointIdx
 						);
 						d.Add( b );
 					} break;
@@ -32,30 +37,44 @@ namespace IzBone.Core {
 					{
 						var b = new Constraint_Axis(){ compliance = i.compliance, axis = i.axis };
 						b.reset(
-							points.ptr + i.srcPointIdx,
-							points.ptr + i.dstPointIdx
+							pntsPtr + i.srcPointIdx,
+							pntsPtr + i.dstPointIdx
 						);
 						a.Add( b );
 					} break;
 				default:throw new InvalidProgramException();
 				}
 			}
-			distance.reset( d.ToArray() );
-			axis.reset( a.ToArray() );
+			distance = new NativeArray<Constraint_Distance>( d.ToArray(), Allocator.Persistent );
+			axis = new NativeArray<Constraint_Axis>( a.ToArray(), Allocator.Persistent );
 		}
 
 		/** 破棄する。最後に必ず呼ぶこと */
-		public void release() {
-			distance.reset( null );
-			axis.reset( null );
+		public void Dispose() {
+			if (distance.IsCreated) distance.Dispose();
+			if (axis.IsCreated) axis.Dispose();
+		}
+
+		~Constraints() {
+			if (
+				distance.IsCreated ||
+				axis.IsCreated
+			) {
+				Debug.LogError("Constraints is not disposed");
+				Dispose();
+			}
 		}
 	}
 
 
+	/** 拘束条件のinterface */
+	public interface IConstraint {
+		public float solve(float sqDt, float lambda);
+	}
 
 	/** 距離による拘束条件 [40bytes] */
 	[StructLayout(LayoutKind.Explicit)]
-	public unsafe struct Constraint_Distance {
+	public unsafe struct Constraint_Distance : IConstraint {
 		[FieldOffset(0)] public Point* src;
 		[FieldOffset(16)] public Point* dst;
 		[FieldOffset(32)] public float compliance;
@@ -100,7 +119,7 @@ namespace IzBone.Core {
 
 	/** 可動軸方向による拘束条件 [48bytes] */
 	[StructLayout(LayoutKind.Explicit)]
-	public unsafe struct Constraint_Axis {
+	public unsafe struct Constraint_Axis : IConstraint {
 		[FieldOffset(0)] public Point* src;
 		[FieldOffset(16)] public Point* dst;
 		[FieldOffset(32)] public float compliance;

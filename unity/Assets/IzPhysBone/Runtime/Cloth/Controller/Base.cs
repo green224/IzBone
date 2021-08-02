@@ -1,10 +1,13 @@
 ﻿using System;
 using UnityEngine;
 
+using Unity.Mathematics;
+using static Unity.Mathematics.math;
+
 using System.Collections.Generic;
 
 
-namespace IzBone.Controller {
+namespace IzPhysBone.Cloth.Controller {
 
 	/** IzBoneを使用するオブジェクトにつけるコンポーネントの基底クラス */
 	public unsafe abstract class Base : MonoBehaviour {
@@ -23,32 +26,31 @@ namespace IzBone.Controller {
 
 		// ----------------------------------- private/protected メンバ -------------------------------
 
-		protected Core.Colliders _coreColliders = new Core.Colliders();
+		protected Core.Colliders _coreColliders;
 		protected List<Constraint> _constraints = new List<Constraint>();
-		protected Point[] _points = null;
-		protected Core.World _world = null;
+		protected Point[] _points;
+		protected Core.World _world;
 
 		virtual protected void Start() {
 			if (!Application.isPlaying) return;
-			_coreColliders.setup();
+			_coreColliders = new Core.Colliders(_izColliders);
 		}
 
 		virtual protected void OnDestroy() {
 			if (!Application.isPlaying) return;
-			_coreColliders.release();
-			_world.release();
+			_coreColliders?.Dispose();
+			_coreColliders = null;
+			_world?.Dispose();
+			_world = null;
 		}
 
 		virtual protected void begin() {
 			// シミュレーション系を作成
-			_world = new Core.World();
-			_world.setup( _points, _constraints );
+			_world = new Core.World( _points, _constraints );
 		}
 
 		virtual protected void coreUpdate(float dt) {
-			foreach (var i in _izColliders) i.update_phase0();
-			foreach (var i in _izColliders) i.update_phase1();
-			_coreColliders.update(_izColliders);
+			_coreColliders.update();
 
 			_world.g = g;
 			_world.airHL = airHL;

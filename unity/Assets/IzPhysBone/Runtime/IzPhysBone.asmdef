@@ -1,7 +1,12 @@
 {
     "name": "IzPhysBone",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "Unity.Mathematics",
+        "Unity.Jobs",
+        "Unity.Burst",
+        "Unity.Entities"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,

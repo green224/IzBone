@@ -2,9 +2,13 @@
 using UnityEngine;
 using UnityEditor;
 
+using Unity.Mathematics;
+using static Unity.Mathematics.math;
 
 
-namespace IzBone.Controller {
+
+
+namespace IzPhysBone.Cloth.Controller {
 
 	/**
 	 * IzBoneを使用するオブジェクトにつけるコンポーネント。

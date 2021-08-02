@@ -1,71 +1,94 @@
 ﻿using System;
 using UnityEngine;
 
+using Unity.Mathematics;
+using static Unity.Mathematics.math;
+using Unity.Collections;
+
 using System.Runtime.InteropServices;
 using System.Linq;
 
-namespace IzBone.Core {
+namespace IzPhysBone.Cloth.Core {
 
 	/** 複数のコライダをまとめて保持するコンテナ */
-	public unsafe class Colliders {
-		public const int Capacity_S = 128;
-		public const int Capacity_C = 64;
-		public const int Capacity_B = 32;
-		public const int Capacity_P = 16;
+	public unsafe class Colliders : IDisposable
+	{
+	//TODO : これはJobからアクセスできる形にする
+		public Controller.IzCollider[] srcList;
 
-		public PinnedArray<Collider_Sphere>		spheres  = new PinnedArray<Collider_Sphere>();
-		public PinnedArray<Collider_Capsule>	capsules = new PinnedArray<Collider_Capsule>();
-		public PinnedArray<Collider_Box>		boxes    = new PinnedArray<Collider_Box>();
-		public PinnedArray<Collider_Plane>		planes   = new PinnedArray<Collider_Plane>();
-		public Collider_Sphere* ptrEnd_s;
-		public Collider_Capsule* ptrEnd_c;
-		public Collider_Box* ptrEnd_b;
-		public Collider_Plane* ptrEnd_p;
+		public NativeArray<Collider_Sphere>		spheres;
+		public NativeArray<Collider_Capsule>	capsules;
+		public NativeArray<Collider_Box>		boxes;
+		public NativeArray<Collider_Plane>		planes;
 
-		/** 初期化する。最初に一度だけ呼ぶこと */
-		public void setup() {
-			spheres.reset( new Collider_Sphere[Capacity_S] );
-			capsules.reset( new Collider_Capsule[Capacity_C] );
-			boxes.reset( new Collider_Box[Capacity_B] );
-			planes.reset( new Collider_Plane[Capacity_P] );
+		public Colliders(Controller.IzCollider[] srcList) {
+			this.srcList = srcList;
 		}
 
 		/** 破棄する。最後に必ず呼ぶこと */
-		public void release() {
-			spheres.reset( null );
-			capsules.reset( null );
-			boxes.reset( null );
-			planes.reset( null );
+		public void Dispose() {
+			if (spheres.IsCreated) spheres.Dispose();
+			if (capsules.IsCreated) capsules.Dispose();
+			if (boxes.IsCreated) boxes.Dispose();
+			if (planes.IsCreated) planes.Dispose();
 		}
 
 		/** 更新処理 */
-		public void update( Controller.IzCollider[] mngColliders ) {
+		public void update() {
+
+			foreach (var i in srcList) i.update_phase0();
+			foreach (var i in srcList) i.update_phase1();
+
+			// コライダー数を計算
+			int cnt_s = 0;
+			int cnt_c = 0;
+			int cnt_b = 0;
+			int cnt_p = 0;
+			foreach (var i in srcList) {
+				switch (i.mode) {
+				case Controller.IzCollider.Mode.Sphere	: ++cnt_s; break;
+				case Controller.IzCollider.Mode.Capsule	: ++cnt_c; break;
+				case Controller.IzCollider.Mode.Box		: ++cnt_b; break;
+				case Controller.IzCollider.Mode.Plane	: ++cnt_p; break;
+				default : throw new InvalidProgramException();
+				}
+			}
+
+			// コライダー数に応じて、バッファサイズを更新する
+			static void resetBufferSize<T>(ref NativeArray<T> buf, int size) where T:struct {
+				if ( (buf.IsCreated ? buf.Length : 0) == size ) return;
+				if (buf.IsCreated) buf.Dispose();
+				if (size != 0) buf = new NativeArray<T>(size, Allocator.Persistent);
+			}
+			resetBufferSize(ref spheres, cnt_s);
+			resetBufferSize(ref capsules, cnt_c);
+			resetBufferSize(ref boxes, cnt_b);
+			resetBufferSize(ref planes, cnt_p);
 
 			// IzColliderコンポーネントから情報を構築する
-			ptrEnd_s = spheres.ptr;
-			ptrEnd_c = capsules.ptr;
-			ptrEnd_b = boxes.ptr;
-			ptrEnd_p = planes.ptr;
-			var ptrMax_s = spheres.ptrEnd;
-			var ptrMax_c = capsules.ptrEnd;
-			var ptrMax_b = boxes.ptrEnd;
-			var ptrMax_p = planes.ptrEnd;
-			foreach (var i in mngColliders) {
+			int idx_s = -1;
+			int idx_c = -1;
+			int idx_b = -1;
+			int idx_p = -1;
+			foreach (var i in srcList) {
 				var l2gMat = i.l2gMat;
-				if ( ptrEnd_s!=ptrMax_s && i.mode==Controller.IzCollider.Mode.Sphere ) {
-					*(ptrEnd_s++) = new Collider_Sphere() {
+				switch (i.mode) {
+				case Controller.IzCollider.Mode.Sphere :
+					spheres[++idx_s] = new Collider_Sphere() {
 						pos = new Vector3(l2gMat.m03,l2gMat.m13,l2gMat.m23),
 						r = i.l2gMatClmNorm.x * i.r.x
 					};
-				} else if ( ptrEnd_c!=ptrMax_c && i.mode==Controller.IzCollider.Mode.Capsule ) {
-					*(ptrEnd_c++) = new Collider_Capsule() {
+					break;
+				case Controller.IzCollider.Mode.Capsule :
+					capsules[++idx_c] = new Collider_Capsule() {
 						pos = new Vector3(l2gMat.m03,l2gMat.m13,l2gMat.m23),
 						r_s = i.l2gMatClmNorm.x * i.r.x,
 						r_h = i.l2gMatClmNorm.y * i.r.y,
 						dir = new Vector3(l2gMat.m01, l2gMat.m11, l2gMat.m21) / i.l2gMatClmNorm.y
 					};
-				} else if ( ptrEnd_b!=ptrMax_b && i.mode==Controller.IzCollider.Mode.Box ) {
-					*(ptrEnd_b++) = new Collider_Box() {
+					break;
+				case Controller.IzCollider.Mode.Box :
+					boxes[++idx_b] = new Collider_Box() {
 						pos = new Vector3(l2gMat.m03,l2gMat.m13,l2gMat.m23),
 						xAxis = new Vector3(l2gMat.m00, l2gMat.m10, l2gMat.m20) / i.l2gMatClmNorm.x,
 						yAxis = new Vector3(l2gMat.m01, l2gMat.m11, l2gMat.m21) / i.l2gMatClmNorm.y,
@@ -76,19 +99,40 @@ namespace IzBone.Core {
 							i.l2gMatClmNorm.z * i.r.z
 						)
 					};
-				} else if ( ptrEnd_p!=ptrMax_p && i.mode==Controller.IzCollider.Mode.Plane ) {
-					*(ptrEnd_p++) = new Collider_Plane() {
+					break;
+				case Controller.IzCollider.Mode.Plane :
+					planes[++idx_p] = new Collider_Plane() {
 						pos = new Vector3(l2gMat.m03,l2gMat.m13,l2gMat.m23),
 						dir = new Vector3(l2gMat.m02, l2gMat.m12, l2gMat.m22) / i.l2gMatClmNorm.z
 					};
+					break;
+				default : throw new InvalidProgramException();
 				}
 			}
 		}
+
+		~Colliders() {
+			if (
+				spheres.IsCreated ||
+				capsules.IsCreated ||
+				boxes.IsCreated ||
+				planes.IsCreated
+			) {
+				Debug.LogError("Colliders is not disposed");
+				Dispose();
+			}
+		}
+	}
+
+
+	/** コライダのinterface */
+	public unsafe interface ICollider {
+		public bool solve(Point* p);
 	}
 	
 	/** 球形コライダ [16bytes] */
 	[StructLayout(LayoutKind.Explicit)]
-	public unsafe struct Collider_Sphere {
+	public unsafe struct Collider_Sphere : ICollider {
 		[FieldOffset(0)] public Vector3 pos;
 		[FieldOffset(12)] public float r;
 
@@ -105,7 +149,7 @@ namespace IzBone.Core {
 
 	/** カプセル形状コライダ [32bytes] */
 	[StructLayout(LayoutKind.Explicit)]
-	public unsafe struct Collider_Capsule {
+	public unsafe struct Collider_Capsule : ICollider {
 		[FieldOffset(0)] public Vector3 pos;	//!< 中央位置
 		[FieldOffset(12)] public float r_s;		//!< 横方向の半径
 		[FieldOffset(16)] public Vector3 dir;	//!< 縦方向の向き
@@ -138,7 +182,7 @@ namespace IzBone.Core {
 
 	/** 直方体コライダ[64bytes] */
 	[StructLayout(LayoutKind.Explicit)]
-	public unsafe struct Collider_Box {
+	public unsafe struct Collider_Box : ICollider {
 		[FieldOffset(0)] public Vector3 pos;			//!< 中心位置
 		[FieldOffset(12)] public Vector3 xAxis;			//!< X軸方向
 		[FieldOffset(24)] public Vector3 yAxis;			//!< Y軸方向
@@ -213,7 +257,7 @@ namespace IzBone.Core {
 
 	/** 無限平面コライダ [24bytes] */
 	[StructLayout(LayoutKind.Explicit)]
-	public unsafe struct Collider_Plane {
+	public unsafe struct Collider_Plane : ICollider {
 		[FieldOffset(0)] public Vector3 pos;			//!< 平面上の位置
 		[FieldOffset(12)] public Vector3 dir;			//!< 各ローカル軸方向の半径
 
