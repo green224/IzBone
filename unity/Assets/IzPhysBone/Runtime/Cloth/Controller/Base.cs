@@ -19,9 +19,13 @@ namespace IzPhysBone.Cloth.Controller {
 		// --------------------------------------- publicメンバ -------------------------------------
 
 		[Space]
-		public float3 g = float3(0,-1,0);				//!< 重力加速度
-		[Range(0.01f,5)] public float airHL = 0.1f;		//!< 空気抵抗による半減期
-		[Range(1,50)] public int iterationNum = 15;		//!< 1frame当たりの計算イテレーション回数
+		public bool useSimulation = true;				// 物理演算を行うか否か
+
+		[Space]
+		public float3 g = float3(0,-1,0);				// 重力加速度
+		public float3 windSpeed = default;				// 風速
+		[Range(0.01f,5)] public float airHL = 0.1f;		// 空気抵抗による半減期
+		[Range(1,50)] public int iterationNum = 15;		// 1frame当たりの計算イテレーション回数
 
 
 		// ----------------------------------- private/protected メンバ -------------------------------
@@ -44,22 +48,32 @@ namespace IzPhysBone.Cloth.Controller {
 			_world = null;
 		}
 
+		/** 初期化処理。派生先から最初に一度だけ呼ぶ事 */
 		virtual protected void begin() {
 			// シミュレーション系を作成
 			_world = new Core.World( _points, _constraints );
 		}
 
+		/** コアの更新処理 */
 		virtual protected void coreUpdate(float dt) {
+
+			// とりあえずdt=0のときはやらないでおく。TODO: あとで何とかする
 			if (dt < 0.000001f) return;
 
 			_coreColliders.update();
 
 			_world.g = g;
 			_world.airHL = airHL;
-			for (int i=0; i<iterationNum; ++i)
-				_world.update(dt/iterationNum, iterationNum, _points, _coreColliders);
+			_world.windSpeed = windSpeed;
+			_world.update(
+				dt,
+				useSimulation ? iterationNum : 0,
+				_points,
+				_coreColliders
+			);
 		}
 
+		/** 制約条件を追加する */
 		protected void addCstr(float compliance, Point p0, Point p1) {
 			if (1 <= compliance) return;
 			_constraints.Add( new Constraint() {

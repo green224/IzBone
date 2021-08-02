@@ -36,6 +36,7 @@ namespace IzPhysBone.Cloth.Controller {
 
 		[Space]
 		[Compliance][SerializeField] float _cmpl_direct = 0.000000001f;		//!< Compliance値 直接接続
+		[Compliance][SerializeField] float _cmpl_side = 0.000000001f;		//!< Compliance値 横方向の接続
 		[Compliance][SerializeField] float _cmpl_diag = 0.0000001f;			//!< Compliance値 捻じれ用の対角線接続
 		[Compliance][SerializeField] float _cmpl_bend = 0.00002f;			//!< Compliance値 曲げ用の１つ飛ばし接続
 
@@ -90,7 +91,7 @@ namespace IzPhysBone.Cloth.Controller {
 
 				int depth=0;
 				while (c!=null) {
-					if (d0 !=null && isChain(4,i,depth)) addCstr(_cmpl_direct, c, d0);
+					if (d0 !=null && isChain(4,i,depth)) addCstr(_cmpl_side,   c, d0);
 					if (d1 !=null && isChain(5,i,depth)) addCstr(_cmpl_bend,   c, d1);
 					if (l0 !=null && isChain(0,i,depth)) addCstr(_cmpl_direct, c, l0);
 					if (l1 !=null && isChain(1,i,depth)) addCstr(_cmpl_bend,   c, l1);

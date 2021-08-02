@@ -229,9 +229,14 @@ MonoBehaviour:
   - {fileID: 1400229654}
   - {fileID: 1508046645}
   - {fileID: 1508046644}
+  useSimulation: 1
   g:
     x: 0
     y: -6.55
+    z: 0
+  windSpeed:
+    x: 0
+    y: 0
     z: 0
   airHL: 0.14
   iterationNum: 5
@@ -783,8 +788,9 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
   _cmpl_direct: 0.00000001
-  _cmpl_diag: 0.005011873
-  _cmpl_bend: 0.0063095726
+  _cmpl_side: 0.00000006309576
+  _cmpl_diag: 0.007943284
+  _cmpl_bend: 0.007943284
 --- !u!114 &1400229654
 MonoBehaviour:
   m_ObjectHideFlags: 0

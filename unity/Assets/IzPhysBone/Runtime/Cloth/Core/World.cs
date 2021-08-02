@@ -16,8 +16,9 @@ namespace IzPhysBone.Cloth.Core {
 	{
 		// --------------------------------------- publicメンバ -------------------------------------
 
-		public float3 g = float3(0,-1,0);		//!< 重力加速度
-		public float airHL = 0.1f;					//!< 空気抵抗による半減期
+		public float3 g = float3(0,-1,0);		// 重力加速度
+		public float3 windSpeed = default;		// 風速
+		public float airHL = 0.1f;				// 空気抵抗による半減期
 
 		public World(
 			Controller.Point[] mngPoints,
@@ -39,44 +40,70 @@ namespace IzPhysBone.Cloth.Core {
 			_constraints.Dispose();
 		}
 
-		/** 更新する */
+		/** 更新する。dtに0は入れない事 */
 		public void update(
 			float dt,
 			int iterationNum,
 			Controller.Point[] mngPoints,
 			Collider.Colliders colliders
 		) {
-			var airResRate = Mathf.Pow( 2, -dt / airHL );
-
+			// 各種バッファのポインタを取得しておく
 			var pntsPtr0 = (Point*)_points.GetUnsafePtr();
 			var pntsPtrEnd = pntsPtr0 + _points.Length;
 			var lmdsPtr0 = (float*)_lambdas.GetUnsafePtr();
 			var lmdsPtrEnd = lmdsPtr0 + _lambdas.Length;
 
-			// 質点の更新
+			// イテレーションが0回の場合は位置キャッシュだけ更新する
+			if (iterationNum == 0) {
+				int i = 0;
+				for (var p=pntsPtr0; p!=pntsPtrEnd; ++p,++i) {
+					var lastPos = p->col.pos;
+					p->col.pos = mngPoints[i].trans.position;
+					p->v = (p->col.pos - lastPos) / dt;
+				}
+				return;
+			}
+
+			// 空気抵抗の値を計算
+			var airResRate = Math8.calcHL( airHL, dt );
+			var airResRateIntegral = Math8.calcIntegralHL( airHL, dt );
+
+			// 質点の位置の更新
 			{
 				var sqDt = dt*dt;
 				int i = 0;
-				for (var p=pntsPtr0; p!=pntsPtrEnd; ++p, ++i) {
+				for (var p=pntsPtr0; p!=pntsPtrEnd; ++p,++i) {
 					if ( p->invM < MinimumM ) {
 						p->col.pos = mngPoints[i].trans.position;
-						p->v = default;
 					} else {
-//						var a = p->pos;
-//						p->pos += (a - p->oldPos)*airResRate + sqDt*g;
-//						p->oldPos = a;
-//						var v = p->pos - p->v;
-						var v = p->v * dt;
+						var v = p->v;
 						var vNrom = length(v);
-						v *= ( Mathf.Min(vNrom,0.006f) / (vNrom+0.0000001f) );
 						
+						// 更新前の位置をvに入れておく。これは後で参照するための一時的なキャッシュ用
 						p->v = p->col.pos;
-						p->col.pos += v*airResRate + sqDt*g;
+
+						// 位置を更新する。
+						// 空気抵抗の影響を与えるため、以下のようにしている。
+						// 一行目:
+						//    dtは変動するので、空気抵抗の影響が解析的に正しく影響するように、
+						//    vには積分結果のairResRateIntegralを掛ける。
+						//    空気抵抗がない場合は、gの影響は g*dt^2になるが、
+						//    ここもいい感じになるようにg*dt*airResRateIntegralとしている。
+						//    これは正しくはないが、いい感じに見える。
+						// 二行目:
+						//    １行目だけの場合は空気抵抗によって速度が0になるように遷移する。
+						//    風速の影響を与えたいため、空気抵抗による遷移先がwindSpeedになるようにしたい。
+						//    airResRateIntegralは空気抵抗の初期値1の減速曲線がグラフ上に描く面積であるので,
+						//    減速が一切ない場合に描く面積1*dtとの差は、dt-airResRateIntegralとなる。
+						//    したがってこれにwindSpeedを掛けて、風速に向かって空気抵抗がかかるようにする。
+						p->col.pos +=
+							(v + g*dt) * airResRateIntegral +
+							windSpeed * (dt - airResRateIntegral);
 					}
 				}
 			}
 
-			{// 物理計算
+			{// XPBDによるフィッティング処理
 				static void solveCollider<T>(Point* p, NativeArray<T> colliders)
 				where T : struct, Collider.ICollider {
 					if (!colliders.IsCreated) return;
@@ -86,7 +113,7 @@ namespace IzPhysBone.Cloth.Core {
 				static void solveConstraints<T>(float sqDt, float* lambda, NativeArray<T> constraints)
 				where T : struct, IConstraint {
 					if (!constraints.IsCreated) return;
-					for (int i=0; i<constraints.Length; ++i, ++lambda)
+					for (int i=0; i<constraints.Length; ++i,++lambda)
 						*lambda += constraints[i].solve( sqDt, *lambda );
 				}
 
