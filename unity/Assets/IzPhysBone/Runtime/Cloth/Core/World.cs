@@ -161,14 +161,32 @@ namespace IzPhysBone.Cloth.Core {
 //var y = Vector3.Cross(z,x).normalized;
 //var agl = Mathf.Atan2(Vector3.Dot(y,a), Vector3.Dot(x,a));
 //var q = Quaternion.AngleAxis( agl*Mathf.Rad2Deg, z ) * j.defaultParentRot;
-						var q = Math8.FromToRotation(
-                            mul( j.defaultParentRot, j.trans.localPosition ),
-							mul(
-								j.trans.parent.worldToLocalMatrix,
-								float4( point->col.pos, 1 )
-							).xyz
-						);
+
+						// 回転する元方向と先方向
+						var from = mul( j.defaultParentRot, j.trans.localPosition );
+						var to = mul(
+							j.trans.parent.worldToLocalMatrix,
+							float4( point->col.pos, 1 )
+						).xyz;
+
+						// 回転軸と角度を計算 refer:Math8.fromToRotation
+						var axis = math.normalizesafe( math.cross(from, to) );
+						var theta = math.acos( math.clamp(
+							math.dot( math.normalizesafe(from), math.normalizesafe(to) ),
+							-1, 1
+						) );
+
+						// 角度制限を反映
+						theta = min( theta, radians(j.maxAngle) );
+
+						// Quaternionを生成
+						var s = math.sin(theta / 2);
+						var c = math.cos(theta / 2);
+						var q = math.quaternion(axis.x*s, axis.y*s, axis.z*s, c);
+
+						// 初期姿勢を反映
 						q = mul(q, j.defaultParentRot);
+
 						j.trans.parent.localRotation = q;
 //						j.trans.position = point.pos;
 						point->col.pos = j.trans.position;

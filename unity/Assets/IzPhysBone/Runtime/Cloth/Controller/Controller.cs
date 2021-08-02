@@ -14,6 +14,7 @@ namespace IzPhysBone.Cloth.Controller {
 		public Point parent, child;
 		public float m;
 		public float r;
+		public float maxAngle = 60;
 
 		public Point(int idx, Transform trans) {
 			this.idx = idx;

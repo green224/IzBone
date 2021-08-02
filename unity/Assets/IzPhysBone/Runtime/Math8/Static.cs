@@ -136,7 +136,7 @@ static partial class Math8 {
 	}		
 
 	/** 指定のfrom方向をto方向に向ける回転を得る */
-	static public quaternion FromToRotation(float3 from, float3 to) {
+	static public quaternion fromToRotation(float3 from, float3 to) {
 		var axis = math.normalizesafe( math.cross(from, to) );
 		var theta = math.acos( math.clamp(
 			math.dot( math.normalizesafe(from), math.normalizesafe(to) ),

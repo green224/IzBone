@@ -14,25 +14,51 @@ namespace IzPhysBone.Cloth.Controller {
 	 * 平面的な布のようなものを再現する際に使用する
 	 */
 	[ExecuteInEditMode]
-	[AddComponentMenu("IzBone/Plain")]
+	[AddComponentMenu("IzPhysBone/Cloth_Plain")]
 	public unsafe sealed class Plain : Base {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
+
+		/** ボーンをランタイム時バッファへの変換するときの情報 */
+		[Serializable] sealed class ConversionParam {
+			public int depth = 1;
+			public int excludeSideChain = 0;
+			public int sideChainDepth => depth - excludeSideChain;
+			[SerializeField] AnimationCurve _m = new AnimationCurve(
+				new Keyframe(0, 1),
+				new Keyframe(1, 1)
+			);
+			[SerializeField] AnimationCurve _r = new AnimationCurve(
+				new Keyframe(0, 1),
+				new Keyframe(1, 1)
+			);
+			[SerializeField] AnimationCurve _maxAngle = new AnimationCurve(
+				new Keyframe(0, 90),
+				new Keyframe(1, 90)
+			);
+
+			public float getM(int idx) => max(0, _m.Evaluate( idx2rate(idx) ) );
+			public float getR(int idx) => max(0, _r.Evaluate( idx2rate(idx) ) );
+			public float getMaxAgl(int idx) => max(0, _maxAngle.Evaluate( idx2rate(idx) ) );
+
+			float idx2rate(int idx) => depth==1 ? 0 : ((float)idx/(depth-1));
+		}
 
 		/** 骨の情報 */
 		[Serializable] sealed class BoneInfo {
 			public Transform boneTop = null;
-			public int depth = 1;
-			public int excludeSideChain = 0;
-			public int sideChainDepth => depth - excludeSideChain;
-			[SerializeField] AnimationCurve _m = null;
-			[SerializeField] AnimationCurve _r = null;
+
+			// ローカルConversionParamを使用するか否か
+			public bool useLocalCnvPrm = false;
+			// ローカルConversionParam
+			public ConversionParam cnvPrm = new ConversionParam();
 
 			[NonSerialized] public Point point = null;
-
-			public float getM(int idx) => Math.Max(0, _m.Evaluate( depth==1 ? 0 : ((float)idx/(depth-1)) ) );
-			public float getR(int idx) => Math.Max(0, _r.Evaluate( depth==1 ? 0 : ((float)idx/(depth-1)) ) );
 		}
 		[SerializeField] BoneInfo[] _boneInfos = null;
+
+		[Space]
+		// グローバルConversionParam
+		[SerializeField] ConversionParam _cnvPrm = new ConversionParam();
 
 		[Space]
 		[Compliance][SerializeField] float _cmpl_direct = 0.000000001f;		//!< Compliance値 直接接続
@@ -52,20 +78,23 @@ namespace IzPhysBone.Cloth.Controller {
 			// 質点リストを構築
 			var points = new List<Point>();
 			foreach ( var i in _boneInfos ) {
+				var cnvPrm = getCnvPrm(i);
 				Point p = i.point = new Point(points.Count, i.boneTop) {
-					m = i.getM(0),
-					r = i.getR(0),
+					m = cnvPrm.getM(0),
+					r = cnvPrm.getR(0),
+					maxAngle = cnvPrm.getMaxAgl(0),
 				};
 				points.Add(p);
-				if (i.depth <= 1) continue;
+				if (cnvPrm.depth <= 1) continue;
 
 				int k = 1;
-				for (var j=p.trans; k<i.depth; ++k) {
+				for (var j=p.trans; k<cnvPrm.depth; ++k) {
 					j=j.GetChild(0);
 					var newP = new Point(points.Count, j) {
 						parent = p,
-						m = i.getM(k),
-						r = i.getR(k),
+						m = cnvPrm.getM(k),
+						r = cnvPrm.getR(k),
+						maxAngle = cnvPrm.getMaxAgl(k),
 					};
 					p.child = newP;
 					p = newP;
@@ -116,71 +145,78 @@ namespace IzPhysBone.Cloth.Controller {
 			begin();
 		}
 
-		/** dir:0上,1上x2,2右上,3右上x2,4右,5右x2,6右下,7右下x2 */
-		bool isChain(int dir, int boneIdx, int depthIdx) {
-			var bc = _boneInfos[boneIdx];
-			var bl0 = (boneIdx+1<_boneInfos.Length ? _boneInfos[boneIdx+1] : null);
-			var bl1 = (boneIdx+2<_boneInfos.Length ? _boneInfos[boneIdx+2] : null);
-			var br0 = (0<=boneIdx-1 ? _boneInfos[boneIdx-1] : null);
-			var br1 = (0<=boneIdx-2 ? _boneInfos[boneIdx-2] : null);
-			switch (dir) {
-			case 0:
-			case 1:
-				if (bl0==null || bl0.depth<=depthIdx || bc.sideChainDepth<=depthIdx) return false;
-				if (dir==1)
-				if (bl1==null || bl1.depth<=depthIdx || bl0.sideChainDepth<=depthIdx) return false;
-				if (0.00000001f < (dir==0?bl0.getM(depthIdx):bl1.getM(depthIdx))) return true;
-				break;
-			case 2:
-			case 3:
-				if (bl0==null || bl0.depth<=depthIdx+1 || bc.sideChainDepth<=depthIdx+1) return false;
-				if (dir==3)
-				if (bl1==null || bl1.depth<=depthIdx+2 || bl0.sideChainDepth<=depthIdx+2) return false;
-				if (0.00000001f < (dir==2?bl0.getM(depthIdx+1):bl1.getM(depthIdx+2))) return true;
-				break;
-			case 4:
-			case 5:
-				if (bc.depth<=depthIdx+1) return false;
-				if (dir==5)
-				if (bc.depth<=depthIdx+2) return false;
-				if (0.00000001f < (dir==4?bc.getM(depthIdx+1):bc.getM(depthIdx+2))) return true;
-				break;
-			case 6:
-			case 7:
-				if (br0==null || br0.depth<=depthIdx+1 || br0.sideChainDepth<=depthIdx+1) return false;
-				if (dir==7)
-				if (br1==null || br1.depth<=depthIdx+2 || br1.sideChainDepth<=depthIdx+2) return false;
-				if (0.00000001f < (dir==6?br0.getM(depthIdx+1):br1.getM(depthIdx+2))) return true;
-				break;
-			}
-			return 0.00000001f < bc.getM(depthIdx);
-		}
-
-	#if UNITY_EDITOR
-		void Update() {
-			if (Application.isPlaying) return;
-
-			if (_boneInfos == null) return;
-			foreach ( var i in _boneInfos ) {
-				// Depthを有効範囲に丸める
-				if ( i.boneTop == null ) {
-					i.depth = 0;
-				} else {
-					int depthMax = 1;
-					for (var j=i.boneTop; j.childCount!=0; j=j.GetChild(0)) ++depthMax;
-
-					i.depth = Mathf.Clamp(i.depth, 1, depthMax);
-				}
-			}
-		}
-	#endif
-			
 		void LateUpdate() {
 			if (!Application.isPlaying) return;
 			coreUpdate(Time.deltaTime);
 		}
 
+		/** BoneInfoから、グローバルConversionParamを使用するか否かを考慮して、ConversionParamを取得する */
+		ConversionParam getCnvPrm(BoneInfo boneInfo) =>
+			boneInfo.useLocalCnvPrm ? boneInfo.cnvPrm : _cnvPrm;
+
+		/** dir:0上,1上x2,2右上,3右上x2,4右,5右x2,6右下,7右下x2 */
+		bool isChain(int dir, int boneIdx, int depthIdx) {
+
+			static bool checkDepth(Plain self, BoneInfo from, BoneInfo to, int depth) {
+				if ( to==null || self.getCnvPrm(to).depth<=depth ) return false;
+				return from==null || depth<self.getCnvPrm(from).sideChainDepth;
+			}
+
+			static bool checkProc(
+				Plain self,
+				BoneInfo from,
+				BoneInfo to1, BoneInfo to2,
+				int fromDepth, int depthOfs
+			) {
+				if (to1==null && to2==null) return false;
+				if (to1!=null && !checkDepth(self, from, to1, fromDepth+depthOfs)) return false;
+				if (to2!=null && !checkDepth(self, to1, to2, fromDepth+depthOfs*2)) return false;
+
+				var fromM = from==null ? 0 : self.getCnvPrm(from).getM(fromDepth);
+				var toM = to2==null
+					? self.getCnvPrm(to1).getM(fromDepth+depthOfs)
+					: self.getCnvPrm(to2).getM(fromDepth+depthOfs*2);
+
+				return 0.00000001f < fromM || 0.00000001f < toM;
+			}
+
+			var bc = _boneInfos[boneIdx];
+			var bl0 = (boneIdx+1<_boneInfos.Length ? _boneInfos[boneIdx+1] : null);
+			var bl1 = (boneIdx+2<_boneInfos.Length ? _boneInfos[boneIdx+2] : null);
+			var br0 = (0<=boneIdx-1 ? _boneInfos[boneIdx-1] : null);
+			var br1 = (0<=boneIdx-2 ? _boneInfos[boneIdx-2] : null);
+
+			switch (dir) {
+			case 0: case 1:
+				return checkProc(this, bc, bl0, dir==1?bl1:null, depthIdx, 0);
+			case 2: case 3:
+				return checkProc(this, bc, bl0, dir==3?bl1:null, depthIdx, 1);
+			case 4: case 5:
+				return checkProc(this, null, dir==5?null:bc, dir==5?bc:null, depthIdx, 1);
+			case 6: case 7:
+				return checkProc(this, bc, br0, dir==3?br1:null, depthIdx, 1);
+			default:
+				throw new ArgumentException("dir:" + dir);
+			}
+		}
+
 	#if UNITY_EDITOR
+		void OnValidate() {
+			if (_boneInfos == null) return;
+			foreach ( var i in _boneInfos ) {
+				// Depthを有効範囲に丸める
+				var cnvPrm = getCnvPrm(i);
+				if ( i.boneTop == null ) {
+					cnvPrm.depth = 0;
+				} else {
+					int depthMax = 1;
+					for (var j=i.boneTop; j.childCount!=0; j=j.GetChild(0)) ++depthMax;
+
+					cnvPrm.depth = Mathf.Clamp(cnvPrm.depth, 1, depthMax);
+				}
+			}
+		}
+			
 		override protected void OnDrawGizmos() {
 			base.OnDrawGizmos();
 			if ( !UnityEditor.Selection.Contains( gameObject.GetInstanceID() ) ) return;
@@ -188,12 +224,13 @@ namespace IzPhysBone.Cloth.Controller {
 			if (_boneInfos == null) return;
 			for (int i=0; i<_boneInfos.Length; ++i) {
 				var b = _boneInfos[i];
+				var cnvPrm = getCnvPrm(b);
 				if (b.boneTop == null) continue;
 
 				var trans = b.boneTop;
-				for (int dCnt=0; dCnt!=b.depth; ++dCnt) {
+				for (int dCnt=0; dCnt!=cnvPrm.depth; ++dCnt) {
 					Gizmos.color = new Color(1,1,1,0.5f);
-					Gizmos.DrawSphere( trans.position, b.getR(dCnt) );
+					Gizmos.DrawSphere( trans.position, cnvPrm.getR(dCnt) );
 
 					if (!Application.isPlaying) {
 						Gizmos.color = new Color(1,1,0);

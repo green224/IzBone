@@ -14,7 +14,7 @@ namespace IzPhysBone.Cloth.Controller {
 	 * 平面的な布のようなものを再現する際に使用する
 	 */
 	[ExecuteInEditMode]
-	[AddComponentMenu("IzBone/Rope")]
+	[AddComponentMenu("IzPhysBone/Cloth_Rope")]
 	public unsafe sealed class Rope : Base {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
@@ -27,8 +27,10 @@ namespace IzPhysBone.Cloth.Controller {
 
 			[NonSerialized] public Point point = null;
 
-			public float getM(int idx) => Math.Max(0, _m.Evaluate( depth==1 ? 0 : ((float)idx/(depth-1)) ) );
-			public float getR(int idx) => Math.Max(0, _r.Evaluate( depth==1 ? 0 : ((float)idx/(depth-1)) ) );
+			public float getM(int idx) => max(0, _m.Evaluate( idx2rate(idx) ) );
+			public float getR(int idx) => max(0, _r.Evaluate( idx2rate(idx) ) );
+
+			float idx2rate(int idx) => depth==1 ? 0 : ((float)idx/(depth-1));
 		}
 		[SerializeField] BoneInfo _boneInfo = null;
 
