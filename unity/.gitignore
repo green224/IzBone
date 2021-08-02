@@ -3,6 +3,7 @@
 /output/
 /Temp/
 /Library/
+/Logs/
 /obj/
 /*.csproj
 /*.sln
