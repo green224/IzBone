@@ -6,7 +6,7 @@ using static Unity.Mathematics.math;
 
 
 namespace IzBone.Common {
-static internal partial class Math8  {
+static public partial class Math8  {
 
 	/** 単純なバネのシミュレーション。速度優先で、軽い処理で近似する */
 	public struct Spring_Float {

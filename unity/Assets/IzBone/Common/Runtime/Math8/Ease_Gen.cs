@@ -8,7 +8,7 @@ using MO = System.Runtime.CompilerServices.MethodImplOptions;
 
 
 namespace IzBone.Common {
-static internal partial class Math8  {
+static public partial class Math8  {
 	static public class Ease {
 
 		[MI(MO.AggressiveInlining)]

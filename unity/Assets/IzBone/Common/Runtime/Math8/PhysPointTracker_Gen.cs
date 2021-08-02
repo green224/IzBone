@@ -4,7 +4,7 @@ using static Unity.Mathematics.math;
 
 
 namespace IzBone.Common {
-static internal partial class Math8  {
+static public partial class Math8  {
 
 	/** 指定位置を指定した物理パラメータで追跡する挙動を再現するモジュール */
 	public struct PhysPointTracker_Float {

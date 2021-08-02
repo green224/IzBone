@@ -5,7 +5,7 @@ using static Unity.Mathematics.math;
 
 
 namespace IzBone.Common {
-static internal partial class Math8  {
+static public partial class Math8  {
 
 	//#	for (int i=1; i<=3; ++i) {
 	//#		var iType0 = "float" + (i==1?"":i.ToString());

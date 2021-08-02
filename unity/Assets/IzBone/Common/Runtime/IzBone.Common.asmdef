@@ -5,6 +5,7 @@
         "Unity.Mathematics",
         "Unity.Jobs",
         "Unity.Burst",
+        "Unity.Collections",
         "Unity.Entities"
     ],
     "includePlatforms": [],

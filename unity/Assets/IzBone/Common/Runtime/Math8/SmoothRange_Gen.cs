@@ -10,7 +10,7 @@ using MIO = System.Runtime.CompilerServices.MethodImplOptions;
 
 
 namespace IzBone.Common {
-static internal partial class Math8  {
+static public partial class Math8  {
 
 	public struct SmoothRange_Float {
 

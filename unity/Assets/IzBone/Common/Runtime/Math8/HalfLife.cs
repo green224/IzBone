@@ -6,7 +6,7 @@ using MO = System.Runtime.CompilerServices.MethodImplOptions;
 
 
 namespace IzBone.Common {
-static internal partial class Math8  {
+static public partial class Math8  {
 
 	/** 半減期による減少を計算する。時刻0のときの値を1とする */
 	[MI(MO.AggressiveInlining)]

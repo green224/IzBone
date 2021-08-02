@@ -33,7 +33,7 @@ using MO = System.Runtime.CompilerServices.MethodImplOptions;
 
 
 namespace IzBone.Common {
-static internal partial class Math8  {
+static public partial class Math8  {
 
 	// 指定の範囲内で、数値を繰り返す
 	//#	{
