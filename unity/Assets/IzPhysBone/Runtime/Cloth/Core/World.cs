@@ -128,13 +128,20 @@ namespace IzPhysBone.Cloth.Core {
 						var point = pntsPtr0 + j.idx;
 
 						j.trans.parent.localRotation = Unity.Mathematics.quaternion.identity;
+//var x = j.defaultParentRot * j.trans.localPosition.normalized;
+//var a = j.trans.parent.worldToLocalMatrix.MultiplyPoint( point.pos ).normalized;
+//var z = Vector3.Cross(x,a).normalized;
+//var y = Vector3.Cross(z,x).normalized;
+//var agl = Mathf.Atan2(Vector3.Dot(y,a), Vector3.Dot(x,a));
+//var q = Quaternion.AngleAxis( agl*Mathf.Rad2Deg, z ) * j.defaultParentRot;
 						var q = Math8.FromToRotation(
-							j.trans.localPosition,
+                            mul( j.defaultParentRot, j.trans.localPosition ),
 							mul(
 								j.trans.parent.worldToLocalMatrix,
 								float4( point->col.pos, 1 )
 							).xyz
 						);
+						q = mul(q, j.defaultParentRot);
 						j.trans.parent.localRotation = q;
 //						j.trans.position = point.pos;
 						point->col.pos = j.trans.position;

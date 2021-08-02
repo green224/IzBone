@@ -51,9 +51,7 @@ namespace IzPhysBone.Cloth.Controller {
 			// 質点リストを構築
 			var points = new List<Point>();
 			foreach ( var i in _boneInfos ) {
-				Point p = i.point = new Point() {
-					idx = points.Count,
-					trans = i.boneTop,
+				Point p = i.point = new Point(points.Count, i.boneTop) {
 					m = i.getM(0),
 					r = i.getR(0),
 				};
@@ -63,9 +61,7 @@ namespace IzPhysBone.Cloth.Controller {
 				int k = 1;
 				for (var j=p.trans; k<i.depth; ++k) {
 					j=j.GetChild(0);
-					var newP = new Point() {
-						idx = points.Count,
-						trans = j,
+					var newP = new Point(points.Count, j) {
 						parent = p,
 						m = i.getM(k),
 						r = i.getR(k),
@@ -119,7 +115,7 @@ namespace IzPhysBone.Cloth.Controller {
 			begin();
 		}
 
-		/** dir:0上,1上x2,2右上,2右上x2,2右,2右x2,3右下,3右下x2 */
+		/** dir:0上,1上x2,2右上,3右上x2,4右,5右x2,6右下,7右下x2 */
 		bool isChain(int dir, int boneIdx, int depthIdx) {
 			var bc = _boneInfos[boneIdx];
 			var bl0 = (boneIdx+1<_boneInfos.Length ? _boneInfos[boneIdx+1] : null);

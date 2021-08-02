@@ -49,9 +49,7 @@ namespace IzPhysBone.Cloth.Controller {
 			// 質点リストを構築
 			var points = new List<Point>();
 			{
-				Point p = _boneInfo.point = new Point() {
-					idx = points.Count,
-					trans = _boneInfo.boneTop,
+				Point p = _boneInfo.point = new Point(points.Count, _boneInfo.boneTop) {
 					m = _boneInfo.getM(0),
 					r = _boneInfo.getR(0),
 				};
@@ -60,9 +58,7 @@ namespace IzPhysBone.Cloth.Controller {
 				int k = 1;
 				for (var j=p.trans; k<_boneInfo.depth; ++k) {
 					j=j.GetChild(0);
-					var newP = new Point() {
-						idx = points.Count,
-						trans = j,
+					var newP = new Point(points.Count, j) {
 						parent = p,
 						m = _boneInfo.getM(k),
 						r = _boneInfo.getR(k),

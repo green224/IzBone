@@ -1,22 +1,25 @@
 ﻿using System;
 using UnityEngine;
-using UnityEditor;
 
 using Unity.Mathematics;
 using static Unity.Mathematics.math;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 
 
 namespace IzPhysBone.Cloth.Controller {
 
 	/**
-	 * IzBoneを使用するオブジェクトにつけるコンポーネント。
-	 * 平面的な布のようなものを再現する際に使用する
+	 * Compliance値として使用するfloatにつける属性。
+	 * インスペクタ表示時に、いい感じのスライダーで設定可能にする。
 	 */
 	public sealed class ComplianceAttribute : PropertyAttribute {
 		public ComplianceAttribute() {}
 
+#if UNITY_EDITOR
 		[CustomPropertyDrawer(typeof(ComplianceAttribute))]
 		sealed class Drawer : PropertyDrawer {
 			public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
@@ -45,6 +48,7 @@ namespace IzPhysBone.Cloth.Controller {
 				pos.width=width; totalPos.x+=width; totalPos.width-=width;
 			}
 		}
+#endif
 	}
 
 }

@@ -8,11 +8,18 @@ using static Unity.Mathematics.math;
 namespace IzPhysBone.Cloth.Controller {
 	
 	public sealed class Point {
-		public int idx;
-		public Transform trans;
+		public readonly int idx;
+		public readonly Transform trans;
+		public readonly quaternion defaultParentRot;		// 親の初期姿勢
 		public Point parent, child;
 		public float m;
 		public float r;
+
+		public Point(int idx, Transform trans) {
+			this.idx = idx;
+			this.trans = trans;
+			defaultParentRot = trans.parent.localRotation;
+		}
 	}
 
 	public sealed class Constraint {
