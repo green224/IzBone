@@ -2,7 +2,7 @@ rem すべての対象コードをビルド
 @echo off
 cd /d %~dp0
 
-for /r %~dp0\..\unity\Assets\IzPhysBone %%i in (.pre.*.cs) do call :proc "%%i"
+for /r %~dp0\..\unity\Assets\IzBone %%i in (.pre.*.cs) do call :proc "%%i"
 
 :good
     goto end
