@@ -8,20 +8,20 @@ using Unity.Collections;
 using System.Runtime.InteropServices;
 using System.Linq;
 
-namespace IzPhysBone.Cloth.Core {
+namespace IzPhysBone.Collider {
 
 	/** 複数のコライダをまとめて保持するコンテナ */
 	public unsafe class Colliders : IDisposable
 	{
 	//TODO : これはJobからアクセスできる形にする
-		public Controller.IzCollider[] srcList;
+		public IzCollider[] srcList;
 
 		public NativeArray<Collider_Sphere>		spheres;
 		public NativeArray<Collider_Capsule>	capsules;
 		public NativeArray<Collider_Box>		boxes;
 		public NativeArray<Collider_Plane>		planes;
 
-		public Colliders(Controller.IzCollider[] srcList) {
+		public Colliders(IzCollider[] srcList) {
 			this.srcList = srcList;
 		}
 
@@ -46,10 +46,10 @@ namespace IzPhysBone.Cloth.Core {
 			int cnt_p = 0;
 			foreach (var i in srcList) {
 				switch (i.mode) {
-				case Controller.IzCollider.Mode.Sphere	: ++cnt_s; break;
-				case Controller.IzCollider.Mode.Capsule	: ++cnt_c; break;
-				case Controller.IzCollider.Mode.Box		: ++cnt_b; break;
-				case Controller.IzCollider.Mode.Plane	: ++cnt_p; break;
+				case IzCollider.Mode.Sphere		: ++cnt_s; break;
+				case IzCollider.Mode.Capsule	: ++cnt_c; break;
+				case IzCollider.Mode.Box		: ++cnt_b; break;
+				case IzCollider.Mode.Plane		: ++cnt_p; break;
 				default : throw new InvalidProgramException();
 				}
 			}
@@ -73,13 +73,13 @@ namespace IzPhysBone.Cloth.Core {
 			foreach (var i in srcList) {
 				var l2gMat = i.l2gMat;
 				switch (i.mode) {
-				case Controller.IzCollider.Mode.Sphere :
+				case IzCollider.Mode.Sphere :
 					spheres[++idx_s] = new Collider_Sphere() {
 						pos = new Vector3(l2gMat.m03,l2gMat.m13,l2gMat.m23),
 						r = i.l2gMatClmNorm.x * i.r.x
 					};
 					break;
-				case Controller.IzCollider.Mode.Capsule :
+				case IzCollider.Mode.Capsule :
 					capsules[++idx_c] = new Collider_Capsule() {
 						pos = new Vector3(l2gMat.m03,l2gMat.m13,l2gMat.m23),
 						r_s = i.l2gMatClmNorm.x * i.r.x,
@@ -87,7 +87,7 @@ namespace IzPhysBone.Cloth.Core {
 						dir = new Vector3(l2gMat.m01, l2gMat.m11, l2gMat.m21) / i.l2gMatClmNorm.y
 					};
 					break;
-				case Controller.IzCollider.Mode.Box :
+				case IzCollider.Mode.Box :
 					boxes[++idx_b] = new Collider_Box() {
 						pos = new Vector3(l2gMat.m03,l2gMat.m13,l2gMat.m23),
 						xAxis = new Vector3(l2gMat.m00, l2gMat.m10, l2gMat.m20) / i.l2gMatClmNorm.x,
@@ -100,7 +100,7 @@ namespace IzPhysBone.Cloth.Core {
 						)
 					};
 					break;
-				case Controller.IzCollider.Mode.Plane :
+				case IzCollider.Mode.Plane :
 					planes[++idx_p] = new Collider_Plane() {
 						pos = new Vector3(l2gMat.m03,l2gMat.m13,l2gMat.m23),
 						dir = new Vector3(l2gMat.m02, l2gMat.m12, l2gMat.m22) / i.l2gMatClmNorm.z
@@ -127,7 +127,8 @@ namespace IzPhysBone.Cloth.Core {
 
 	/** コライダのinterface */
 	public unsafe interface ICollider {
-		public bool solve(Point* p);
+		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
+		public bool solve(Collider_Sphere* s);
 	}
 	
 	/** 球形コライダ [16bytes] */
@@ -136,13 +137,13 @@ namespace IzPhysBone.Cloth.Core {
 		[FieldOffset(0)] public Vector3 pos;
 		[FieldOffset(12)] public float r;
 
-		/** 指定のPointがぶつかっていた場合、衝突しない位置まで引き離す */
-		public bool solve(Point* p) {
-			var d = p->pos - pos;
+		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
+		public bool solve(Collider_Sphere* s) {
+			var d = s->pos - pos;
 			var dSqLen = d.sqrMagnitude;
-			var sumR = r + p->r;
+			var sumR = r + s->r;
 			if ( sumR*sumR < dSqLen ) return false;
-			p->pos = pos + d * (sumR / Mathf.Sqrt(dSqLen+0.0000001f));
+			s->pos = pos + d * (sumR / Mathf.Sqrt(dSqLen+0.0000001f));
 			return true;
 		}
 	}
@@ -155,14 +156,14 @@ namespace IzPhysBone.Cloth.Core {
 		[FieldOffset(16)] public Vector3 dir;	//!< 縦方向の向き
 		[FieldOffset(28)] public float r_h;		//!< 縦方向の長さ
 
-		/** 指定のPointがぶつかっていた場合、衝突しない位置まで引き離す */
-		public bool solve(Point* p) {
-			var d = p->pos - pos;
+		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
+		public bool solve(Collider_Sphere* s) {
+			var d = s->pos - pos;
 
 			// まずはバウンダリー球で衝突判定
 			var dSqLen = d.sqrMagnitude;
-			var sumR_s = r_s + p->r;
-			var sumR_h = r_h + p->r;
+			var sumR_s = r_s + s->r;
+			var sumR_h = r_h + s->r;
 			if (sumR_s*sumR_s < dSqLen && sumR_h*sumR_h < dSqLen) return false;
 
 			// 縦方向の位置により距離を再計算
@@ -175,7 +176,7 @@ namespace IzPhysBone.Cloth.Core {
 			// 押し出し処理
 			dSqLen = d.sqrMagnitude;
 			if ( sumR_s*sumR_s < dSqLen ) return false;
-			p->pos += d * (sumR_s/Mathf.Sqrt(dSqLen+0.0000001f) - 1);
+			s->pos += d * (sumR_s/Mathf.Sqrt(dSqLen+0.0000001f) - 1);
 			return true;
 		}
 	}
@@ -189,10 +190,10 @@ namespace IzPhysBone.Cloth.Core {
 		[FieldOffset(36)] public Vector3 zAxis;			//!< Z軸方向
 		[FieldOffset(52)] public Vector3 r;				//!< 各ローカル軸方向の半径
 
-		/** 指定のPointがぶつかっていた場合、衝突しない位置まで引き離す */
-		public bool solve(Point* p) {
-			var d = p->pos - pos;
-			var pr = p->r;
+		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
+		public bool solve(Collider_Sphere* s) {
+			var d = s->pos - pos;
+			var pr = s->r;
 
 			// まずはバウンダリー球で衝突判定
 			var dSqLen = d.sqrMagnitude;
@@ -226,20 +227,20 @@ namespace IzPhysBone.Cloth.Core {
 				if (absEy < absEx) {
 					if (absEz < absEy) {
 						// z方向に押し出し
-						p->pos += a.z*zAxis;
+						s->pos += a.z*zAxis;
 						return true;
 					}
 					// y方向に押し出し
-					p->pos += a.y*yAxis;
+					s->pos += a.y*yAxis;
 					return true;
 				}
 				if (absEz < absEx) {
 					// z方向に押し出し
-					p->pos += a.z*zAxis;
+					s->pos += a.z*zAxis;
 					return true;
 				}
 				// x方向に押し出し
-				p->pos += a.x*xAxis;
+				s->pos += a.x*xAxis;
 				return true;
 			}
 			
@@ -250,7 +251,7 @@ namespace IzPhysBone.Cloth.Core {
 			var sqrA = a.sqrMagnitude;
 			if ( pr*pr < sqrA ) return false;
 			a *= pr/Mathf.Sqrt(sqrA+0.0000001f) - 1;
-			p->pos += a.x*xAxis + a.y*yAxis + a.z*zAxis;
+			s->pos += a.x*xAxis + a.y*yAxis + a.z*zAxis;
 			return true;
 		}
 	}
@@ -261,14 +262,14 @@ namespace IzPhysBone.Cloth.Core {
 		[FieldOffset(0)] public Vector3 pos;			//!< 平面上の位置
 		[FieldOffset(12)] public Vector3 dir;			//!< 各ローカル軸方向の半径
 
-		/** 指定のPointがぶつかっていた場合、衝突しない位置まで引き離す */
-		public bool solve(Point* p) {
-			var d = p->pos - pos;
+		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
+		public bool solve(Collider_Sphere* s) {
+			var d = s->pos - pos;
 
 			var dLen = Vector3.Dot(d, dir);
-			if (p->r < dLen) return false;
+			if (s->r < dLen) return false;
 
-			p->pos += dir * (p->r - dLen);
+			s->pos += dir * (s->r - dLen);
 			return true;
 		}
 	}

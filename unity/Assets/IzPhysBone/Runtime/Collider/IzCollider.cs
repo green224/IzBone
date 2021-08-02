@@ -9,7 +9,7 @@ using UnityEditor;
 #endif
 
 
-namespace IzPhysBone.Cloth.Controller {
+namespace IzPhysBone.Collider {
 
 	/** IzBone専用のコライダー */
 	[AddComponentMenu("IzBone/IzCollider")]
@@ -40,8 +40,8 @@ namespace IzPhysBone.Cloth.Controller {
 		public Matrix4x4 l2gMat {get; private set;}
 		public Vector3 l2gMatClmNorm {get; private set;}
 	#else
-		public Matrix4x4 l2gMat;
-		public Vector3 l2gMatClmNorm;
+		[NonSerialized] public Matrix4x4 l2gMat;
+		[NonSerialized] public Vector3 l2gMatClmNorm;
 	#endif
 
 		/** 更新処理。l2gMat等を呼ぶ前に必ずこれを読んで更新すること */
@@ -85,7 +85,7 @@ namespace IzPhysBone.Cloth.Controller {
 
 #if UNITY_EDITOR
 		void OnDrawGizmos() {
-			if ( !UnityEditor.Selection.Contains( gameObject.GetInstanceID() ) ) return;
+			if ( !Selection.Contains( gameObject.GetInstanceID() ) ) return;
 			DEBUG_drawGizmos();
 		}
 

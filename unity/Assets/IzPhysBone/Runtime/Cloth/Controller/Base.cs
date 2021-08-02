@@ -13,7 +13,7 @@ namespace IzPhysBone.Cloth.Controller {
 	public unsafe abstract class Base : MonoBehaviour {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
-		[SerializeField] protected IzCollider[] _izColliders = null;
+		[SerializeField] protected Collider.IzCollider[] _izColliders = null;
 
 
 		// --------------------------------------- publicメンバ -------------------------------------
@@ -26,14 +26,14 @@ namespace IzPhysBone.Cloth.Controller {
 
 		// ----------------------------------- private/protected メンバ -------------------------------
 
-		protected Core.Colliders _coreColliders;
+		protected Collider.Colliders _coreColliders;
 		protected List<Constraint> _constraints = new List<Constraint>();
 		protected Point[] _points;
 		protected Core.World _world;
 
 		virtual protected void Start() {
 			if (!Application.isPlaying) return;
-			_coreColliders = new Core.Colliders(_izColliders);
+			_coreColliders = new Collider.Colliders(_izColliders);
 		}
 
 		virtual protected void OnDestroy() {
@@ -72,7 +72,7 @@ namespace IzPhysBone.Cloth.Controller {
 		/** 配下のIzColliderを全登録する */
 		[ContextMenu("Collect child IzColliders")]
 		void collectChildIzCol() {
-			_izColliders = GetComponentsInChildren< IzCollider >();
+			_izColliders = GetComponentsInChildren< Collider.IzCollider >();
 		}
 
 		virtual protected void OnDrawGizmos() {

@@ -44,7 +44,7 @@ namespace IzPhysBone.Cloth.Core {
 			float dt,
 			int iterationNum,
 			Controller.Point[] mngPoints,
-			Colliders colliders
+			Collider.Colliders colliders
 		) {
 			var airResRate = Mathf.Pow( 2, -dt / airHL );
 
@@ -59,7 +59,7 @@ namespace IzPhysBone.Cloth.Core {
 				int i = 0;
 				for (var p=pntsPtr0; p!=pntsPtrEnd; ++p, ++i) {
 					if ( p->invM < MinimumM ) {
-						p->pos = mngPoints[i].trans.position;
+						p->col.pos = mngPoints[i].trans.position;
 						p->v = new Vector3(0,0,0);
 					} else {
 //						var a = p->pos;
@@ -70,17 +70,17 @@ namespace IzPhysBone.Cloth.Core {
 						var vNrom = v.magnitude;
 						v *= ( Mathf.Min(vNrom,0.006f) / (vNrom+0.0000001f) );
 						
-						p->v = p->pos;
-						p->pos += v*airResRate + sqDt*g;
+						p->v = p->col.pos;
+						p->col.pos += v*airResRate + sqDt*g;
 					}
 				}
 			}
 
 			{// 物理計算
 				static void solveCollider<T>(Point* p, NativeArray<T> colliders)
-				where T : struct, ICollider {
+				where T : struct, Collider.ICollider {
 					if (!colliders.IsCreated) return;
-					for (int i=0; i<colliders.Length; ++i) colliders[i].solve(p);
+					for (int i=0; i<colliders.Length; ++i) colliders[i].solve(&p->col);
 				}
 
 				static void solveConstraints<T>(float sqDt, float* lambda, NativeArray<T> constraints)
@@ -111,7 +111,7 @@ namespace IzPhysBone.Cloth.Core {
 
 			// 速度の保存
 			for (var p=pntsPtr0; p!=pntsPtrEnd; ++p)
-				p->v = (p->pos - p->v) / dt;
+				p->v = (p->col.pos - p->v) / dt;
 
 			// 質点の反映
 			{
@@ -121,7 +121,7 @@ namespace IzPhysBone.Cloth.Core {
 					if ( j.parent != null ) continue;
 
 					if (MinimumM <= j.m) {
-						j.trans.position = _points[i].pos;
+						j.trans.position = _points[i].col.pos;
 					}
 
 					for (j=j.child; j!=null; j=j.child) {
@@ -130,11 +130,11 @@ namespace IzPhysBone.Cloth.Core {
 						j.trans.parent.localRotation = Quaternion.identity;
 						var q = Quaternion.FromToRotation(
 							j.trans.localPosition.normalized,
-							j.trans.parent.worldToLocalMatrix.MultiplyPoint( point->pos ).normalized
+							j.trans.parent.worldToLocalMatrix.MultiplyPoint( point->col.pos ).normalized
 						);
 						j.trans.parent.localRotation = q;
 //						j.trans.position = point.pos;
-						point->pos = j.trans.position;
+						point->col.pos = j.trans.position;
 
 //						var p = j.trans.position - point.pos;
 //						point.pos += p;
@@ -147,7 +147,7 @@ namespace IzPhysBone.Cloth.Core {
 	#if UNITY_EDITOR
 		public Vector3 DEBUG_getPos(int idx) {
 			if (!_points.IsCreated || _points.Length<=idx) return default;
-			return _points[idx].pos;
+			return _points[idx].col.pos;
 		}
 		public Vector3 DEBUG_getV(int idx) {
 			if (!_points.IsCreated || _points.Length<=idx) return default;
