@@ -11,8 +11,8 @@ using UnityEditor;
 
 namespace IzPhysBone.Collider {
 
-	/** IzBone専用のコライダー */
-	[AddComponentMenu("IzBone/IzCollider")]
+	/** IzPhysBone専用のコライダー */
+	[AddComponentMenu("IzPhysBone/IzPhysBone_Collider")]
 	public sealed class IzCollider : MonoBehaviour {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 

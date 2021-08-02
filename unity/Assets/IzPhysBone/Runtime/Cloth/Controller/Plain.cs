@@ -59,6 +59,7 @@ namespace IzPhysBone.Cloth.Controller {
 		[Space]
 		// グローバルConversionParam
 		[SerializeField] ConversionParam _cnvPrm = new ConversionParam();
+		[SerializeField] bool _isLoopConnect = false;		// スカートなどの筒状のつながりにする
 
 		[Space]
 		[Compliance][SerializeField] float _cmpl_direct = 0.000000001f;		//!< Compliance値 直接接続
@@ -106,14 +107,10 @@ namespace IzPhysBone.Cloth.Controller {
 			// 制約リストを構築
 			_constraints.Clear();
 			for (int i=0; i<_boneInfos.Length; ++i) {
-				var bc = _boneInfos[i];
-				var bl0 = (i+1<_boneInfos.Length ? _boneInfos[i+1] : null);
-				var bl1 = (i+2<_boneInfos.Length ? _boneInfos[i+2] : null);
-				var br0 = (0<=i-1 ? _boneInfos[i-1] : null);
-				var br1 = (0<=i-2 ? _boneInfos[i-2] : null);
+				var (bl1, bl0, bc, br0, br1) = getSideBoneInfos(i);
 				var c = bc.point;
-				var l0 = bl0?.point; var l1 = bl1?.point;
-				var r0 = br0?.point; var r1 = br1?.point;
+				var l0 = br0?.point; var l1 = br1?.point;
+				var r0 = bl0?.point; var r1 = bl1?.point;
 				var d0 = c.child;    var d1 = d0?.child;
 				var ld0 = l0?.child; var ld1 = l1?.child?.child;
 				var rd0 = r0?.child; var rd1 = r1?.child?.child;
@@ -154,6 +151,26 @@ namespace IzPhysBone.Cloth.Controller {
 		ConversionParam getCnvPrm(BoneInfo boneInfo) =>
 			boneInfo.useLocalCnvPrm ? boneInfo.cnvPrm : _cnvPrm;
 
+		/** 指定のインデックスのBoneInfoを左右のものもセットで取得する */
+		(
+			BoneInfo bl1, BoneInfo bl0,
+			BoneInfo bc,
+			BoneInfo br0, BoneInfo br1
+		) getSideBoneInfos(int idx) {
+			int idxR0 = (idx+1) % _boneInfos.Length;
+			int idxR1 = (idx+2) % _boneInfos.Length;
+			int idxL0 = (idx-1+_boneInfos.Length) % _boneInfos.Length;
+			int idxL1 = (idx-2+_boneInfos.Length) % _boneInfos.Length;
+
+			return (
+				(0<=idx-2||_isLoopConnect ? _boneInfos[idxL1] : null),
+				(0<=idx-1||_isLoopConnect ? _boneInfos[idxL0] : null),
+				_boneInfos[idx],
+				(idx+1<_boneInfos.Length||_isLoopConnect ? _boneInfos[idxR0] : null),
+				(idx+2<_boneInfos.Length||_isLoopConnect ? _boneInfos[idxR1] : null)
+			);
+		}
+
 		/** dir:0上,1上x2,2右上,3右上x2,4右,5右x2,6右下,7右下x2 */
 		bool isChain(int dir, int boneIdx, int depthIdx) {
 
@@ -180,21 +197,17 @@ namespace IzPhysBone.Cloth.Controller {
 				return 0.00000001f < fromM || 0.00000001f < toM;
 			}
 
-			var bc = _boneInfos[boneIdx];
-			var bl0 = (boneIdx+1<_boneInfos.Length ? _boneInfos[boneIdx+1] : null);
-			var bl1 = (boneIdx+2<_boneInfos.Length ? _boneInfos[boneIdx+2] : null);
-			var br0 = (0<=boneIdx-1 ? _boneInfos[boneIdx-1] : null);
-			var br1 = (0<=boneIdx-2 ? _boneInfos[boneIdx-2] : null);
+			var (bl1, bl0, bc, br0, br1) = getSideBoneInfos(boneIdx);
 
 			switch (dir) {
 			case 0: case 1:
-				return checkProc(this, bc, bl0, dir==1?bl1:null, depthIdx, 0);
+				return checkProc(this, bc, br0, dir==1?br1:null, depthIdx, 0);
 			case 2: case 3:
-				return checkProc(this, bc, bl0, dir==3?bl1:null, depthIdx, 1);
+				return checkProc(this, bc, br0, dir==3?br1:null, depthIdx, 1);
 			case 4: case 5:
 				return checkProc(this, null, dir==5?null:bc, dir==5?bc:null, depthIdx, 1);
 			case 6: case 7:
-				return checkProc(this, bc, br0, dir==3?br1:null, depthIdx, 1);
+				return checkProc(this, bc, bl0, dir==3?bl1:null, depthIdx, 1);
 			default:
 				throw new ArgumentException("dir:" + dir);
 			}
@@ -236,7 +249,7 @@ namespace IzPhysBone.Cloth.Controller {
 						Gizmos.color = new Color(1,1,0);
 						if (dCnt != 0) Gizmos.DrawLine( trans.position, trans.parent.position );
 						if (isChain(0,i,dCnt)) {
-							var b2 = _boneInfos[i+1];
+							var b2 = _boneInfos[(i+1)%_boneInfos.Length];
 							var trans2 = b2.boneTop;
 							for (int dCnt2=0; dCnt2!=dCnt; ++dCnt2) {
 								if ( trans2.childCount==0 ) break; else trans2=trans2.GetChild(0);
