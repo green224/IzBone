@@ -25,6 +25,7 @@ namespace IzBone.PhysCloth.Controller {
 		public float3 g = float3(0,-1,0);				// 重力加速度
 		public float3 windSpeed = default;				// 風速
 		[Range(0.01f,5)] public float airHL = 0.1f;		// 空気抵抗による半減期
+		[Min(0)] public float maxSpeed = 100;			// 最大速度
 		[Range(1,50)] public int iterationNum = 15;		// 1frame当たりの計算イテレーション回数
 
 
@@ -36,12 +37,10 @@ namespace IzBone.PhysCloth.Controller {
 		protected Core.World _world;
 
 		virtual protected void Start() {
-			if (!Application.isPlaying) return;
 			_coreColliders = new Common.Collider.Colliders(_izColliders);
 		}
 
 		virtual protected void OnDestroy() {
-			if (!Application.isPlaying) return;
 			_coreColliders?.Dispose();
 			_coreColliders = null;
 			_world?.Dispose();
@@ -63,8 +62,9 @@ namespace IzBone.PhysCloth.Controller {
 			_coreColliders.update();
 
 			_world.g = g;
-			_world.airHL = airHL;
 			_world.windSpeed = windSpeed;
+			_world.airHL = airHL;
+			_world.maxSpeed = maxSpeed;
 			_world.update(
 				dt,
 				useSimulation ? iterationNum : 0,

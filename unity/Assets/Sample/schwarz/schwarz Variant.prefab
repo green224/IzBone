@@ -239,6 +239,7 @@ MonoBehaviour:
     y: 0
     z: 0
   airHL: 0.14
+  maxSpeed: 10
   iterationNum: 5
   _boneInfos:
   - boneTop: {fileID: 8353513750820953128}
@@ -821,7 +822,7 @@ MonoBehaviour:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0
+        value: 0.010377357
         inSlope: 0
         outSlope: 0
         tangentMode: 34
@@ -829,8 +830,8 @@ MonoBehaviour:
         inWeight: 0
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.08212665
-        value: 0
+        time: 0.11962512
+        value: 0.010377357
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -1462,7 +1463,7 @@ PrefabInstance:
     - target: {fileID: -4216859302048453862, guid: fdb2502068a79914ca7fdedecfcdbd5f,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.53
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: fdb2502068a79914ca7fdedecfcdbd5f,
         type: 3}

@@ -13,7 +13,6 @@ namespace IzBone.PhysCloth.Controller {
 	 * IzBoneを使用するオブジェクトにつけるコンポーネント。
 	 * 平面的な布のようなものを再現する際に使用する
 	 */
-	[ExecuteInEditMode]
 	[AddComponentMenu("IzBone/BonePhysics_Cloth_Rope")]
 	public unsafe sealed class Rope : Base {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
@@ -46,7 +45,6 @@ namespace IzBone.PhysCloth.Controller {
 
 		override protected void Start() {
 			base.Start();
-			if (!Application.isPlaying) return;
 
 			// 質点リストを構築
 			var points = new List<Point>();
@@ -95,8 +93,7 @@ namespace IzBone.PhysCloth.Controller {
 		}
 
 	#if UNITY_EDITOR
-		void Update() {
-			if (Application.isPlaying) return;
+		void OnValidate() {
 
 			if (_boneInfo == null) return;
 			{
@@ -114,7 +111,6 @@ namespace IzBone.PhysCloth.Controller {
 	#endif
 			
 		void LateUpdate() {
-			if (!Application.isPlaying) return;
 			coreUpdate(Time.deltaTime);
 		}
 

@@ -20,6 +20,7 @@ namespace IzBone.PhysCloth.Core {
 		public float3 g = float3(0,-1,0);		// 重力加速度
 		public float3 windSpeed = default;		// 風速
 		public float airHL = 0.1f;				// 空気抵抗による半減期
+		public float maxSpeed = 100;			// 最大速度
 
 		public World(
 			Controller.Point[] mngPoints,
@@ -71,15 +72,16 @@ namespace IzBone.PhysCloth.Core {
 
 			// 質点の位置の更新
 			{
-				var sqDt = dt*dt;
 				int i = 0;
 				for (var p=pntsPtr0; p!=pntsPtrEnd; ++p,++i) {
 					if ( p->invM < MinimumM ) {
 						p->col.pos = mngPoints[i].trans.position;
 					} else {
 						var v = p->v;
-						var vNrom = length(v);
 						
+						// 速度制限を適応
+						v = clamp(-maxSpeed, v, maxSpeed);
+
 						// 更新前の位置をvに入れておく。これは後で参照するための一時的なキャッシュ用
 						p->v = p->col.pos;
 
@@ -111,7 +113,7 @@ namespace IzBone.PhysCloth.Core {
 					for (int i=0; i<colliders.Length; ++i) colliders[i].solve(&p->col);
 				}
 
-				static void solveConstraints<T>(float sqDt, float* lambda, NativeArray<T> constraints)
+				static void solveConstraints<T>(float sqDt, ref float* lambda, NativeArray<T> constraints)
 				where T : struct, IConstraint {
 					if (!constraints.IsCreated) return;
 					for (int i=0; i<constraints.Length; ++i,++lambda)
@@ -120,7 +122,7 @@ namespace IzBone.PhysCloth.Core {
 
 				for (var p=lmdsPtr0; p!=lmdsPtrEnd; ++p) *p=0;
 
-				var sqDt = dt*dt;
+				var sqDt = dt*dt/iterationNum/iterationNum;
 				for (int i=0; i<iterationNum; ++i) {
 
 					for (var p=pntsPtr0; p!=pntsPtrEnd; ++p) {
@@ -132,8 +134,8 @@ namespace IzBone.PhysCloth.Core {
 					}
 
 					var lambda = lmdsPtr0;
-					solveConstraints(sqDt, lambda, _constraints.distance);
-					solveConstraints(sqDt, lambda, _constraints.axis);
+					solveConstraints(sqDt, ref lambda, _constraints.distance);
+					solveConstraints(sqDt, ref lambda, _constraints.axis);
 				}
 			}
 
@@ -148,9 +150,10 @@ namespace IzBone.PhysCloth.Core {
 					var j=mngPoints[i];
 					if ( j.parent != null ) continue;
 
-					if (MinimumM <= j.m) {
-						j.trans.position = _points[i].col.pos;
-					}
+					// 位置変化の適応はとりあえず無しで
+//					if (MinimumM <= j.m) {
+//						j.trans.position = _points[i].col.pos;
+//					}
 
 					for (j=j.child; j!=null; j=j.child) {
 						var point = pntsPtr0 + j.idx;
@@ -171,19 +174,20 @@ namespace IzBone.PhysCloth.Core {
 						).xyz;
 
 						// 回転軸と角度を計算 refer:Math8.fromToRotation
-						var axis = math.normalizesafe( math.cross(from, to) );
-						var theta = math.acos( math.clamp(
-							math.dot( math.normalizesafe(from), math.normalizesafe(to) ),
+						var axis = normalizesafe( cross(from, to) );
+						var theta = acos( clamp(
+							dot( normalizesafe(from), normalizesafe(to) ),
 							-1, 1
 						) );
 
 						// 角度制限を反映
+						// TODO : 角度制限はここではなく、Constraintで行うようにする
 						theta = min( theta, radians(j.maxAngle) );
 
 						// Quaternionを生成
-						var s = math.sin(theta / 2);
-						var c = math.cos(theta / 2);
-						var q = math.quaternion(axis.x*s, axis.y*s, axis.z*s, c);
+						var s = sin(theta / 2);
+						var c = cos(theta / 2);
+						var q = quaternion(axis.x*s, axis.y*s, axis.z*s, c);
 
 						// 初期姿勢を反映
 						q = mul(q, j.defaultParentRot);

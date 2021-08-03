@@ -19,8 +19,8 @@ using Common;
  * 必要であればアニメーション付きのボーンに、ゆれを付加することもできる。
  */
 [AddComponentMenu("IzBone/PhysSpring")]
-[UnityEngine.Animations.NotKeyable]
-[DisallowMultipleComponent]
+//[UnityEngine.Animations.NotKeyable]
+//[DisallowMultipleComponent]
 public sealed class RootAuthoring : MonoBehaviour {
 	// --------------------------- インスペクタに公開しているフィールド -----------------------------
 
@@ -105,20 +105,27 @@ public sealed class RootAuthoring : MonoBehaviour {
 		foreach (var bone in _bones)
 		foreach (var boneTgt in bone.targets) {
 
+			var trns = boneTgt.endOfBone;
+			if (trns == null) continue;
+
 			// 間接の位置リストを構築
 			var posLst = new float3[bone.depth + 1];
-			var trns = boneTgt.endOfBone;
 			posLst[0] = trns.position;
 			for (int i=0; i<bone.depth; ++i) {
 				var next = trns.parent;
 				posLst[i+1] = next.position;
-				trns = next;
 
 				// ついでに角度範囲を描画
 				var l2w = (float4x4)next.localToWorldMatrix;
 				if (bone.rotShiftRate < 0.9999f) {
 					var pos = l2w.c3.xyz;
-					var rot = next.rotation;
+					var rot = mul(
+						Math8.fromToRotation(
+							mul( next.rotation, float3(0,1,0) ),
+							trns.position - next.position
+						),
+						next.rotation
+					);
 					var scl = HandleUtility.GetHandleSize(l2w.c3.xyz)/2;
 					Gizmos.color = Color.blue;
 					Gizmos8.drawAngleCone( pos, rot, scl, bone.angleMax+bone.angleMargin );
@@ -139,6 +146,8 @@ public sealed class RootAuthoring : MonoBehaviour {
 					Gizmos.color = Color.blue;
 					Gizmos8.drawWireCube( mul(l2w, scl1) );
 				}
+
+				trns = next;
 			}
 
 			// 描画

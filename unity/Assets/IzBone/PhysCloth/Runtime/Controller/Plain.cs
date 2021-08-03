@@ -13,7 +13,6 @@ namespace IzBone.PhysCloth.Controller {
 	 * IzBoneを使用するオブジェクトにつけるコンポーネント。
 	 * 平面的な布のようなものを再現する際に使用する
 	 */
-	[ExecuteInEditMode]
 	[AddComponentMenu("IzBone/BonePhysics_Cloth_Plain")]
 	public unsafe sealed class Plain : Base {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
@@ -74,7 +73,6 @@ namespace IzBone.PhysCloth.Controller {
 
 		override protected void Start() {
 			base.Start();
-			if (!Application.isPlaying) return;
 
 			// 質点リストを構築
 			var points = new List<Point>();
@@ -109,26 +107,26 @@ namespace IzBone.PhysCloth.Controller {
 			for (int i=0; i<_boneInfos.Length; ++i) {
 				var (bl1, bl0, bc, br0, br1) = getSideBoneInfos(i);
 				var c = bc.point;
-				var l0 = br0?.point; var l1 = br1?.point;
-				var r0 = bl0?.point; var r1 = bl1?.point;
+				var l0 = bl0?.point; var l1 = bl1?.point;
+				var r0 = br0?.point; var r1 = br1?.point;
 				var d0 = c.child;    var d1 = d0?.child;
 				var ld0 = l0?.child; var ld1 = l1?.child?.child;
 				var rd0 = r0?.child; var rd1 = r1?.child?.child;
 
 				int depth=0;
 				while (c!=null) {
-					if (d0 !=null && isChain(4,i,depth)) addCstr(_cmpl_side,   c, d0);
+					if (d0 !=null && isChain(4,i,depth)) addCstr(_cmpl_direct, c, d0);
 					if (d1 !=null && isChain(5,i,depth)) addCstr(_cmpl_bend,   c, d1);
-					if (l0 !=null && isChain(0,i,depth)) addCstr(_cmpl_direct, c, l0);
-					if (l1 !=null && isChain(1,i,depth)) addCstr(_cmpl_bend,   c, l1);
-					if (ld0!=null && isChain(2,i,depth)) addCstr(_cmpl_diag,   c, ld0);
-					if (ld1!=null && isChain(3,i,depth)) addCstr(_cmpl_bend,   c, ld1);
-					if (rd0!=null && isChain(6,i,depth)) addCstr(_cmpl_diag,   c, rd0);
-					if (rd1!=null && isChain(7,i,depth)) addCstr(_cmpl_bend,   c, rd1);
+					if (r0 !=null && isChain(0,i,depth)) addCstr(_cmpl_side,   c, r0);
+					if (r1 !=null && isChain(1,i,depth)) addCstr(_cmpl_bend,   c, r1);
+					if (rd0!=null && isChain(2,i,depth)) addCstr(_cmpl_diag,   c, rd0);
+					if (rd1!=null && isChain(3,i,depth)) addCstr(_cmpl_bend,   c, rd1);
+					if (ld0!=null && isChain(6,i,depth)) addCstr(_cmpl_diag,   c, ld0);
+					if (ld1!=null && isChain(7,i,depth)) addCstr(_cmpl_bend,   c, ld1);
 
 					c=c.child;
-					l0=l0?.child;
-					l1=l1?.child;
+					r0=r0?.child;
+					r1=r1?.child;
 					d0=d0?.child;
 					d1=d1?.child;
 					ld0=ld0?.child;
@@ -143,7 +141,6 @@ namespace IzBone.PhysCloth.Controller {
 		}
 
 		void LateUpdate() {
-			if (!Application.isPlaying) return;
 			coreUpdate(Time.deltaTime);
 		}
 
@@ -207,7 +204,7 @@ namespace IzBone.PhysCloth.Controller {
 			case 4: case 5:
 				return checkProc(this, null, dir==5?null:bc, dir==5?bc:null, depthIdx, 1);
 			case 6: case 7:
-				return checkProc(this, bc, bl0, dir==3?bl1:null, depthIdx, 1);
+				return checkProc(this, bc, bl0, dir==7?bl1:null, depthIdx, 1);
 			default:
 				throw new ArgumentException("dir:" + dir);
 			}
@@ -242,7 +239,9 @@ namespace IzBone.PhysCloth.Controller {
 
 				var trans = b.boneTop;
 				for (int dCnt=0; dCnt!=cnvPrm.depth; ++dCnt) {
-					Gizmos.color = new Color(1,1,1,0.5f);
+					Gizmos.color = cnvPrm.getM(dCnt)<0.00001f
+						? new Color(1,0,0,0.5f)
+						: new Color(1,1,1,0.5f);
 					Gizmos.DrawSphere( trans.position, cnvPrm.getR(dCnt) );
 
 					if (!Application.isPlaying) {

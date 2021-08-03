@@ -34,7 +34,10 @@ namespace IzBone.PhysSpring.Core {
 					var parent = child.parent;
 
 					// デフォルト姿勢を適応
-					if (i == bone.depth-1) parent.localRotation *= j.defaultRot;
+					if (i == bone.depth-1) {
+						if (!j.defaultRot.Equals(default))		// defaultRotが未初期化の場合があるので、そうでないかチェックする
+							parent.localRotation *= j.defaultRot;
+					}
 
 
 					// 範囲情報を初期化
