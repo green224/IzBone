@@ -25,32 +25,36 @@ public sealed class RootAuthoring : MonoBehaviour {
 	// --------------------------- インスペクタに公開しているフィールド -----------------------------
 
 	[Serializable] public sealed class Bone {
+
+		public string name = "name";		//!< 名前。これはEditor表示用なので特別な意味はない
+
 		[Serializable] public sealed class OneTrnasParam {			//!< 目標の1Transformごとのパラメータ
 			public Transform endOfBone = null;									//!< 末端Transform
 			[UseEuler] public Quaternion defaultRot = Quaternion.identity;		//!< 根元の初期姿勢
 		}
-		[SerializeField] public OneTrnasParam[] targets = null;			//!< 目標のTransformたち
+		[Space]
+		public OneTrnasParam[] targets = null;			//!< 目標のTransformたち
 
 		[Space]
-		[Range(0,180)]	[SerializeField] public float angleMax = 60;		//!< 姿勢の差分角度の最大値
-		[Range(0,90)]	[SerializeField] public float angleMargin = 4;		//!< 姿勢の差分角度の最大値付近のスムースマージン
-		[Range(0,100)]	[SerializeField] public float omgMax = 20;			//!< 角速度の最大値
-		[Range(1,1000)]	[SerializeField] public float rotKpm = 70;			//!< バネ係数/質量
-		[Range(0.001f,1)]	[SerializeField] public float omgHL = 0.1f;		//!< 空気抵抗による速度半減期
+		[Range(0,180)]	public float angleMax = 60;		//!< 姿勢の差分角度の最大値
+		[Range(0,90)]	public float angleMargin = 4;	//!< 姿勢の差分角度の最大値付近のスムースマージン
+		[Range(0,100)]	public float omgMax = 20;		//!< 角速度の最大値
+		[Range(1,1000)]	public float rotKpm = 70;		//!< バネ係数/質量
+		[Range(0.001f,1)] public float omgHL = 0.1f;	//!< 空気抵抗による速度半減期
 
 		[Space]
-		[SerializeField] public float shiftMax = 1;			//!< 位置の差分距離の最大値
-		[SerializeField] public float shiftMargin = 0.1f;	//!< 位置の差分距離の最大値付近のスムースマージン範囲
-		[SerializeField] public float vMax = 1;				//!< 速度の最大値
-		[SerializeField] public float shiftKpm = 1000;		//!< バネ係数/質量
-		[Range(0.001f,1)]	[SerializeField] public float vHL = 0.1f;			//!< 空気抵抗による速度半減期。移動に関するもの。これを小さくしておくと収束しやすい
+		[Min(0)] public float shiftMax = 1;				//!< 位置の差分距離の最大値
+		[Min(0)] public float shiftMargin = 0.1f;		//!< 位置の差分距離の最大値付近のスムースマージン範囲
+		[Min(0)] public float vMax = 1;					//!< 速度の最大値
+		[Min(0)] public float shiftKpm = 1000;			//!< バネ係数/質量
+		[Range(0.001f,1)] public float vHL = 0.1f;		//!< 空気抵抗による速度半減期。移動に関するもの。これを小さくしておくと収束しやすい
 
 		[Space]
-		[Range(1,10)]		[SerializeField] public int depth = 1;				//!< ボーン深度
-		[Range(1,10)]		[SerializeField] public int iterationNum = 1;		//!< 繰り返し計算回数
+		[Range(1,10)] public int depth = 1;				//!< ボーン深度
+		[Range(1,10)] public int iterationNum = 1;		//!< 繰り返し計算回数
 
-		[Range(0,1)]		[SerializeField] public float rotShiftRate = 0.5f;	//!< 回転と移動の反映割合
-		[SerializeField] public bool withAnimation = false;						//!< アニメーション付きのボーンに対して使用するフラグ。毎フレームデフォルト位置を再キャッシュする。
+		[Range(0,1)] public float rotShiftRate = 0.5f;	//!< 回転と移動の反映割合
+		public bool withAnimation = false;				//!< アニメーション付きのボーンに対して使用するフラグ。毎フレームデフォルト位置を再キャッシュする。
 	}
 
 	[SerializeField] internal Bone[] _bones = new []{new Bone()};
@@ -109,12 +113,48 @@ public sealed class RootAuthoring : MonoBehaviour {
 				var next = trns.parent;
 				posLst[i+1] = next.position;
 				trns = next;
+
+				// ついでに角度範囲を描画
+				var l2w = (float4x4)next.localToWorldMatrix;
+				if (bone.rotShiftRate < 0.9999f) {
+					var pos = l2w.c3.xyz;
+					var rot = next.rotation;
+					var scl = HandleUtility.GetHandleSize(l2w.c3.xyz)/2;
+					Gizmos.color = Color.blue;
+					Gizmos8.drawAngleCone( pos, rot, scl, bone.angleMax+bone.angleMargin );
+					Gizmos.color = Color.white;
+					Gizmos8.drawAngleCone( pos, rot, scl, bone.angleMax );
+				}
+
+				// ついでに移動可能範囲を描画
+				if (0.00001f < bone.rotShiftRate) {
+					var scl0 = Unity.Mathematics.float4x4.TRS(
+						0, Unity.Mathematics.quaternion.identity, bone.shiftMax
+					);
+					var scl1 = Unity.Mathematics.float4x4.TRS(
+						0, Unity.Mathematics.quaternion.identity, bone.shiftMax + bone.shiftMargin
+					);
+					Gizmos.color = Color.white;
+					Gizmos8.drawWireCube( mul(l2w, scl0) );
+					Gizmos.color = Color.blue;
+					Gizmos8.drawWireCube( mul(l2w, scl1) );
+				}
 			}
 
 			// 描画
 			Gizmos8.drawBones(posLst);
 		}
 	}
+
+//	void OnValidate() {
+//		foreach (var bone in _bones) {
+//			// 移動差分距離の限界値等を許容値範囲にクランプする
+//			bone.shiftMax = max(0, bone.shiftMax);
+//			bone.shiftMargin = max(0, bone.shiftMargin);
+//			bone.vMax = max(0, bone.vMax);
+//			bone.shiftKpm = max(0, bone.shiftKpm);
+//		}
+//	}
 #endif
 }
 }

@@ -882,10 +882,44 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+  _isLoopConnect: 0
   _cmpl_direct: 0.00000001
   _cmpl_side: 0.00000006309576
   _cmpl_diag: 0.007943284
   _cmpl_bend: 0.007943284
+--- !u!114 &3762319300166216511
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6932796488126606520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4c742b0fff834b40897f786ab94deb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _bones:
+  - name: Ears
+    targets:
+    - endOfBone: {fileID: 775363279575782691}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    - endOfBone: {fileID: 8204968971697266243}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    angleMax: 25.2
+    angleMargin: 9
+    omgMax: 20
+    rotKpm: 70
+    omgHL: 0.1
+    shiftMax: 0.001
+    shiftMargin: 0.001
+    vMax: 0.1
+    shiftKpm: 10
+    vHL: 0.1
+    depth: 1
+    iterationNum: 1
+    rotShiftRate: 0.509
+    withAnimation: 1
 --- !u!114 &1400229654
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1428,7 +1462,7 @@ PrefabInstance:
     - target: {fileID: -4216859302048453862, guid: fdb2502068a79914ca7fdedecfcdbd5f,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -0.53
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: fdb2502068a79914ca7fdedecfcdbd5f,
         type: 3}
@@ -2754,6 +2788,18 @@ Transform:
 --- !u!4 &7363014999724711233 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -776449155594376976, guid: fdb2502068a79914ca7fdedecfcdbd5f,
+    type: 3}
+  m_PrefabInstance: {fileID: 1375797711836804529}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8204968971697266243 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -2104808903952962574, guid: fdb2502068a79914ca7fdedecfcdbd5f,
+    type: 3}
+  m_PrefabInstance: {fileID: 1375797711836804529}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &775363279575782691 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1861522052791197842, guid: fdb2502068a79914ca7fdedecfcdbd5f,
     type: 3}
   m_PrefabInstance: {fileID: 1375797711836804529}
   m_PrefabAsset: {fileID: 0}
