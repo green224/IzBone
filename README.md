@@ -1,2 +1,2 @@
-# IzPhysBone
-Simple bone physics module for Unity
+# IzBone
+Simple bone modules for Unity
