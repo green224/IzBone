@@ -101,6 +101,7 @@ public sealed class RootAuthoring : MonoBehaviour {
 
 		// 自分が含まれているツリーを選択中のみ表示する
 		if (!Gizmos8.isSelectedTransformTree(Selection.objects, transform)) return;
+		Gizmos8.drawMode = Gizmos8.DrawMode.Handle;
 
 		foreach (var bone in _bones)
 		foreach (var boneTgt in bone.targets) {
@@ -126,10 +127,11 @@ public sealed class RootAuthoring : MonoBehaviour {
 						),
 						next.rotation
 					);
-					var scl = HandleUtility.GetHandleSize(l2w.c3.xyz)/2;
-					Gizmos.color = Color.blue;
+//					var scl = HandleUtility.GetHandleSize(l2w.c3.xyz)/2;
+					var scl = length(trns.position - next.position)/2;
+					Gizmos8.color = new Color(0.97f,0.7f,0);
 					Gizmos8.drawAngleCone( pos, rot, scl, bone.angleMax+bone.angleMargin );
-					Gizmos.color = Color.white;
+					Gizmos8.color = new Color(1,0,0);
 					Gizmos8.drawAngleCone( pos, rot, scl, bone.angleMax );
 				}
 
@@ -141,10 +143,10 @@ public sealed class RootAuthoring : MonoBehaviour {
 					var scl1 = Unity.Mathematics.float4x4.TRS(
 						0, Unity.Mathematics.quaternion.identity, bone.shiftMax + bone.shiftMargin
 					);
-					Gizmos.color = Color.white;
-					Gizmos8.drawWireCube( mul(l2w, scl0) );
-					Gizmos.color = Color.blue;
+					Gizmos8.color = new Color(0,0.7f,0.97f);
 					Gizmos8.drawWireCube( mul(l2w, scl1) );
+					Gizmos8.color = new Color(0,0,1);
+					Gizmos8.drawWireCube( mul(l2w, scl0) );
 				}
 
 				trns = next;

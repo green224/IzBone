@@ -33,20 +33,21 @@ static internal partial class Gizmos8 {
 	}
 
 	/** 指定の座標リストでボーン繋ぎを描画する */
-	public static void drawBones(float3[] posLst) {
+	public static void drawBones(float3[] posLst) => drawBones(posLst, new Color(1,0,1,0.5f));
+	public static void drawBones(float3[] posLst, Color col) {
+		using (new ColorScope(col)) {
 
-		// 繋がりの線を描画
-		float maxLen = 0;
-		Gizmos.color = new Color(1,1,0,0.8f);
-		for (int i=1; i<posLst.Length; ++i) {
-			maxLen = max( maxLen, length(posLst[i-1] - posLst[i]) );
-			Gizmos.DrawLine(posLst[i-1], posLst[i]);
+			// 繋がりの線を描画
+			float maxLen = 0;
+			for (int i=1; i<posLst.Length; ++i) {
+				maxLen = max( maxLen, length(posLst[i-1] - posLst[i]) );
+				drawLine(posLst[i-1], posLst[i]);
+			}
+
+			// 間接位置を描画
+			for (int i=0; i<posLst.Length; ++i)
+				drawSphere(posLst[i], 0.1f*maxLen);
 		}
-
-		// 間接位置を描画
-		Gizmos.color = new Color(1,0,1,0.5f);
-		for (int i=0; i<posLst.Length; ++i)
-			Gizmos.DrawSphere(posLst[i], 0.1f*maxLen);
 	}
 
 } }

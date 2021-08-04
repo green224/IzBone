@@ -13,6 +13,43 @@ using UnityEngine;
 namespace IzBone.Common {
 static internal partial class Gizmos8 {
 
+	// Gizmoで描くか、Handleで描くか
+	public enum DrawMode {Gizmos, Handle,}
+	public static DrawMode drawMode = DrawMode.Gizmos;
+
+	// 色
+	public static Color color = Color.white;
+
+
+	/** ラインを表示 */
+	public static void drawLine(float3 a, float3 b) {
+		if (drawMode == DrawMode.Gizmos) {
+			var lastCol = Gizmos.color;
+			Gizmos.color = color;
+			Gizmos.DrawLine(a, b);
+			Gizmos.color = lastCol;
+		} else {
+			var lastCol = Handles.color;
+			Handles.color = color;
+			Handles.DrawLine(a, b);
+			Handles.color = lastCol;
+		}
+	}
+
+	/** 球を表示 */
+	public static void drawSphere(float3 pos, float r) {
+		if (drawMode == DrawMode.Gizmos) {
+			var lastCol = Gizmos.color;
+			Gizmos.color = color;
+			Gizmos.DrawSphere(pos, r);
+			Gizmos.color = lastCol;
+		} else {
+			var lastCol = Handles.color;
+			Handles.color = color;
+			Handles.SphereHandleCap(0, pos, Quaternion.identity, r*2, EventType.Repaint);
+			Handles.color = lastCol;
+		}
+	}
 
 	/** 直方体を表示 */
 	public static void drawWireCube(float3 trans, quaternion rot, float3 size) =>
@@ -27,20 +64,20 @@ static internal partial class Gizmos8 {
 		var mmp = mul(trs, float4(-1,-1, 1, 1)).xyz;
 		var mmm = mul(trs, float4(-1,-1,-1, 1)).xyz;
 
-		Gizmos.DrawLine(ppp, ppm);
-		Gizmos.DrawLine(ppp, mpp);
-		Gizmos.DrawLine(ppm, mpm);
-		Gizmos.DrawLine(mpp, mpm);
+		drawLine(ppp, ppm);
+		drawLine(ppp, mpp);
+		drawLine(ppm, mpm);
+		drawLine(mpp, mpm);
 
-		Gizmos.DrawLine(pmp, pmm);
-		Gizmos.DrawLine(pmp, mmp);
-		Gizmos.DrawLine(pmm, mmm);
-		Gizmos.DrawLine(mmp, mmm);
+		drawLine(pmp, pmm);
+		drawLine(pmp, mmp);
+		drawLine(pmm, mmm);
+		drawLine(mmp, mmm);
 
-		Gizmos.DrawLine(ppp, pmp);
-		Gizmos.DrawLine(mpp, mmp);
-		Gizmos.DrawLine(ppm, pmm);
-		Gizmos.DrawLine(mpm, mmm);
+		drawLine(ppp, pmp);
+		drawLine(mpp, mmp);
+		drawLine(ppm, pmm);
+		drawLine(mpm, mmm);
 	}
 
 	/** カプセルを表示 */
@@ -78,7 +115,7 @@ static internal partial class Gizmos8 {
 			var theta1 = calcTheta( i+1 );
 			var p0 = mul( rot, float3(cos(theta0),0,sin(theta0)) ) * r + center;
 			var p1 = mul( rot, float3(cos(theta1),0,sin(theta1)) ) * r + center;
-			Gizmos.DrawLine(p0, p1);
+			drawLine(p0, p1);
 		}
 	}
 
@@ -96,10 +133,10 @@ static internal partial class Gizmos8 {
 		var b = -y*r_h + pos;
 		drawWireCircle(t, r_s, float3x3(x,y,z), 0, 1);
 		drawWireCircle(b, r_s, float3x3(x,y,z), 0, 1);
-		Gizmos.DrawLine( b + x*r_s, t + x*r_s );
-		Gizmos.DrawLine( b + z*r_s, t + z*r_s );
-		Gizmos.DrawLine( b - x*r_s, t - x*r_s );
-		Gizmos.DrawLine( b - z*r_s, t - z*r_s );
+		drawLine( b + x*r_s, t + x*r_s );
+		drawLine( b + z*r_s, t + z*r_s );
+		drawLine( b - x*r_s, t - x*r_s );
+		drawLine( b - z*r_s, t - z*r_s );
 	}
 
 	/** コーンを描画 */
@@ -120,19 +157,19 @@ static internal partial class Gizmos8 {
 		drawWireCircle(btmPos, r_s, rotMtx);
 
 		// 壁面のラインを描画
-		Gizmos.DrawLine(
+		drawLine(
 			mul(rotMtx, float3(1,0,0)) + btmPos,
 			topPos
 		);
-		Gizmos.DrawLine(
+		drawLine(
 			mul(rotMtx, float3(-1,0,0)) + btmPos,
 			topPos
 		);
-		Gizmos.DrawLine(
+		drawLine(
 			mul(rotMtx, float3(0,0,1)) + btmPos,
 			topPos
 		);
-		Gizmos.DrawLine(
+		drawLine(
 			mul(rotMtx, float3(0,0,-1)) + btmPos,
 			topPos
 		);
@@ -145,7 +182,7 @@ static internal partial class Gizmos8 {
 
 		// ローカル座標でDrawLineする
 		static void line(float4x4 trs, float3 lPos0, float3 lPos1) {
-			Gizmos.DrawLine(
+			drawLine(
 				mul( trs, float4(lPos0,1) ).xyz,
 				mul( trs, float4(lPos1,1) ).xyz
 			);
