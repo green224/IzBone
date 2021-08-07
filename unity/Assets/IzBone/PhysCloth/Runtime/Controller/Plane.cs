@@ -13,12 +13,12 @@ namespace IzBone.PhysCloth.Controller {
 	 * IzBoneを使用するオブジェクトにつけるコンポーネント。
 	 * 平面的な布のようなものを再現する際に使用する
 	 */
-	[AddComponentMenu("IzBone/BonePhysics_Cloth_Plain")]
-	public unsafe sealed class Plain : Base {
+	[AddComponentMenu("IzBone/PhysCloth_Plane")]
+	public unsafe sealed class Plane : Base {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 		/** ボーンをランタイム時バッファへの変換するときの情報 */
-		[Serializable] sealed class ConversionParam {
+		[Serializable] internal sealed class ConversionParam {
 			public int depth = 1;
 			public int excludeSideChain = 0;
 			public int sideChainDepth => depth - excludeSideChain;
@@ -43,7 +43,7 @@ namespace IzBone.PhysCloth.Controller {
 		}
 
 		/** 骨の情報 */
-		[Serializable] sealed class BoneInfo {
+		[Serializable] internal sealed class BoneInfo {
 			public Transform boneTop = null;
 
 			// ローカルConversionParamを使用するか否か
@@ -53,7 +53,7 @@ namespace IzBone.PhysCloth.Controller {
 
 			[NonSerialized] public Point point = null;
 		}
-		[SerializeField] BoneInfo[] _boneInfos = null;
+		[SerializeField] internal BoneInfo[] _boneInfos = null;
 
 		[Space]
 		// グローバルConversionParam
@@ -145,7 +145,7 @@ namespace IzBone.PhysCloth.Controller {
 		}
 
 		/** BoneInfoから、グローバルConversionParamを使用するか否かを考慮して、ConversionParamを取得する */
-		ConversionParam getCnvPrm(BoneInfo boneInfo) =>
+		internal ConversionParam getCnvPrm(BoneInfo boneInfo) =>
 			boneInfo.useLocalCnvPrm ? boneInfo.cnvPrm : _cnvPrm;
 
 		/** 指定のインデックスのBoneInfoを左右のものもセットで取得する */
@@ -169,15 +169,15 @@ namespace IzBone.PhysCloth.Controller {
 		}
 
 		/** dir:0上,1上x2,2右上,3右上x2,4右,5右x2,6右下,7右下x2 */
-		bool isChain(int dir, int boneIdx, int depthIdx) {
+		internal bool isChain(int dir, int boneIdx, int depthIdx) {
 
-			static bool checkDepth(Plain self, BoneInfo from, BoneInfo to, int depth) {
+			static bool checkDepth(Plane self, BoneInfo from, BoneInfo to, int depth) {
 				if ( to==null || self.getCnvPrm(to).depth<=depth ) return false;
 				return from==null || depth<self.getCnvPrm(from).sideChainDepth;
 			}
 
 			static bool checkProc(
-				Plain self,
+				Plane self,
 				BoneInfo from,
 				BoneInfo to1, BoneInfo to2,
 				int fromDepth, int depthOfs
@@ -223,41 +223,6 @@ namespace IzBone.PhysCloth.Controller {
 					for (var j=i.boneTop; j.childCount!=0; j=j.GetChild(0)) ++depthMax;
 
 					cnvPrm.depth = Mathf.Clamp(cnvPrm.depth, 1, depthMax);
-				}
-			}
-		}
-			
-		override protected void OnDrawGizmos() {
-			base.OnDrawGizmos();
-			if ( !UnityEditor.Selection.Contains( gameObject.GetInstanceID() ) ) return;
-
-			if (_boneInfos == null) return;
-			for (int i=0; i<_boneInfos.Length; ++i) {
-				var b = _boneInfos[i];
-				var cnvPrm = getCnvPrm(b);
-				if (b.boneTop == null) continue;
-
-				var trans = b.boneTop;
-				for (int dCnt=0; dCnt!=cnvPrm.depth; ++dCnt) {
-					Gizmos.color = cnvPrm.getM(dCnt)<0.00001f
-						? new Color(1,0,0,0.5f)
-						: new Color(1,1,1,0.5f);
-					Gizmos.DrawSphere( trans.position, cnvPrm.getR(dCnt) );
-
-					if (!Application.isPlaying) {
-						Gizmos.color = new Color(1,1,0);
-						if (dCnt != 0) Gizmos.DrawLine( trans.position, trans.parent.position );
-						if (isChain(0,i,dCnt)) {
-							var b2 = _boneInfos[(i+1)%_boneInfos.Length];
-							var trans2 = b2.boneTop;
-							for (int dCnt2=0; dCnt2!=dCnt; ++dCnt2) {
-								if ( trans2.childCount==0 ) break; else trans2=trans2.GetChild(0);
-							}
-							Gizmos.DrawLine( trans.position, trans2.position );
-						}
-					}
-
-					if ( trans.childCount==0 ) break; else trans=trans.GetChild(0);
 				}
 			}
 		}

@@ -50,6 +50,21 @@ static internal partial class Gizmos8 {
 			Handles.color = lastCol;
 		}
 	}
+	public static void drawWireSphere(float3 center, float r) {
+		var mtx = Unity.Mathematics.float3x3.identity;
+		drawWireCircle(center, r, mtx);
+		var c0 = mtx.c0;
+		var c1 = mtx.c1;
+		var c2 = mtx.c2;
+		mtx.c0 = c2;
+		mtx.c1 = c0;
+		mtx.c2 = c1;
+		drawWireCircle(center, r, mtx);
+		mtx.c0 = c1;
+		mtx.c1 = c2;
+		mtx.c2 = c0;
+		drawWireCircle(center, r, mtx);
+	}
 
 	/** 直方体を表示 */
 	public static void drawWireCube(float3 trans, quaternion rot, float3 size) =>

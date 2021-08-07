@@ -910,7 +910,7 @@ MonoBehaviour:
     angleMax:
       start: 35
       end: 60
-      curve: 0.5
+      curve: 0.5105374
       useCurve: 0
     angleMargin:
       start: 0.3
@@ -944,17 +944,22 @@ MonoBehaviour:
       useCurve: 0
     vMax:
       start: 0.1
-      end: 1
+      end: 0.1
       curve: 0.5
       useCurve: 0
     shiftKpm:
       start: 10
-      end: 1000
+      end: 10
       curve: 0.5
       useCurve: 0
     vHL:
       start: 0.1
       end: 0.1
+      curve: 0.5
+      useCurve: 0
+    radius:
+      start: 0.01
+      end: 0.01
       curve: 0.5
       useCurve: 0
     depth: 1

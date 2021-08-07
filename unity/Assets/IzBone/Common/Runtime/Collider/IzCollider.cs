@@ -80,19 +80,16 @@ namespace IzBone.Common.Collider {
 
 		// --------------------------------------------------------------------------------------------
 #if UNITY_EDITOR
-		void OnDrawGizmos() {
-			if ( !Selection.Contains( gameObject.GetInstanceID() ) ) return;
-			DEBUG_drawGizmos();
-		}
-
-		public void DEBUG_drawGizmos() {
+		internal void DEBUG_drawGizmos() {
 			if ( !Application.isPlaying ) checkRebuildL2GMat();
-			Gizmos.color = new Color(0.3f,1f,0.2f);
+			Gizmos8.drawMode = Gizmos8.DrawMode.Handle;
+
+			Gizmos8.color = Gizmos8.Colors.Collider;
 
 			if (_mode == Mode.Sphere) {
 				var pos = l2gMat.c3.xyz;
 				var size = mul( (float3x3)l2gMat, (float3)(_r.x / Mathf.Sqrt(3)) );
-				Gizmos.DrawWireSphere( pos, length(size) );
+				Gizmos8.drawWireSphere( pos, length(size) );
 
 			} else if (_mode == Mode.Capsule) {
 				var pos = l2gMat.c3.xyz;
@@ -110,8 +107,8 @@ namespace IzBone.Common.Collider {
 					var pN0 = pos + sizeY0 + c*sizeX + s*sizeZ;
 					var pN1 = pos - sizeY0 + c*sizeX + s*sizeZ;
 					if (i!=0) {
-						Gizmos.DrawLine( p0, pN0 );
-						Gizmos.DrawLine( p1, pN1 );
+						Gizmos8.drawLine( p0, pN0 );
+						Gizmos8.drawLine( p1, pN1 );
 					}
 					p0 = pN0;
 					p1 = pN1;
@@ -123,18 +120,18 @@ namespace IzBone.Common.Collider {
 					var pN0 = c*sizeX + s*sizeY1;
 					var pN1 = c*sizeZ + s*sizeY1;
 					if (i!=0) {
-						Gizmos.DrawLine(pos + sizeY0+p0, pos + sizeY0+pN0 );
-						Gizmos.DrawLine(pos + sizeY0+p1, pos + sizeY0+pN1 );
-						Gizmos.DrawLine(pos - sizeY0-p0, pos - sizeY0-pN0 );
-						Gizmos.DrawLine(pos - sizeY0-p1, pos - sizeY0-pN1 );
+						Gizmos8.drawLine(pos + sizeY0+p0, pos + sizeY0+pN0 );
+						Gizmos8.drawLine(pos + sizeY0+p1, pos + sizeY0+pN1 );
+						Gizmos8.drawLine(pos - sizeY0-p0, pos - sizeY0-pN0 );
+						Gizmos8.drawLine(pos - sizeY0-p1, pos - sizeY0-pN1 );
 					}
 					p0 = pN0;
 					p1 = pN1;
 				}
-				Gizmos.DrawLine( pos +sizeY0+sizeX, pos -sizeY0+sizeX );
-				Gizmos.DrawLine( pos +sizeY0-sizeX, pos -sizeY0-sizeX );
-				Gizmos.DrawLine( pos +sizeY0+sizeZ, pos -sizeY0+sizeZ );
-				Gizmos.DrawLine( pos +sizeY0-sizeZ, pos -sizeY0-sizeZ );
+				Gizmos8.drawLine( pos +sizeY0+sizeX, pos -sizeY0+sizeX );
+				Gizmos8.drawLine( pos +sizeY0-sizeX, pos -sizeY0-sizeX );
+				Gizmos8.drawLine( pos +sizeY0+sizeZ, pos -sizeY0+sizeZ );
+				Gizmos8.drawLine( pos +sizeY0-sizeZ, pos -sizeY0-sizeZ );
 
 			} else if (_mode == Mode.Box) {
 				var pos = l2gMat.c3.xyz;
@@ -150,18 +147,18 @@ namespace IzBone.Common.Collider {
 				var mpm = -sizeX +sizeY -sizeZ + pos;
 				var mmp = -sizeX -sizeY +sizeZ + pos;
 				var mmm = -sizeX -sizeY -sizeZ + pos;
-				Gizmos.DrawLine( ppp, ppm );
-				Gizmos.DrawLine( pmp, pmm );
-				Gizmos.DrawLine( mpp, mpm );
-				Gizmos.DrawLine( mmp, mmm );
-				Gizmos.DrawLine( ppp, pmp );
-				Gizmos.DrawLine( ppm, pmm );
-				Gizmos.DrawLine( mpp, mmp );
-				Gizmos.DrawLine( mpm, mmm );
-				Gizmos.DrawLine( ppp, mpp );
-				Gizmos.DrawLine( ppm, mpm );
-				Gizmos.DrawLine( pmp, mmp );
-				Gizmos.DrawLine( pmm, mmm );
+				Gizmos8.drawLine( ppp, ppm );
+				Gizmos8.drawLine( pmp, pmm );
+				Gizmos8.drawLine( mpp, mpm );
+				Gizmos8.drawLine( mmp, mmm );
+				Gizmos8.drawLine( ppp, pmp );
+				Gizmos8.drawLine( ppm, pmm );
+				Gizmos8.drawLine( mpp, mmp );
+				Gizmos8.drawLine( mpm, mmm );
+				Gizmos8.drawLine( ppp, mpp );
+				Gizmos8.drawLine( ppm, mpm );
+				Gizmos8.drawLine( pmp, mmp );
+				Gizmos8.drawLine( pmm, mmm );
 
 			} else if (_mode == Mode.Plane) {
 				var pos = l2gMat.c3.xyz;
@@ -169,18 +166,24 @@ namespace IzBone.Common.Collider {
 				var x = mul( l2gMat3x3, float3(0.05f,0,0) );
 				var y = mul( l2gMat3x3, float3(0,0.05f,0) );
 				var z = mul( l2gMat3x3, float3(0,0,0.02f) );
-				Gizmos.DrawLine( pos-x, pos+x );
-				Gizmos.DrawLine( pos-y, pos+y );
-				Gizmos.DrawLine( pos, pos-z );
+				Gizmos8.drawLine( pos-x, pos+x );
+				Gizmos8.drawLine( pos-y, pos+y );
+				Gizmos8.drawLine( pos, pos-z );
 
 			} else { throw new InvalidProgramException(); }
 		}
 
 		[CustomEditor(typeof(IzCollider))]
 		sealed class CustomInspector : Editor {
+			void OnSceneGUI() {
+				var tgt = (IzCollider)target;
+				tgt.DEBUG_drawGizmos();
+			}
+
 			public override void OnInspectorGUI() {
-				var tgt = target as IzCollider;
-				if (tgt == null) return;
+
+				// TODO : tgtを使用しない形に改善する
+				var tgt = (IzCollider)target;
 
 				serializedObject.Update();
 

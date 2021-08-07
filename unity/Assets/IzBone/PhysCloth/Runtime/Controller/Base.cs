@@ -13,7 +13,7 @@ namespace IzBone.PhysCloth.Controller {
 	public unsafe abstract class Base : MonoBehaviour {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
-		[SerializeField] protected Common.Collider.IzCollider[] _izColliders = null;
+		[SerializeField] internal Common.Collider.IzCollider[] _izColliders = null;
 
 
 		// --------------------------------------- publicメンバ -------------------------------------
@@ -32,9 +32,9 @@ namespace IzBone.PhysCloth.Controller {
 		// ----------------------------------- private/protected メンバ -------------------------------
 
 		protected Common.Collider.Colliders _coreColliders;
-		protected List<Constraint> _constraints = new List<Constraint>();
-		protected Point[] _points;
-		protected Core.World _world;
+		internal List<Constraint> _constraints = new List<Constraint>();
+		internal Point[] _points;
+		internal Core.World _world;
 
 		virtual protected void Start() {
 			_coreColliders = new Common.Collider.Colliders(_izColliders);

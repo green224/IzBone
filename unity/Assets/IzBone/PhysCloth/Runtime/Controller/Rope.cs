@@ -13,7 +13,7 @@ namespace IzBone.PhysCloth.Controller {
 	 * IzBoneを使用するオブジェクトにつけるコンポーネント。
 	 * 平面的な布のようなものを再現する際に使用する
 	 */
-	[AddComponentMenu("IzBone/BonePhysics_Cloth_Rope")]
+	[AddComponentMenu("IzBone/PhysCloth_Rope")]
 	public unsafe sealed class Rope : Base {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
