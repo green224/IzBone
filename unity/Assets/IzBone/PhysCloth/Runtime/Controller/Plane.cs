@@ -24,9 +24,9 @@ public unsafe sealed class Plane : Base {
 
 	/** ボーンをランタイム時バッファへの変換するときの情報 */
 	[Serializable] internal sealed class ConversionParam {
-		public int depth = 1;
-		public int fixCount = 1;
-		public int excludeSideChain = 0;
+		[JointCount(1)] public int depth = 1;
+		[JointCount] public int fixCount = 1;
+		[JointCount] public int excludeSideChain = 0;
 		public int sideChainDepth => depth - excludeSideChain;
 		[RangeSC(0)] public SC m = 1;
 		[RangeSC(0)] public SC r = 1;
@@ -53,6 +53,8 @@ public unsafe sealed class Plane : Base {
 		// 一番上のパーティクル
 		[NonSerialized] public Point point = null;
 	}
+
+	[Space]
 	[SerializeField] internal BoneInfo[] _boneInfos = null;
 
 	[Space]
@@ -213,6 +215,8 @@ public unsafe sealed class Plane : Base {
 		}
 	}
 
+
+	// --------------------------------------------------------------------------------------------
 #if UNITY_EDITOR
 	void OnValidate() {
 		if (_boneInfos == null) return;
@@ -230,11 +234,12 @@ public unsafe sealed class Plane : Base {
 
 			// fixCountを有効範囲に丸める
 			cnvPrm.fixCount = clamp(cnvPrm.fixCount, 0, cnvPrm.depth);
+
+			// excludeSideChainを有効範囲に丸める
+			cnvPrm.excludeSideChain = clamp(cnvPrm.excludeSideChain, 0, cnvPrm.depth);
 		}
 	}
 #endif
-
-	// --------------------------------------------------------------------------------------------
 }
 
 }

@@ -23,13 +23,13 @@ public unsafe abstract class Base : MonoBehaviour {
 
 	[Space]
 	public bool useSimulation = true;				// 物理演算を行うか否か
+	[Range(1,50)] public int iterationNum = 15;		// 1frame当たりの計算イテレーション回数
 
 	[Space]
 	public float3 g = float3(0,-1,0);				// 重力加速度
 	public float3 windSpeed = default;				// 風速
 	[HalfLifeDrag] public HalfLife airDrag = 0.1f;	// 空気抵抗による半減期
 	[Min(0)] public float maxSpeed = 100;			// 最大速度
-	[Range(1,50)] public int iterationNum = 15;		// 1frame当たりの計算イテレーション回数
 
 
 	// ----------------------------------- private/protected メンバ -------------------------------

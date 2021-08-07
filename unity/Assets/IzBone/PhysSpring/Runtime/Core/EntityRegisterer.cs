@@ -33,6 +33,13 @@ namespace IzBone.PhysSpring.Core {
 				// OneSpringコンポーネントを生成
 				for (int i=0; i<bone.depth; ++i) {
 					var parent = child.parent;
+
+					// 無効なDepth値が指定されていた場合はエラーを出す
+					if (parent == null) {
+						UnityEngine.Debug.LogError("PhySpring:depth is too higher");
+						continue;
+					}
+
 					var iRate = (float)(bone.depth-1-i) / max(bone.depth-1, 1);
 
 					// デフォルト姿勢を適応

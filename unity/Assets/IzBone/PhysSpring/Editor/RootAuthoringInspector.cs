@@ -28,6 +28,13 @@ sealed class RootAuthoringInspector : Editor
 			posLst[0] = trns.position;
 			for (int i=0; i<bone.depth; ++i) {
 				var next = trns.parent;
+
+				// 無効なDepth値が指定されていた場合はエラーを出す
+				if (next == null) {
+					Debug.LogError("PhySpring:depth is too higher");
+					continue;
+				}
+
 				posLst[i+1] = next.position;
 				var iRate = (float)(bone.depth-1-i) / max(bone.depth-1, 1);
 

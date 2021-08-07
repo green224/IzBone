@@ -454,7 +454,10 @@ MonoBehaviour:
       curve: 0.5
       useCurve: 0
     omgDrag:
-      value: 0.1
+      start: 0.9
+      end: 0.9
+      curve: 0.5
+      useCurve: 0
     shiftMax:
       start: 0.001
       end: 1
@@ -476,7 +479,10 @@ MonoBehaviour:
       curve: 0.5
       useCurve: 0
     vDrag:
-      value: 0.1
+      start: 0.9
+      end: 0.9
+      curve: 0.5
+      useCurve: 0
     radius:
       start: 0.01
       end: 0.01

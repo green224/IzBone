@@ -52,7 +52,7 @@ public sealed class RootAuthoring : MonoBehaviour {
 
 		[Space]
 		[RangeSC(0)] public SC radius = 0.1f;			//!< パーティクル半径
-		[Range(1,10)] public int depth = 1;				//!< ボーン深度
+		[JointCount(1)] public int depth = 1;			//!< ボーン深度
 		[Range(1,10)] public int iterationNum = 1;		//!< 繰り返し計算回数
 
 		[Range(0,1)] public float rotShiftRate = 0.5f;	//!< 回転と移動の反映割合
@@ -97,5 +97,21 @@ public sealed class RootAuthoring : MonoBehaviour {
 
 
 	// --------------------------------------------------------------------------------------------
+#if UNITY_EDITOR
+	void OnValidate() {
+		if (_bones == null) return;
+		foreach ( var i in _bones ) {
+			// Depthを有効範囲に丸める
+			int depthMax = 0;
+			foreach (var t in i.targets) {
+				int s = 0;
+				for (var j=t.endOfBone; j.parent!=null; j=j.parent) ++s;
+				depthMax = max(s, depthMax);
+			}
+
+			i.depth = Mathf.Clamp(i.depth, 1, depthMax);
+		}
+	}
+#endif
 }
 }
