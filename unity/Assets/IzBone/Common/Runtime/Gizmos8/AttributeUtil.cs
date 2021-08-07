@@ -34,9 +34,9 @@ static public class AttributeUtil {
 	}
 
 	/**
-		* フィールドInfoから属性値を取り出す
-		* taken from : https://github.com/Unity-Technologies/UnityCsReference/blob/fbd4f2bd409f7adb9b077acfaed620bf992f7e55/Editor/Mono/ScriptAttributeGUI/ScriptAttributeUtility.cs
-		*/
+	 * フィールドInfoから属性値を取り出す
+	 * taken from : https://github.com/Unity-Technologies/UnityCsReference/blob/fbd4f2bd409f7adb9b077acfaed620bf992f7e55/Editor/Mono/ScriptAttributeGUI/ScriptAttributeUtility.cs
+	 */
 	public static List<PropertyAttribute> GetFieldAttributes(FieldInfo field) {
 		if (field == null)
 			return null;
@@ -49,9 +49,9 @@ static public class AttributeUtil {
 	}
 
 	/**
-		* SerializedProperty から FieldInfo を取得する
-		* taken from : https://hacchi-man.hatenablog.com/entry/2020/03/08/220000
-		*/
+	 * SerializedProperty から FieldInfo を取得する
+	 * taken from : https://hacchi-man.hatenablog.com/entry/2020/03/08/220000
+	 */
 	public static FieldInfo GetFieldInfo(SerializedProperty property)
 	{
 		FieldInfo GetField(Type type, string path)

@@ -10,6 +10,10 @@ using UnityEditor;
 
 namespace IzBone.PhysSpring {
 using Common;
+using Common.Field;
+
+using RangeSC = Common.Field.SimpleCurveRangeAttribute;
+using SC = Common.Field.SimpleCurve;
 
 /**
  * おっぱいやしっぽ、短いアクセサリーなどの単純なゆれものを
@@ -36,18 +40,28 @@ public sealed class RootAuthoring : MonoBehaviour {
 		public OneTrnasParam[] targets = null;			//!< 目標のTransformたち
 
 		[Space]
-		[Range(0,180)]	public float angleMax = 60;		//!< 姿勢の差分角度の最大値
-		[Range(0,90)]	public float angleMargin = 4;	//!< 姿勢の差分角度の最大値付近のスムースマージン
-		[Range(0,100)]	public float omgMax = 20;		//!< 角速度の最大値
-		[Range(1,1000)]	public float rotKpm = 70;		//!< バネ係数/質量
-		[Range(0.001f,1)] public float omgHL = 0.1f;	//!< 空気抵抗による速度半減期
+		[UnityEngine.Serialization.FormerlySerializedAs("angleMax3")]
+		[RangeSC(0,180)] public SC angleMax = 60;
+		[UnityEngine.Serialization.FormerlySerializedAs("angleMargin3")]
+		[RangeSC(0,1)] public SC angleMargin = 0.3f;
+		[UnityEngine.Serialization.FormerlySerializedAs("omgMax3")]
+		[RangeSC(0,100)] public SC omgMax = 20;
+		[UnityEngine.Serialization.FormerlySerializedAs("rotKpm3")]
+		[RangeSC(0,1000)] public SC rotKpm = 70;
+		[UnityEngine.Serialization.FormerlySerializedAs("omgHL3")]
+		[RangeSC(0.001f,1)] public SC omgHL = 0.1f;
 
 		[Space]
-		[Min(0)] public float shiftMax = 1;				//!< 位置の差分距離の最大値
-		[Min(0)] public float shiftMargin = 0.1f;		//!< 位置の差分距離の最大値付近のスムースマージン範囲
-		[Min(0)] public float vMax = 1;					//!< 速度の最大値
-		[Min(0)] public float shiftKpm = 1000;			//!< バネ係数/質量
-		[Range(0.001f,1)] public float vHL = 0.1f;		//!< 空気抵抗による速度半減期。移動に関するもの。これを小さくしておくと収束しやすい
+		[UnityEngine.Serialization.FormerlySerializedAs("shiftMax3")]
+		[RangeSC(0)] public SC shiftMax = 1;
+		[UnityEngine.Serialization.FormerlySerializedAs("shiftMargin3")]
+		[RangeSC(0,1)] public SC shiftMargin = 0.3f;
+		[UnityEngine.Serialization.FormerlySerializedAs("vMax3")]
+		[RangeSC(0)] public SC vMax = 1;
+		[UnityEngine.Serialization.FormerlySerializedAs("shiftKpm3")]
+		[RangeSC(0)] public SC shiftKpm = 1000;
+		[UnityEngine.Serialization.FormerlySerializedAs("vHL3")]
+		[RangeSC(0.001f,1)] public SC vHL = 0.1f;
 
 		[Space]
 		[Range(1,10)] public int depth = 1;				//!< ボーン深度
@@ -115,6 +129,7 @@ public sealed class RootAuthoring : MonoBehaviour {
 			for (int i=0; i<bone.depth; ++i) {
 				var next = trns.parent;
 				posLst[i+1] = next.position;
+				var iRate = (float)(bone.depth-1-i) / max(bone.depth-1, 1);
 
 				// ついでに角度範囲を描画
 				var l2w = (float4x4)next.localToWorldMatrix;
@@ -130,18 +145,22 @@ public sealed class RootAuthoring : MonoBehaviour {
 //					var scl = HandleUtility.GetHandleSize(l2w.c3.xyz)/2;
 					var scl = length(trns.position - next.position)/2;
 					Gizmos8.color = new Color(0.97f,0.7f,0);
-					Gizmos8.drawAngleCone( pos, rot, scl, bone.angleMax+bone.angleMargin );
+					var agl = bone.angleMax.evaluate(iRate);
+					Gizmos8.drawAngleCone( pos, rot, scl, agl );
 					Gizmos8.color = new Color(1,0,0);
-					Gizmos8.drawAngleCone( pos, rot, scl, bone.angleMax );
+					agl *= 1 - bone.angleMargin.evaluate(iRate);
+					Gizmos8.drawAngleCone( pos, rot, scl, agl );
 				}
 
 				// ついでに移動可能範囲を描画
 				if (0.00001f < bone.rotShiftRate) {
-					var scl0 = Unity.Mathematics.float4x4.TRS(
-						0, Unity.Mathematics.quaternion.identity, bone.shiftMax
-					);
+					var sft = bone.shiftMax.evaluate(iRate);
 					var scl1 = Unity.Mathematics.float4x4.TRS(
-						0, Unity.Mathematics.quaternion.identity, bone.shiftMax + bone.shiftMargin
+						0, Unity.Mathematics.quaternion.identity, sft
+					);
+					sft *= 1 - bone.shiftMargin.evaluate(iRate);
+					var scl0 = Unity.Mathematics.float4x4.TRS(
+						0, Unity.Mathematics.quaternion.identity, sft
 					);
 					Gizmos8.color = new Color(0,0.7f,0.97f);
 					Gizmos8.drawWireCube( mul(l2w, scl1) );

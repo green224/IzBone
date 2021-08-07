@@ -811,6 +811,61 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1099786729}
     m_Modifications:
+    - target: {fileID: 3762319300166216511, guid: 5d8f6aaa7987027468cb90fbbb9ce096,
+        type: 3}
+      propertyPath: _bones.Array.data[0].depth
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3762319300166216511, guid: 5d8f6aaa7987027468cb90fbbb9ce096,
+        type: 3}
+      propertyPath: _bones.Array.data[0].vMax.end
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3762319300166216511, guid: 5d8f6aaa7987027468cb90fbbb9ce096,
+        type: 3}
+      propertyPath: _bones.Array.data[0].vMax.start
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3762319300166216511, guid: 5d8f6aaa7987027468cb90fbbb9ce096,
+        type: 3}
+      propertyPath: _bones.Array.data[0].shiftKpm.end
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3762319300166216511, guid: 5d8f6aaa7987027468cb90fbbb9ce096,
+        type: 3}
+      propertyPath: _bones.Array.data[0].vHL.useCurve
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3762319300166216511, guid: 5d8f6aaa7987027468cb90fbbb9ce096,
+        type: 3}
+      propertyPath: _bones.Array.data[0].vMax.useCurve
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3762319300166216511, guid: 5d8f6aaa7987027468cb90fbbb9ce096,
+        type: 3}
+      propertyPath: _bones.Array.data[0].angleMax.curve
+      value: 0.5105374
+      objectReference: {fileID: 0}
+    - target: {fileID: 3762319300166216511, guid: 5d8f6aaa7987027468cb90fbbb9ce096,
+        type: 3}
+      propertyPath: _bones.Array.data[0].shiftKpm.start
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3762319300166216511, guid: 5d8f6aaa7987027468cb90fbbb9ce096,
+        type: 3}
+      propertyPath: _bones.Array.data[0].angleMax.useCurve
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3762319300166216511, guid: 5d8f6aaa7987027468cb90fbbb9ce096,
+        type: 3}
+      propertyPath: _bones.Array.data[0].shiftKpm.useCurve
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3762319300166216511, guid: 5d8f6aaa7987027468cb90fbbb9ce096,
+        type: 3}
+      propertyPath: _bones.Array.data[0].shiftMargin.useCurve
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6227744310331858603, guid: 5d8f6aaa7987027468cb90fbbb9ce096,
         type: 3}
       propertyPath: m_RootOrder

@@ -907,16 +907,56 @@ MonoBehaviour:
       defaultRot: {x: 0, y: 0, z: 0, w: 0}
     - endOfBone: {fileID: 8204968971697266243}
       defaultRot: {x: 0, y: 0, z: 0, w: 0}
-    angleMax: 25.2
-    angleMargin: 9
-    omgMax: 20
-    rotKpm: 70
-    omgHL: 0.1
-    shiftMax: 0.001
-    shiftMargin: 0.001
-    vMax: 0.1
-    shiftKpm: 10
-    vHL: 0.1
+    angleMax:
+      start: 35
+      end: 60
+      curve: 0.5
+      useCurve: 0
+    angleMargin:
+      start: 0.3
+      end: 0.3
+      curve: 0.5
+      useCurve: 0
+    omgMax:
+      start: 20
+      end: 20
+      curve: 0.5
+      useCurve: 0
+    rotKpm:
+      start: 70
+      end: 70
+      curve: 0.5
+      useCurve: 0
+    omgHL:
+      start: 0.1
+      end: 0.1
+      curve: 0.5
+      useCurve: 0
+    shiftMax:
+      start: 0.001
+      end: 1
+      curve: 0.5
+      useCurve: 0
+    shiftMargin:
+      start: 0.7
+      end: 0.3
+      curve: 0.5
+      useCurve: 0
+    vMax:
+      start: 0.1
+      end: 1
+      curve: 0.5
+      useCurve: 0
+    shiftKpm:
+      start: 10
+      end: 1000
+      curve: 0.5
+      useCurve: 0
+    vHL:
+      start: 0.1
+      end: 0.1
+      curve: 0.5
+      useCurve: 0
     depth: 1
     iterationNum: 1
     rotShiftRate: 0.509
