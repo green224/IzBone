@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using UnityEngine;
 using UnityEditor;
 
@@ -13,7 +13,7 @@ using Common;
 [CanEditMultipleObjects]
 sealed class PlaneInspector : BaseInspector
 {
-	/** ‚PƒIƒuƒWƒFƒNƒg‚É‘Î‚·‚éOnSceneGUIBŠî–{“I‚É”h¶æ‚©‚ç‚Í‚±‚ê‚ğŠg’£‚·‚ê‚ÎOK */
+	/** ï¼‘ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«å¯¾ã™ã‚‹OnSceneGUIã€‚åŸºæœ¬çš„ã«æ´¾ç”Ÿå…ˆã‹ã‚‰ã¯ã“ã‚Œã‚’æ‹¡å¼µã™ã‚Œã°OK */
 	void OnSceneGUI() {
 //		base.OnSceneGUI();
 		Gizmos8.drawMode = Gizmos8.DrawMode.Handle;
@@ -23,32 +23,62 @@ sealed class PlaneInspector : BaseInspector
 		for (int i=0; i<tgt._boneInfos.Length; ++i) {
 			var b = tgt._boneInfos[i];
 			var cnvPrm = tgt.getCnvPrm(b);
-			if (b.boneTop == null) continue;
+			if (b.endOfBone == null) continue;
 
-			var trans = b.boneTop;
+			var trans = b.endOfBone;
+			var lastBoneLen = length(trans.position - trans.parent.position);	// depthãŒ1ã®æ™‚ç”¨ã«ã€ã“ã“ã«ã¯é©å½“ãªå€¤ã‚’å…¥ã‚Œã¦ãŠã
 			for (int dCnt=0; dCnt!=cnvPrm.depth; ++dCnt) {
+				var idx = cnvPrm.depth - 1 - dCnt;
 
-				// ƒp[ƒeƒBƒNƒ‹‚ğ•`‰æ
-				Gizmos8.color = cnvPrm.getM(dCnt)<0.00001f
+				// ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«ã‚’æç”»
+				var boneLen = length(trans.position - trans.parent.position);
+				var isFixedJoint = idx < cnvPrm.fixCount;
+				Gizmos8.color = isFixedJoint
 					? Gizmos8.Colors.JointFixed
 					: Gizmos8.Colors.JointMovable;
-				Gizmos8.drawSphere( trans.position, cnvPrm.getR(dCnt) );
+				var viewR = isFixedJoint
+//					? min(boneLen, lastBoneLen) * 0.1f
+					? lastBoneLen * 0.15f
+					: cnvPrm.getR(idx);
+				Gizmos8.drawSphere(trans.position, viewR);
 
-				// Editor’â~’†‚ÍConstraint‚ª‚Ü‚¾–¢¶¬‚È‚Ì‚ÅA“K“–‚Éƒ`ƒFƒCƒ“‚ğ•`‰æ
+				// Editoråœæ­¢ä¸­ã¯ConstraintãŒã¾ã æœªç”Ÿæˆãªã®ã§ã€é©å½“ã«ãƒã‚§ã‚¤ãƒ³ã‚’æç”»
 				if (!Application.isPlaying) {
 					Gizmos8.color = Gizmos8.Colors.BoneMovable;
-					if (dCnt != 0) Gizmos8.drawLine( trans.position, trans.parent.position );
-					if (tgt.isChain(0,i,dCnt)) {
-						var b2 = tgt._boneInfos[(i+1)%tgt._boneInfos.Length];
-						var trans2 = b2.boneTop;
-						for (int dCnt2=0; dCnt2!=dCnt; ++dCnt2) {
-							if ( trans2.childCount==0 ) break; else trans2=trans2.GetChild(0);
+//					if (dCnt != cnvPrm.depth-1)
+//						Gizmos8.drawLine( trans.position, trans.parent.position );
+
+					static Transform getJointTrans(Plane tgt, int boneIdx, int depthIdx) {
+						boneIdx = (boneIdx + tgt._boneInfos.Length) % tgt._boneInfos.Length;
+						var bi = tgt._boneInfos[ boneIdx ];
+						var cp = tgt.getCnvPrm(bi);
+						var ret = bi.endOfBone;
+						for (int dCnt2=0; dCnt2!=cp.depth-1-depthIdx; ++dCnt2) {
+							if ( ret.parent==null ) break; else ret=ret.parent;
 						}
+						return ret;
+					}
+
+					if (tgt.isChain(0,i,idx)) {
+						var trans2 = getJointTrans(tgt, i+1, idx);
+						Gizmos8.drawLine( trans.position, trans2.position );
+					}
+					if (tgt.isChain(2,i,idx)) {
+						var trans2 = getJointTrans(tgt, i+1, idx+1);
+						Gizmos8.drawLine( trans.position, trans2.position );
+					}
+					if (tgt.isChain(4,i,idx)) {
+						var trans2 = getJointTrans(tgt, i, idx+1);
+						Gizmos8.drawLine( trans.position, trans2.position );
+					}
+					if (tgt.isChain(6,i,idx)) {
+						var trans2 = getJointTrans(tgt, i-1, idx+1);
 						Gizmos8.drawLine( trans.position, trans2.position );
 					}
 				}
 
-				if ( trans.childCount==0 ) break; else trans=trans.GetChild(0);
+				lastBoneLen = boneLen;
+				if ( trans.parent==null ) break; else trans=trans.parent;
 			}
 		}
 	}

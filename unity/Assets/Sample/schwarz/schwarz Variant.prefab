@@ -242,10 +242,12 @@ MonoBehaviour:
   maxSpeed: 10
   iterationNum: 5
   _boneInfos:
-  - boneTop: {fileID: 8353513750820953128}
+  - ___boneTop: {fileID: 8353513750820953128}
+    endOfBone: {fileID: 3143729865858199727}
     useLocalCnvPrm: 0
     cnvPrm:
       depth: 1
+      fixCount: 1
       excludeSideChain: 0
       _m:
         serializedVersion: 2
@@ -319,10 +321,27 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-  - boneTop: {fileID: 8832226345084668327}
+      m:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      r:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      maxAngle:
+        start: 60
+        end: 60
+        curve: 0.5
+        useCurve: 0
+  - ___boneTop: {fileID: 8832226345084668327}
+    endOfBone: {fileID: 6865221329399298481}
     useLocalCnvPrm: 0
     cnvPrm:
       depth: 1
+      fixCount: 1
       excludeSideChain: 0
       _m:
         serializedVersion: 2
@@ -396,10 +415,27 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-  - boneTop: {fileID: 3164374154960284198}
+      m:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      r:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      maxAngle:
+        start: 60
+        end: 60
+        curve: 0.5
+        useCurve: 0
+  - ___boneTop: {fileID: 3164374154960284198}
+    endOfBone: {fileID: 3581043447922572104}
     useLocalCnvPrm: 0
     cnvPrm:
       depth: 1
+      fixCount: 1
       excludeSideChain: 0
       _m:
         serializedVersion: 2
@@ -473,10 +509,27 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-  - boneTop: {fileID: 7363014999724711233}
+      m:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      r:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      maxAngle:
+        start: 60
+        end: 60
+        curve: 0.5
+        useCurve: 0
+  - ___boneTop: {fileID: 7363014999724711233}
+    endOfBone: {fileID: 8589982406226282413}
     useLocalCnvPrm: 0
     cnvPrm:
       depth: 1
+      fixCount: 1
       excludeSideChain: 0
       _m:
         serializedVersion: 2
@@ -550,10 +603,27 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-  - boneTop: {fileID: 989194471293379307}
+      m:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      r:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      maxAngle:
+        start: 60
+        end: 60
+        curve: 0.5
+        useCurve: 0
+  - ___boneTop: {fileID: 989194471293379307}
+    endOfBone: {fileID: 1988689058010864710}
     useLocalCnvPrm: 0
     cnvPrm:
       depth: 1
+      fixCount: 1
       excludeSideChain: 0
       _m:
         serializedVersion: 2
@@ -627,10 +697,27 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-  - boneTop: {fileID: 2730736402838647363}
+      m:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      r:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      maxAngle:
+        start: 60
+        end: 60
+        curve: 0.5
+        useCurve: 0
+  - ___boneTop: {fileID: 2730736402838647363}
+    endOfBone: {fileID: 253768448066259961}
     useLocalCnvPrm: 0
     cnvPrm:
       depth: 1
+      fixCount: 1
       excludeSideChain: 0
       _m:
         serializedVersion: 2
@@ -704,10 +791,27 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-  - boneTop: {fileID: 4381155481141325233}
+      m:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      r:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      maxAngle:
+        start: 60
+        end: 60
+        curve: 0.5
+        useCurve: 0
+  - ___boneTop: {fileID: 4381155481141325233}
+    endOfBone: {fileID: 3714572951673528790}
     useLocalCnvPrm: 0
     cnvPrm:
       depth: 1
+      fixCount: 1
       excludeSideChain: 0
       _m:
         serializedVersion: 2
@@ -781,8 +885,24 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+      m:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      r:
+        start: 1
+        end: 1
+        curve: 0.5
+        useCurve: 0
+      maxAngle:
+        start: 60
+        end: 60
+        curve: 0.5
+        useCurve: 0
   _cnvPrm:
     depth: 8
+    fixCount: 1
     excludeSideChain: 0
     _m:
       serializedVersion: 2
@@ -883,6 +1003,21 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    m:
+      start: 1
+      end: 1
+      curve: 0.5
+      useCurve: 0
+    r:
+      start: 0.012
+      end: 0.033
+      curve: 0.037220843
+      useCurve: 1
+    maxAngle:
+      start: 60
+      end: 60
+      curve: 0.5
+      useCurve: 0
   _isLoopConnect: 0
   _cmpl_direct: 0.00000001
   _cmpl_side: 0.00000006309576
@@ -2747,12 +2882,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fdb2502068a79914ca7fdedecfcdbd5f, type: 3}
---- !u!1 &6932796488126606520 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: -927199367670048503, guid: fdb2502068a79914ca7fdedecfcdbd5f,
-    type: 3}
-  m_PrefabInstance: {fileID: 1375797711836804529}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &4520999994316714132 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3290443785197684005, guid: fdb2502068a79914ca7fdedecfcdbd5f,
@@ -2801,9 +2930,21 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1375797711836804529}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &3143729865858199727 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -5136613678970288866, guid: fdb2502068a79914ca7fdedecfcdbd5f,
+    type: 3}
+  m_PrefabInstance: {fileID: 1375797711836804529}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4381155481141325233 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3448399453541423104, guid: fdb2502068a79914ca7fdedecfcdbd5f,
+    type: 3}
+  m_PrefabInstance: {fileID: 1375797711836804529}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &3714572951673528790 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -6873899504507710361, guid: fdb2502068a79914ca7fdedecfcdbd5f,
     type: 3}
   m_PrefabInstance: {fileID: 1375797711836804529}
   m_PrefabAsset: {fileID: 0}
@@ -2813,9 +2954,21 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1375797711836804529}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &6865221329399298481 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -3723919618829169664, guid: fdb2502068a79914ca7fdedecfcdbd5f,
+    type: 3}
+  m_PrefabInstance: {fileID: 1375797711836804529}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2730736402838647363 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3959322613800437746, guid: fdb2502068a79914ca7fdedecfcdbd5f,
+    type: 3}
+  m_PrefabInstance: {fileID: 1375797711836804529}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &253768448066259961 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1194089100389580360, guid: fdb2502068a79914ca7fdedecfcdbd5f,
     type: 3}
   m_PrefabInstance: {fileID: 1375797711836804529}
   m_PrefabAsset: {fileID: 0}
@@ -2825,15 +2978,33 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1375797711836804529}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &3581043447922572104 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2496609033192591097, guid: fdb2502068a79914ca7fdedecfcdbd5f,
+    type: 3}
+  m_PrefabInstance: {fileID: 1375797711836804529}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &989194471293379307 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2210567697004697434, guid: fdb2502068a79914ca7fdedecfcdbd5f,
     type: 3}
   m_PrefabInstance: {fileID: 1375797711836804529}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &1988689058010864710 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 616692517070596599, guid: fdb2502068a79914ca7fdedecfcdbd5f,
+    type: 3}
+  m_PrefabInstance: {fileID: 1375797711836804529}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7363014999724711233 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -776449155594376976, guid: fdb2502068a79914ca7fdedecfcdbd5f,
+    type: 3}
+  m_PrefabInstance: {fileID: 1375797711836804529}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8589982406226282413 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7215452450624041500, guid: fdb2502068a79914ca7fdedecfcdbd5f,
     type: 3}
   m_PrefabInstance: {fileID: 1375797711836804529}
   m_PrefabAsset: {fileID: 0}
@@ -2846,6 +3017,12 @@ Transform:
 --- !u!4 &775363279575782691 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1861522052791197842, guid: fdb2502068a79914ca7fdedecfcdbd5f,
+    type: 3}
+  m_PrefabInstance: {fileID: 1375797711836804529}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6932796488126606520 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -927199367670048503, guid: fdb2502068a79914ca7fdedecfcdbd5f,
     type: 3}
   m_PrefabInstance: {fileID: 1375797711836804529}
   m_PrefabAsset: {fileID: 0}
