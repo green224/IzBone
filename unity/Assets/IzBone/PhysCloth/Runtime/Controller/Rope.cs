@@ -114,29 +114,6 @@ namespace IzBone.PhysCloth.Controller {
 			coreUpdate(Time.deltaTime);
 		}
 
-	#if UNITY_EDITOR
-		override protected void OnDrawGizmos() {
-			base.OnDrawGizmos();
-			if ( !UnityEditor.Selection.Contains( gameObject.GetInstanceID() ) ) return;
-
-			if (_boneInfo == null) return;
-			if (_boneInfo.boneTop != null) {
-
-				var trans = _boneInfo.boneTop;
-				for (int dCnt=0; dCnt!=_boneInfo.depth; ++dCnt) {
-					Gizmos.color = new Color(1,1,1,0.5f);
-					Gizmos.DrawSphere( trans.position, _boneInfo.getR(dCnt) );
-
-					if (!Application.isPlaying) {
-						Gizmos.color = new Color(1,1,0);
-						if (dCnt != 0) Gizmos.DrawLine( trans.position, trans.parent.position );
-					}
-
-					if ( trans.childCount==0 ) break; else trans=trans.GetChild(0);
-				}
-			}
-		}
-	#endif
 
 		// --------------------------------------------------------------------------------------------
 	}

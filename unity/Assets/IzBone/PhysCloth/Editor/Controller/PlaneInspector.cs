@@ -14,8 +14,8 @@ using Common;
 sealed class PlaneInspector : BaseInspector
 {
 	/** １オブジェクトに対するOnSceneGUI。基本的に派生先からはこれを拡張すればOK */
-	void OnSceneGUI() {
-//		base.OnSceneGUI();
+	override protected void OnSceneGUI() {
+		base.OnSceneGUI();
 		Gizmos8.drawMode = Gizmos8.DrawMode.Handle;
 		var tgt = (Plane)target;
 

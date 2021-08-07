@@ -93,32 +93,6 @@ public unsafe abstract class Base : MonoBehaviour {
 	void collectChildIzCol() {
 		_izColliders = GetComponentsInChildren< Common.Collider.IzCollider >();
 	}
-
-	virtual protected void OnDrawGizmos() {
-		if ( !UnityEditor.Selection.Contains( gameObject.GetInstanceID() ) ) return;
-
-		// 登録されているコライダを表示
-		if (_izColliders!=null) foreach (var i in _izColliders) i.DEBUG_drawGizmos();
-
-		// コンストレイントを描画
-		Gizmos.color = new Color(1,1,0);
-		if (_constraints != null) foreach (var i in _constraints) {
-			var p0 = _world.DEBUG_getPos( i.srcPointIdx );
-			var p1 = _world.DEBUG_getPos( i.dstPointIdx );
-			Gizmos.DrawLine( p0, p1 );
-		}
-
-		// 質点を描画
-		Gizmos.color = Color.blue;
-		if (_points != null) foreach (var i in _points) {
-			if (i.m < 0.000001f) continue;
-			var v = _world.DEBUG_getV( i.idx );
-			var p = _world.DEBUG_getPos( i.idx );
-//				var p = i.trans.position;
-			Gizmos.DrawLine( p, p+v*0.03f );
-//				Gizmos.DrawLine( p, v );
-		}
-	}
 #endif
 
 	// --------------------------------------------------------------------------------------------

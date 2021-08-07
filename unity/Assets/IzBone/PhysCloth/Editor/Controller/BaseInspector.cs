@@ -11,7 +11,7 @@ using Common;
 
 abstract class BaseInspector : Editor
 {
-	void OnSceneGUI() {
+	virtual protected void OnSceneGUI() {
 		Gizmos8.drawMode = Gizmos8.DrawMode.Handle;
 		var tgt = (Base)target;
 
@@ -20,7 +20,7 @@ abstract class BaseInspector : Editor
 			i.DEBUG_drawGizmos();
 
 		// コンストレイントを描画
-		Gizmos8.color = new Color(1,1,0);
+		Gizmos8.color = Gizmos8.Colors.BoneMovable;
 		if (tgt._constraints != null) foreach (var i in tgt._constraints) {
 			var p0 = tgt._world.DEBUG_getPos( i.srcPointIdx );
 			var p1 = tgt._world.DEBUG_getPos( i.dstPointIdx );
