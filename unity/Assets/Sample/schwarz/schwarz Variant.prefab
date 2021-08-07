@@ -230,6 +230,7 @@ MonoBehaviour:
   - {fileID: 1508046645}
   - {fileID: 1508046644}
   useSimulation: 1
+  iterationNum: 5
   g:
     x: 0
     y: -6.55
@@ -241,7 +242,6 @@ MonoBehaviour:
   airDrag:
     value: 0.1
   maxSpeed: 10
-  iterationNum: 5
   _boneInfos:
   - endOfBone: {fileID: 3143729865858199727}
     useLocalCnvPrm: 0

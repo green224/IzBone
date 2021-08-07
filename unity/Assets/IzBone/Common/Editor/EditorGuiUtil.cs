@@ -42,7 +42,7 @@ static class EditorGuiUtil {
 		} GL.End();
 
 		// グラフを表示
-		GL.Begin(GL.LINES); {
+		GL.Begin(GL.LINE_STRIP); {
 			GL.Color( new Color(0,1,0) );
 			for (int x=0; x<=rect.width-4; ++x) {
 				var xRate = x / (rect.width-4);
