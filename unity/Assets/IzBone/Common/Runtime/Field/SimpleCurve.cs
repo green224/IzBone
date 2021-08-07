@@ -70,8 +70,8 @@ namespace IzBone.Common.Field {
 		// 指定の値を属性の設定値でClampする
 		static public float clamp(SimpleCurveRangeAttribute attr, float value) {
 			if (attr == null) return value;
-			if (attr.Min.HasValue) value = math.max(attr.Min.Value, value);
-			if (attr.Max.HasValue) value = math.min(attr.Max.Value, value);
+			if (attr.Min.HasValue) value = max(attr.Min.Value, value);
+			if (attr.Max.HasValue) value = min(attr.Max.Value, value);
 			return value;
 		}
 

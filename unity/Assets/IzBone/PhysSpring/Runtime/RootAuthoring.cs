@@ -37,28 +37,18 @@ public sealed class RootAuthoring : MonoBehaviour {
 		public OneTrnasParam[] targets = null;			//!< 目標のTransformたち
 
 		[Space]
-		[UnityEngine.Serialization.FormerlySerializedAs("angleMax3")]
 		[RangeSC(0,180)] public SC angleMax = 60;
-		[UnityEngine.Serialization.FormerlySerializedAs("angleMargin3")]
 		[RangeSC(0,1)] public SC angleMargin = 0.3f;
-		[UnityEngine.Serialization.FormerlySerializedAs("omgMax3")]
 		[RangeSC(0,100)] public SC omgMax = 20;
-		[UnityEngine.Serialization.FormerlySerializedAs("rotKpm3")]
 		[RangeSC(0,1000)] public SC rotKpm = 70;
-		[UnityEngine.Serialization.FormerlySerializedAs("omgHL3")]
-		[RangeSC(0.001f,1)] public SC omgHL = 0.1f;
+		[RangeSC(0,1)] public SC omgDrag = 0.6f;
 
 		[Space]
-		[UnityEngine.Serialization.FormerlySerializedAs("shiftMax3")]
 		[RangeSC(0)] public SC shiftMax = 1;
-		[UnityEngine.Serialization.FormerlySerializedAs("shiftMargin3")]
 		[RangeSC(0,1)] public SC shiftMargin = 0.3f;
-		[UnityEngine.Serialization.FormerlySerializedAs("vMax3")]
 		[RangeSC(0)] public SC vMax = 1;
-		[UnityEngine.Serialization.FormerlySerializedAs("shiftKpm3")]
 		[RangeSC(0)] public SC shiftKpm = 1000;
-		[UnityEngine.Serialization.FormerlySerializedAs("vHL3")]
-		[RangeSC(0.001f,1)] public SC vHL = 0.1f;
+		[RangeSC(0,1)] public SC vDrag = 0.6f;
 
 		[Space]
 		[RangeSC(0)] public SC radius = 0.1f;			//!< パーティクル半径

@@ -11,6 +11,7 @@ using System.Linq;
 
 namespace IzBone.PhysCloth.Core {
 	using Common;
+	using Common.Field;
 
 	/** シミュレーション系本体 */
 	public unsafe sealed class World : IDisposable
@@ -19,7 +20,7 @@ namespace IzBone.PhysCloth.Core {
 
 		public float3 g = float3(0,-1,0);		// 重力加速度
 		public float3 windSpeed = default;		// 風速
-		public float airHL = 0.1f;				// 空気抵抗による半減期
+		public HalfLife airHL = 0.1f;			// 空気抵抗による半減期
 		public float maxSpeed = 100;			// 最大速度
 
 		public World(
@@ -67,8 +68,8 @@ namespace IzBone.PhysCloth.Core {
 			}
 
 			// 空気抵抗の値を計算
-			var airResRate = Math8.calcHL( airHL, dt );
-			var airResRateIntegral = Math8.calcIntegralHL( airHL, dt );
+			var airResRate = airHL.evaluate( dt );
+			var airResRateIntegral = airHL.evaluateIntegral( dt );
 
 			// 質点の位置の更新
 			{

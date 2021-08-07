@@ -6,6 +6,7 @@ using static Unity.Mathematics.math;
 
 namespace IzBone.PhysSpring.Core {
 	using Common.Entities8;
+	using Common.Field;
 
 	/** RootAuthのデータをもとに、Entityを生成するモジュール */
 	public sealed class EntityRegisterer : EntityRegistererBase<RootAuthoring>
@@ -54,11 +55,15 @@ namespace IzBone.PhysSpring.Core {
 					a.spring_rot.kpm = bone.rotKpm.evaluate(iRate);
 					a.spring_rot.maxV = bone.omgMax.evaluate(iRate);
 					a.spring_rot.maxX = a.range_rot.localMax;
-					a.spring_rot.vHL = bone.omgHL.evaluate(iRate);
+					a.spring_rot.vHL = HalfLifeDragAttribute.showValue2HalfLife(
+						bone.omgDrag.evaluate(iRate)
+					);
 					a.spring_sft.kpm = bone.shiftKpm.evaluate(iRate);
 					a.spring_sft.maxV = bone.vMax.evaluate(iRate);
 					a.spring_sft.maxX = a.range_sft.localMax.x;
-					a.spring_sft.vHL = bone.vHL.evaluate(iRate);
+					a.spring_sft.vHL = HalfLifeDragAttribute.showValue2HalfLife(
+						bone.vDrag.evaluate(iRate)
+					);
 						
 					// コンポーネントを割り当て
 					var entity = em.CreateEntity();

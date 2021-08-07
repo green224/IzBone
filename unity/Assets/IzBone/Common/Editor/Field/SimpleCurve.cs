@@ -9,12 +9,6 @@ using static Unity.Mathematics.math;
 namespace IzBone.Common.Field {
 
 
-/**
- * 簡単なカーブと定数のどちらかを指定できるインスペクタ公開用フィールド型。
- * t=0~1のカーブを定義する。
- * 
- * Burst領域にもそのまま持っていける。
- */
 [CustomPropertyDrawer(typeof(SimpleCurve))]
 sealed class SimpleCurveEditor : PropertyDrawer
 {
