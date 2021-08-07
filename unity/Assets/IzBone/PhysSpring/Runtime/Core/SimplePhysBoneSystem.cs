@@ -1,4 +1,4 @@
-using UnityEngine.Jobs;
+﻿using UnityEngine.Jobs;
 using Unity.Jobs;
 
 using Unity.Burst;

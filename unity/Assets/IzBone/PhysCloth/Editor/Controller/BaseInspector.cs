@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using UnityEngine;
 using UnityEditor;
 
@@ -15,11 +15,11 @@ abstract class BaseInspector : Editor
 		Gizmos8.drawMode = Gizmos8.DrawMode.Handle;
 		var tgt = (Base)target;
 
-		// “o˜^‚³‚ê‚Ä‚¢‚éƒRƒ‰ƒCƒ_‚ğ•\¦
+		// ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹ã‚³ãƒ©ã‚¤ãƒ€ã‚’è¡¨ç¤º
 		if (tgt._izColliders!=null) foreach (var i in tgt._izColliders)
 			i.DEBUG_drawGizmos();
 
-		// ƒRƒ“ƒXƒgƒŒƒCƒ“ƒg‚ğ•`‰æ
+		// ã‚³ãƒ³ã‚¹ãƒˆãƒ¬ã‚¤ãƒ³ãƒˆã‚’æç”»
 		Gizmos8.color = new Color(1,1,0);
 		if (tgt._constraints != null) foreach (var i in tgt._constraints) {
 			var p0 = tgt._world.DEBUG_getPos( i.srcPointIdx );
@@ -27,8 +27,8 @@ abstract class BaseInspector : Editor
 			Gizmos8.drawLine( p0, p1 );
 		}
 
-		// ¿“_‚ğ•`‰æ
-		// TODO : ‚±‚±A–îˆó‚É‚·‚é
+		// è³ªç‚¹ã‚’æç”»
+		// TODO : ã“ã“ã€çŸ¢å°ã«ã™ã‚‹
 		Gizmos8.color = new Color(0,0,1);
 		if (tgt._points != null) foreach (var i in tgt._points) {
 			if (i.m < 0.000001f) continue;

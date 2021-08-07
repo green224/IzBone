@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using UnityEngine;
 using UnityEditor;
 
@@ -23,7 +23,7 @@ sealed class RootAuthoringInspector : Editor
 			var trns = boneTgt.endOfBone;
 			if (trns == null) continue;
 
-			// ƒWƒ‡ƒCƒ“ƒg‚²‚Æ‚É•`‰æ
+			// ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã”ã¨ã«æç”»
 			var posLst = new float3[bone.depth + 1];
 			posLst[0] = trns.position;
 			for (int i=0; i<bone.depth; ++i) {
@@ -31,20 +31,20 @@ sealed class RootAuthoringInspector : Editor
 				posLst[i+1] = next.position;
 				var iRate = (float)(bone.depth-1-i) / max(bone.depth-1, 1);
 
-				// ƒp[ƒeƒBƒNƒ‹–{‘Ì‚ğ•`‰æ
+				// ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«æœ¬ä½“ã‚’æç”»
 				Gizmos8.color = Gizmos8.Colors.JointMovable;
 				Gizmos8.drawSphere(trns.position, bone.radius.evaluate(iRate));
 				if (i == bone.depth-1) {
 					Gizmos8.color = Gizmos8.Colors.JointFixed;
-					var r = length(trns.position - next.position) * 0.1f;
+					var r = length(trns.position - next.position) * 0.15f;
 					Gizmos8.drawSphere(next.position, r);
 				}
 
-				// ‚Â‚È‚ª‚è‚ğ•`‰æ
+				// ã¤ãªãŒã‚Šã‚’æç”»
 				Gizmos8.color = Gizmos8.Colors.BoneMovable;
 				Gizmos8.drawLine(next.position, trns.position);
 
-				// Šp“x”ÍˆÍ‚ğ•`‰æ
+				// è§’åº¦ç¯„å›²ã‚’æç”»
 				var l2w = (float4x4)next.localToWorldMatrix;
 				if (bone.rotShiftRate < 0.9999f) {
 					var pos = l2w.c3.xyz;
@@ -65,7 +65,7 @@ sealed class RootAuthoringInspector : Editor
 					Gizmos8.drawAngleCone( pos, rot, scl, agl );
 				}
 
-				// ˆÚ“®‰Â”\”ÍˆÍ‚ğ•`‰æ
+				// ç§»å‹•å¯èƒ½ç¯„å›²ã‚’æç”»
 				if (0.00001f < bone.rotShiftRate) {
 					var sft = bone.shiftMax.evaluate(iRate);
 					var scl1 = Unity.Mathematics.float4x4.TRS(
@@ -84,7 +84,7 @@ sealed class RootAuthoringInspector : Editor
 				trns = next;
 			}
 
-			// •`‰æ
+			// æç”»
 //			Gizmos8.drawBones(posLst);
 		}
 	}
