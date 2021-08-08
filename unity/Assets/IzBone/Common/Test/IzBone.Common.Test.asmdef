@@ -1,5 +1,5 @@
 {
-    "name": "IzBone.PhysCloth.Editor",
+    "name": "IzBone.Common.Test",
     "rootNamespace": "",
     "references": [
         "Unity.Mathematics",
@@ -7,9 +7,9 @@
         "Unity.Burst",
         "Unity.Collections",
         "Unity.Entities",
-        "IzBone.PhysCloth",
         "IzBone.Common",
-        "IzBone.Common.Editor"
+        "IzBone.Common.Editor",
+        "UnityEngine.TestRunner"
     ],
     "includePlatforms": [
         "Editor"

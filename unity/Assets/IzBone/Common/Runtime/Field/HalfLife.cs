@@ -43,27 +43,18 @@ namespace IzBone.Common.Field {
 	 */
 	internal sealed class HalfLifeDragAttribute : PropertyAttribute
 	{
-		public const float MIN_VAL = 0.01f;
-		public const float MAX_VAL = 5;
+		public const float LEFT_VAL = 5;
+		public const float RIGHT_VAL = 0.01f;
 
 		// 減衰力として表示する値と、実際の半減期の値との相互変換
-		static public float showValue2HalfLife(float val) {
-			var a = clamp(val, 0, 1);
-
-//			a = pow( a, 1f/5 );
-			a = ( 1 - pow(0.001f, a) ) / 0.999f;
-
-			return lerp( MAX_VAL, MIN_VAL, clamp(a,0,1) );
-		}
-		static public float halfLife2ShowValue(float hl) {
-			var a = hl;
-			a = 1f - (a - MIN_VAL) / (MAX_VAL - MIN_VAL);
-
-//			a = pow(a, 5);
-			a = log2(1-a) / log2(0.001f);
-
-			return clamp(a,0,1);
-		}
+		static public float halfLife2ShowValue(float hl) =>
+			(float)PowRangeAttribute.srcValue2showValue(
+				hl, 1000, LEFT_VAL, RIGHT_VAL
+			);
+		static public float showValue2HalfLife(float val) =>
+			(float)PowRangeAttribute.showValue2srcValue(
+				val, 1000, LEFT_VAL, RIGHT_VAL
+			);
 	}
 
 

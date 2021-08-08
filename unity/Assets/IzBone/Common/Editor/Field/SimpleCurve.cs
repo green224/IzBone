@@ -68,7 +68,7 @@ sealed class SimpleCurveEditor : PropertyDrawer
 			};
 			var minY = min(tgt.start, tgt.end);
 			var height = abs(tgt.start - tgt.end) + 0.00001f;
-			EditorGuiUtil.drawGraphPreview(
+			EditorGUIUtility8.drawGraphPreview(
 				pos,
 				x => ( tgt.evaluate(x) - minY ) / height
 			);

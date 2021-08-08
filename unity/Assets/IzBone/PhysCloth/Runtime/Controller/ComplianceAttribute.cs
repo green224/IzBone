@@ -4,52 +4,33 @@ using UnityEngine;
 using Unity.Mathematics;
 using static Unity.Mathematics.math;
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 
 
 namespace IzBone.PhysCloth.Controller {
 
-	/**
-	 * Compliance値として使用するfloatにつける属性。
-	 * インスペクタ表示時に、いい感じのスライダーで設定可能にする。
-	 */
-	public sealed class ComplianceAttribute : PropertyAttribute {
-		public ComplianceAttribute() {}
+using Common;
+using Common.Field;
 
-#if UNITY_EDITOR
-		[CustomPropertyDrawer(typeof(ComplianceAttribute))]
-		sealed class Drawer : PropertyDrawer {
-			public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
-				var range2Attribute = (ComplianceAttribute)attribute;
+/**
+ * Compliance値として使用するfloatにつける属性。
+ * インスペクタ表示時に、いい感じのスライダーで設定可能にする。
+ */
+public sealed class ComplianceAttribute : PropertyAttribute {
+	public ComplianceAttribute() {}
 
-				var v = property.floatValue;
-				using (var cs = new EditorGUI.ChangeCheckScope()) {
-					Rect pos;
-					shiftPos(out pos, ref position, 100);
-					EditorGUI.PrefixLabel(pos, new GUIContent(property.displayName));
+	public const float LEFT_VAL = 0.1f;
+	public const float RIGHT_VAL = 1e-12f;
 
-					shiftPos(out pos, ref position, 150);
-					v = (-Mathf.Log10( v ) - 2) / 10;
-					v = Mathf.Clamp01(v);
-					v = EditorGUI.Slider(pos, v, 0f, 1f);
-					if ( cs.changed ) {
-						if (v <= 0.0001f) v = -10;
-						v = Mathf.Pow(10, -(v*10 + 2));
-						property.floatValue = v;
-					}
-				}
-			}
-
-			void shiftPos(out Rect pos, ref Rect totalPos, int width) {
-				pos = totalPos;
-				pos.width=width; totalPos.x+=width; totalPos.width-=width;
-			}
-		}
-#endif
-	}
+	// 強度として表示する値と、実際のcomplianceの値との相互変換
+	static public float compliance2ShowValue(float cmp) =>
+		(float)PowRangeAttribute.srcValue2showValue(
+			cmp, 1000, LEFT_VAL, RIGHT_VAL
+		);
+	static public float showValue2Compliance(float val) =>
+		(float)PowRangeAttribute.showValue2srcValue(
+			val, 1000, LEFT_VAL, RIGHT_VAL
+		);
+}
 
 }
 

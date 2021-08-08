@@ -41,14 +41,14 @@ public sealed class RootAuthoring : MonoBehaviour {
 		[RangeSC(0,1)] public SC angleMargin = 0.3f;
 		[RangeSC(0,100)] public SC omgMax = 20;
 		[RangeSC(0,1000)] public SC rotKpm = 70;
-		[RangeSC(0,1)] public SC omgDrag = 0.6f;
+		[RangeSC(0,1)] public SC omgDrag = 0.5f;
 
 		[Space]
 		[RangeSC(0)] public SC shiftMax = 1;
 		[RangeSC(0,1)] public SC shiftMargin = 0.3f;
 		[RangeSC(0)] public SC vMax = 1;
 		[RangeSC(0)] public SC shiftKpm = 1000;
-		[RangeSC(0,1)] public SC vDrag = 0.6f;
+		[RangeSC(0,1)] public SC vDrag = 0.5f;
 
 		[Space]
 		[RangeSC(0)] public SC radius = 0.1f;			//!< パーティクル半径

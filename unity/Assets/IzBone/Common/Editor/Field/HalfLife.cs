@@ -31,8 +31,8 @@ sealed class HalfLifeEditor : PropertyDrawer
 				var a = prop_value.floatValue;
 				a = EditorGUI.Slider(
 					position, label, a,
-					HalfLifeDragAttribute.MIN_VAL,
-					HalfLifeDragAttribute.MAX_VAL
+					min(HalfLifeDragAttribute.LEFT_VAL, HalfLifeDragAttribute.RIGHT_VAL),
+					max(HalfLifeDragAttribute.LEFT_VAL, HalfLifeDragAttribute.RIGHT_VAL)
 				);
 				if (cc.changed) {
 					prop_value.floatValue = a;

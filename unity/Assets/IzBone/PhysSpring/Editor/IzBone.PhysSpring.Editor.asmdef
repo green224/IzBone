@@ -8,7 +8,8 @@
         "Unity.Collections",
         "Unity.Entities",
         "IzBone.PhysSpring",
-        "IzBone.Common"
+        "IzBone.Common",
+        "IzBone.Common.Editor"
     ],
     "includePlatforms": [
         "Editor"

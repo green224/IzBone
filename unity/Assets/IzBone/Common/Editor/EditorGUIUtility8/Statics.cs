@@ -11,7 +11,8 @@ namespace IzBone.Common {
 /**
  * EditorGUIに対する便利処理
  */
-static class EditorGuiUtil {
+internal static partial class EditorGUIUtility8
+{
 	// ------------------------------------- public メンバ --------------------------------------------
 
 	/**
