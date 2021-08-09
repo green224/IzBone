@@ -8,6 +8,7 @@
     "com.unity.inputsystem": "1.0.2",
     "com.unity.jobs": "0.7.0-preview.17",
     "com.unity.recorder": "2.5.5",
+    "com.unity.render-pipelines.universal": "10.5.1",
     "com.unity.test-framework": "1.1.26",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.timeline": "1.4.8",
