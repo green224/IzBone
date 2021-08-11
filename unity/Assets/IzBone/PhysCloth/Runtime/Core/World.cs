@@ -22,6 +22,7 @@ namespace IzBone.PhysCloth.Core {
 		public float3 windSpeed = default;		// 風速
 		public HalfLife airHL = 0.1f;			// 空気抵抗による半減期
 		public float maxSpeed = 100;			// 最大速度
+		public HalfLife restoreHL = 100;		// 初期位置への復元半減期
 
 		public World(
 			Controller.Point[] mngPoints,
@@ -66,10 +67,29 @@ namespace IzBone.PhysCloth.Core {
 				}
 				return;
 			}
+			
+			{// デフォルト姿勢でのL2Wを計算しておく
+				int i = 0;
+				for (var p=pntsPtr0; p!=pntsPtrEnd; ++p,++i) {
+					if (mngPoints[i].parent != null) continue;
+
+					var parentTrans = mngPoints[i].trans;
+					var l2w = parentTrans == null
+						? Unity.Mathematics.float4x4.identity
+						: (float4x4)mngPoints[i].trans.parent.localToWorldMatrix;
+
+					for (var m=mngPoints[i]; m!=null; m=m.child) {
+						l2w = mul( l2w, m.defaultL2P );
+
+						pntsPtr0[m.idx].defaultL2W = l2w;
+					}
+				}
+			}
 
 			// 空気抵抗の値を計算
-			var airResRate = airHL.evaluate( dt );
-			var airResRateIntegral = airHL.evaluateIntegral( dt );
+			var airResRate = HalfLifeDragAttribute.evaluate( airHL, dt );
+			var airResRateIntegral = HalfLifeDragAttribute.evaluateIntegral( airHL, dt );
+			var restoreRate = HalfLifeDragAttribute.evaluate( restoreHL, dt );
 
 			// 質点の位置の更新
 			{
@@ -86,7 +106,7 @@ namespace IzBone.PhysCloth.Core {
 						// 更新前の位置をvに入れておく。これは後で参照するための一時的なキャッシュ用
 						p->v = p->col.pos;
 
-						// 位置を更新する。
+						// 位置を物理で更新する。
 						// 空気抵抗の影響を与えるため、以下のようにしている。
 						// 一行目:
 						//    dtは変動するので、空気抵抗の影響が解析的に正しく影響するように、
@@ -103,6 +123,13 @@ namespace IzBone.PhysCloth.Core {
 						p->col.pos +=
 							(v + g*dt) * airResRateIntegral +
 							windSpeed * (dt - airResRateIntegral);
+
+						// 初期位置に戻すようなフェードを掛ける
+						p->col.pos = lerp(
+							p->defaultL2W.c3.xyz,
+							p->col.pos,
+							restoreRate
+						);
 					}
 				}
 			}

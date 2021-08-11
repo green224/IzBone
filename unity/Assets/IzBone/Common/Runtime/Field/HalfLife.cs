@@ -51,6 +51,18 @@ namespace IzBone.Common.Field {
 			(float)PowRangeAttribute.showValue2srcValue(
 				val, 1000, LEFT_VAL, RIGHT_VAL
 			);
+
+		// この属性を使用した時のHalfLifeを使用した計算を、左右でクリップした値で返す処理
+		static public float evaluate(HalfLife hl, float t) {
+			if      ( hl.value < RIGHT_VAL*1.3f ) return 0;
+			else if ( LEFT_VAL*0.98f < hl.value ) return 1;
+			return hl.evaluate(t);
+		}
+		static public float evaluateIntegral(HalfLife hl, float t) {
+			if      ( hl.value < RIGHT_VAL*1.3f ) return 0;
+			else if ( LEFT_VAL*0.98f < hl.value ) return t;
+			return hl.evaluateIntegral(t);
+		}
 	}
 
 

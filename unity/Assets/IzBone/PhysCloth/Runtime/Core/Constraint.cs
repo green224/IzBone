@@ -72,13 +72,12 @@ namespace IzBone.PhysCloth.Core {
 		public float solve(float sqDt, float lambda);
 	}
 
-	/** 距離による拘束条件 [40bytes] */
-	[StructLayout(LayoutKind.Explicit)]
+	/** 距離による拘束条件 */
 	public unsafe struct Constraint_Distance : IConstraint {
-		[FieldOffset(0)] public Point* src;
-		[FieldOffset(16)] public Point* dst;
-		[FieldOffset(32)] public float compliance;
-		[FieldOffset(36)] public float defLen;
+		public Point* src;
+		public Point* dst;
+		public float compliance;
+		public float defLen;
 
 		public void reset(Point* src, Point* dst) {
 			this.src = src;
@@ -117,13 +116,12 @@ namespace IzBone.PhysCloth.Core {
 		const float MinimumM = 0.00000001f;
 	}
 
-	/** 可動軸方向による拘束条件 [48bytes] */
-	[StructLayout(LayoutKind.Explicit)]
+	/** 可動軸方向による拘束条件 */
 	public unsafe struct Constraint_Axis : IConstraint {
-		[FieldOffset(0)] public Point* src;
-		[FieldOffset(16)] public Point* dst;
-		[FieldOffset(32)] public float compliance;
-		[FieldOffset(36)] public float3 axis;
+		public Point* src;
+		public Point* dst;
+		public float compliance;
+		public float3 axis;
 
 		public void reset(Point* src, Point* dst) {
 			this.src = src;

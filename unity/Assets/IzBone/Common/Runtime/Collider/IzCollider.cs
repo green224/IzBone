@@ -15,20 +15,20 @@ namespace IzBone.Common.Collider {
 	[AddComponentMenu("IzBone/IzBone_Collider")]
 	public sealed class IzCollider : MonoBehaviour {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
-
-		public enum Mode { Sphere, Capsule, Box, Plane, }
-		[SerializeField] Mode _mode = Mode.Sphere;
-		[SerializeField] float3 _center = float3(0,0,0);
-		[SerializeField] float3 _r = float3(1,1,1);
-		[SerializeField] quaternion _rot = Unity.Mathematics.quaternion.identity;
-
-
 		// --------------------------------------- publicメンバ -------------------------------------
 
-		public Mode mode => _mode;
-		public float3 center => _center;
-		public float3 r => _r;
-		public quaternion rot => _rot;
+		public enum Mode { Sphere, Capsule, Box, Plane, }
+
+		[UnityEngine.Serialization.FormerlySerializedAs("_mode")]
+		public Mode mode = Mode.Sphere;
+		[UnityEngine.Serialization.FormerlySerializedAs("_center")]
+		public float3 center = float3(0,0,0);
+		[UnityEngine.Serialization.FormerlySerializedAs("_r")]
+		public float3 r = float3(1,1,1);
+		[UnityEngine.Serialization.FormerlySerializedAs("_rot")]
+		public quaternion rot = Unity.Mathematics.quaternion.identity;
+		public bool forcePeneCancel = false;		// 中央に仮想板を配置して、パーティクルが絶対に初期位置から見て逆側に浸透しないようにする
+
 
 		new public Transform transform {get{
 			if (_transform == null) _transform = ((MonoBehaviour)this).transform;
@@ -37,14 +37,14 @@ namespace IzBone.Common.Collider {
 
 		// 高速化のために、実機ではフィールドアクセスに変化させる
 	#if UNITY_EDITOR
-		public float4x4 l2gMat {get; private set;}
-		public float3 l2gMatClmNorm {get; private set;}
+		public float4x4 l2wMtx {get; private set;}
+		public float3 l2wMtxClmNorm {get; private set;}
 	#else
-		[NonSerialized] public float4x4 l2gMat;
-		[NonSerialized] public float3 l2gMatClmNorm;
+		[NonSerialized] public float4x4 l2wMtx;
+		[NonSerialized] public float3 l2wMtxClmNorm;
 	#endif
 
-		/** 更新処理。l2gMat等を呼ぶ前に必ずこれを読んで更新すること */
+		/** 更新処理。l2gMtx等を呼ぶ前に必ずこれを読んで更新すること */
 		public void update_phase0() { checkRebuildL2GMat(); }
 		public void update_phase1() { _transform.hasChanged = false; }
 
@@ -53,27 +53,27 @@ namespace IzBone.Common.Collider {
 
 		Transform _transform;
 		float3 _ctrCache = default;
-		quaternion _rotCache = Unity.Mathematics.quaternion.identity;
+		quaternion rotCache = Unity.Mathematics.quaternion.identity;
 
 		void checkRebuildL2GMat() {
 			var trans = transform;
-			if (_mode == Mode.Sphere) {
-				if (!trans.hasChanged && _ctrCache.Equals(_center)) return;
+			if (mode == Mode.Sphere) {
+				if (!trans.hasChanged && _ctrCache.Equals(center)) return;
 				var tr = Unity.Mathematics.float4x4.identity;
-				tr.c3.xyz = _center;
-				l2gMat = mul(trans.localToWorldMatrix, tr);
+				tr.c3.xyz = center;
+				l2wMtx = mul(trans.localToWorldMatrix, tr);
 			} else {
-				if (!trans.hasChanged && _ctrCache.Equals(_center) && _rotCache.Equals(_rot)) return;
-				var tr = float4x4(_rot, _center);
-				l2gMat = mul(trans.localToWorldMatrix, tr);
-				_rotCache = _rot;
+				if (!trans.hasChanged && _ctrCache.Equals(center) && rotCache.Equals(rot)) return;
+				var tr = float4x4(rot, center);
+				l2wMtx = mul(trans.localToWorldMatrix, tr);
+				rotCache = rot;
 			}
-			_ctrCache = _center;
+			_ctrCache = center;
 
-			l2gMatClmNorm = float3(
-				length( l2gMat.c0.xyz ),
-				length( l2gMat.c1.xyz ),
-				length( l2gMat.c2.xyz )
+			l2wMtxClmNorm = float3(
+				length( l2wMtx.c0.xyz ),
+				length( l2wMtx.c1.xyz ),
+				length( l2wMtx.c2.xyz )
 			);
 		}
 
@@ -86,18 +86,18 @@ namespace IzBone.Common.Collider {
 
 			Gizmos8.color = Gizmos8.Colors.Collider;
 
-			if (_mode == Mode.Sphere) {
-				var pos = l2gMat.c3.xyz;
-				var size = mul( (float3x3)l2gMat, (float3)(_r.x / Mathf.Sqrt(3)) );
+			if (mode == Mode.Sphere) {
+				var pos = l2wMtx.c3.xyz;
+				var size = mul( (float3x3)l2wMtx, (float3)(r.x / Mathf.Sqrt(3)) );
 				Gizmos8.drawWireSphere( pos, length(size) );
 
-			} else if (_mode == Mode.Capsule) {
-				var pos = l2gMat.c3.xyz;
-				var l2gMat3x3 = (float3x3)l2gMat;
-				var sizeX  = mul( l2gMat3x3, float3(_r.x,0,0) );
-				var sizeY0 = mul( l2gMat3x3, float3(0,_r.y-_r.x,0) );
-				var sizeY1 = mul( l2gMat3x3, float3(0,_r.x,0) );
-				var sizeZ  = mul( l2gMat3x3, float3(0,0,_r.x) );
+			} else if (mode == Mode.Capsule) {
+				var pos = l2wMtx.c3.xyz;
+				var l2gMat3x3 = (float3x3)l2wMtx;
+				var sizeX  = mul( l2gMat3x3, float3(r.x,0,0) );
+				var sizeY0 = mul( l2gMat3x3, float3(0,r.y-r.x,0) );
+				var sizeY1 = mul( l2gMat3x3, float3(0,r.x,0) );
+				var sizeZ  = mul( l2gMat3x3, float3(0,0,r.x) );
 				float3 p0 = default;
 				float3 p1 = default;
 				for (int i=0; i<=30; ++i) {
@@ -133,12 +133,12 @@ namespace IzBone.Common.Collider {
 				Gizmos8.drawLine( pos +sizeY0+sizeZ, pos -sizeY0+sizeZ );
 				Gizmos8.drawLine( pos +sizeY0-sizeZ, pos -sizeY0-sizeZ );
 
-			} else if (_mode == Mode.Box) {
-				var pos = l2gMat.c3.xyz;
-				var l2gMat3x3 = (float3x3)l2gMat;
-				var sizeX = mul( l2gMat3x3, float3(_r.x,0,0) );
-				var sizeY = mul( l2gMat3x3, float3(0,_r.y,0) );
-				var sizeZ = mul( l2gMat3x3, float3(0,0,_r.z) );
+			} else if (mode == Mode.Box) {
+				var pos = l2wMtx.c3.xyz;
+				var l2gMat3x3 = (float3x3)l2wMtx;
+				var sizeX = mul( l2gMat3x3, float3(r.x,0,0) );
+				var sizeY = mul( l2gMat3x3, float3(0,r.y,0) );
+				var sizeZ = mul( l2gMat3x3, float3(0,0,r.z) );
 				var ppp =  sizeX +sizeY +sizeZ + pos;
 				var ppm =  sizeX +sizeY -sizeZ + pos;
 				var pmp =  sizeX -sizeY +sizeZ + pos;
@@ -160,9 +160,9 @@ namespace IzBone.Common.Collider {
 				Gizmos8.drawLine( pmp, mmp );
 				Gizmos8.drawLine( pmm, mmm );
 
-			} else if (_mode == Mode.Plane) {
-				var pos = l2gMat.c3.xyz;
-				var l2gMat3x3 = (float3x3)l2gMat;
+			} else if (mode == Mode.Plane) {
+				var pos = l2wMtx.c3.xyz;
+				var l2gMat3x3 = (float3x3)l2wMtx;
 				var x = mul( l2gMat3x3, float3(0.05f,0,0) );
 				var y = mul( l2gMat3x3, float3(0,0.05f,0) );
 				var z = mul( l2gMat3x3, float3(0,0,0.02f) );

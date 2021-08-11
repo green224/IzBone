@@ -71,39 +71,39 @@ namespace IzBone.Common.Collider {
 			int idx_b = -1;
 			int idx_p = -1;
 			foreach (var i in srcList) {
-				var l2gMat = i.l2gMat;
+				var l2wMtx = i.l2wMtx;
 				switch (i.mode) {
 				case IzCollider.Mode.Sphere :
 					spheres[++idx_s] = new Collider_Sphere() {
-						pos = l2gMat.c3.xyz,
-						r = i.l2gMatClmNorm.x * i.r.x
+						pos = l2wMtx.c3.xyz,
+						r = i.l2wMtxClmNorm.x * i.r.x,
 					};
 					break;
 				case IzCollider.Mode.Capsule :
 					capsules[++idx_c] = new Collider_Capsule() {
-						pos = l2gMat.c3.xyz,
-						r_s = i.l2gMatClmNorm.x * i.r.x,
-						r_h = i.l2gMatClmNorm.y * i.r.y,
-						dir = l2gMat.c1.xyz / i.l2gMatClmNorm.y
+						pos = l2wMtx.c3.xyz,
+						r_s = i.l2wMtxClmNorm.x * i.r.x,
+						r_h = i.l2wMtxClmNorm.y * i.r.y,
+						dir = l2wMtx.c1.xyz / i.l2wMtxClmNorm.y,
 					};
 					break;
 				case IzCollider.Mode.Box :
 					boxes[++idx_b] = new Collider_Box() {
-						pos = l2gMat.c3.xyz,
-						xAxis = l2gMat.c0.xyz / i.l2gMatClmNorm.x,
-						yAxis = l2gMat.c1.xyz / i.l2gMatClmNorm.y,
-						zAxis = l2gMat.c2.xyz / i.l2gMatClmNorm.z,
+						pos = l2wMtx.c3.xyz,
+						xAxis = l2wMtx.c0.xyz / i.l2wMtxClmNorm.x,
+						yAxis = l2wMtx.c1.xyz / i.l2wMtxClmNorm.y,
+						zAxis = l2wMtx.c2.xyz / i.l2wMtxClmNorm.z,
 						r = float3(
-							i.l2gMatClmNorm.x * i.r.x,
-							i.l2gMatClmNorm.y * i.r.y,
-							i.l2gMatClmNorm.z * i.r.z
-						)
+							i.l2wMtxClmNorm.x * i.r.x,
+							i.l2wMtxClmNorm.y * i.r.y,
+							i.l2wMtxClmNorm.z * i.r.z
+						),
 					};
 					break;
 				case IzCollider.Mode.Plane :
 					planes[++idx_p] = new Collider_Plane() {
-						pos = l2gMat.c3.xyz,
-						dir = l2gMat.c2.xyz / i.l2gMatClmNorm.z
+						pos = l2wMtx.c3.xyz,
+						dir = l2wMtx.c2.xyz / i.l2wMtxClmNorm.z,
 					};
 					break;
 				default : throw new InvalidProgramException();
@@ -131,11 +131,11 @@ namespace IzBone.Common.Collider {
 		public bool solve(Collider_Sphere* s);
 	}
 	
-	/** 球形コライダ [16bytes] */
-	[StructLayout(LayoutKind.Explicit)]
+	/** 球形コライダ */
 	public unsafe struct Collider_Sphere : ICollider {
-		[FieldOffset(0)] public float3 pos;
-		[FieldOffset(12)] public float r;
+		public float3 pos;
+		public float r;
+//		public bool forcePeneCancel;		//!< 強制突き抜け防止処理を使用するか否か
 
 		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
 		public bool solve(Collider_Sphere* s) {
@@ -148,13 +148,13 @@ namespace IzBone.Common.Collider {
 		}
 	}
 
-	/** カプセル形状コライダ [32bytes] */
-	[StructLayout(LayoutKind.Explicit)]
+	/** カプセル形状コライダ */
 	public unsafe struct Collider_Capsule : ICollider {
-		[FieldOffset(0)] public float3 pos;		//!< 中央位置
-		[FieldOffset(12)] public float r_s;		//!< 横方向の半径
-		[FieldOffset(16)] public float3 dir;	//!< 縦方向の向き
-		[FieldOffset(28)] public float r_h;		//!< 縦方向の長さ
+		public float3 pos;		//!< 中央位置
+		public float r_s;		//!< 横方向の半径
+		public float3 dir;		//!< 縦方向の向き
+		public float r_h;		//!< 縦方向の長さ
+//		public bool forcePeneCancel;		//!< 強制突き抜け防止処理を使用するか否か
 
 		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
 		public bool solve(Collider_Sphere* s) {
@@ -181,14 +181,13 @@ namespace IzBone.Common.Collider {
 		}
 	}
 
-	/** 直方体コライダ[64bytes] */
-	[StructLayout(LayoutKind.Explicit)]
+	/** 直方体コライダ */
 	public unsafe struct Collider_Box : ICollider {
-		[FieldOffset(0)] public float3 pos;			//!< 中心位置
-		[FieldOffset(12)] public float3 xAxis;			//!< X軸方向
-		[FieldOffset(24)] public float3 yAxis;			//!< Y軸方向
-		[FieldOffset(36)] public float3 zAxis;			//!< Z軸方向
-		[FieldOffset(52)] public float3 r;				//!< 各ローカル軸方向の半径
+		public float3 pos;			//!< 中心位置
+		public float3 xAxis;		//!< X軸方向
+		public float3 yAxis;		//!< Y軸方向
+		public float3 zAxis;		//!< Z軸方向
+		public float3 r;			//!< 各ローカル軸方向の半径
 
 		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
 		public bool solve(Collider_Sphere* s) {
@@ -256,11 +255,10 @@ namespace IzBone.Common.Collider {
 		}
 	}
 
-	/** 無限平面コライダ [24bytes] */
-	[StructLayout(LayoutKind.Explicit)]
+	/** 無限平面コライダ */
 	public unsafe struct Collider_Plane : ICollider {
-		[FieldOffset(0)] public float3 pos;			//!< 平面上の位置
-		[FieldOffset(12)] public float3 dir;		//!< 各ローカル軸方向の半径
+		public float3 pos;		//!< 平面上の位置
+		public float3 dir;		//!< 各ローカル軸方向の半径
 
 		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
 		public bool solve(Collider_Sphere* s) {
@@ -274,6 +272,24 @@ namespace IzBone.Common.Collider {
 		}
 	}
 
+
+
+	/** ForcePeneCancel用のコライダ。特殊コライダなのでIColliderは継承できない:球に対応するもの */
+//	public unsafe struct Collider_FPCPlane_FromSphere {
+//		public float4x4 l2wCur;		//!< 現在のL2W
+//		public float4x4 l2wDef;		//!< 初期L2W
+//
+//		/** 指定の球がぶつかっていた場合、衝突しない位置まで引き離す */
+//		public bool solve(Collider_Sphere* s) {
+//			var d = s->pos - pos;
+//
+//			var dLen = dot(d, dir);
+//			if (s->r < dLen) return false;
+//
+//			s->pos += dir * (s->r - dLen);
+//			return true;
+//		}
+//	}
 
 }
 
