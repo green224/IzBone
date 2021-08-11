@@ -32,8 +32,8 @@ namespace IzBone.PhysCloth.Core {
 						var b = new Constraint_Distance();
 						b.reset(
 							i.compliance,
-							pntsPtr + i.srcPointIdx,
-							pntsPtr + i.dstPointIdx,
+							pntsPtr + i.srcPtclIdx,
+							pntsPtr + i.dstPtclIdx,
 							i.param.x
 						);
 						d.Add( b );
@@ -43,8 +43,8 @@ namespace IzBone.PhysCloth.Core {
 						var b = new Constraint_Axis();
 						b.reset(
 							i.compliance,
-							pntsPtr + i.srcPointIdx,
-							pntsPtr + i.dstPointIdx,
+							pntsPtr + i.srcPtclIdx,
+							pntsPtr + i.dstPtclIdx,
 							i.param
 						);
 						a.Add( b );

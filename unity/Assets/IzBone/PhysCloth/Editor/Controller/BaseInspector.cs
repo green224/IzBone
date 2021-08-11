@@ -22,15 +22,15 @@ abstract class BaseInspector : Editor
 		// コンストレイントを描画
 		Gizmos8.color = Gizmos8.Colors.BoneMovable;
 		if (tgt._constraints != null) foreach (var i in tgt._constraints) {
-			var p0 = tgt._world.DEBUG_getPos( i.srcPointIdx );
-			var p1 = tgt._world.DEBUG_getPos( i.dstPointIdx );
+			var p0 = tgt._world.DEBUG_getPos( i.srcPtclIdx );
+			var p1 = tgt._world.DEBUG_getPos( i.dstPtclIdx );
 			Gizmos8.drawLine( p0, p1 );
 		}
 
 		// 質点を描画
 		// TODO : ここ、矢印にする
 		Gizmos8.color = new Color(0,0,1);
-		if (tgt._points != null) foreach (var i in tgt._points) {
+		if (tgt._particles != null) foreach (var i in tgt._particles) {
 			if (i.m < 0.000001f) continue;
 			var v = tgt._world.DEBUG_getV( i.idx );
 			var p = tgt._world.DEBUG_getPos( i.idx );

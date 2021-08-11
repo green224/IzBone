@@ -55,7 +55,7 @@ public unsafe sealed class Plane : Base {
 		public ConversionParam cnvPrm = new ConversionParam();
 
 		// 一番上のパーティクル
-		[NonSerialized] public ParticleMng point = null;
+		[NonSerialized] public ParticleMng particle = null;
 	}
 
 	[Space]
@@ -77,29 +77,29 @@ public unsafe sealed class Plane : Base {
 
 	// ----------------------------------- private/protected メンバ -------------------------------
 
-	/** Pointsのバッファをビルドする処理。派生先で実装すること */
-	override protected void buildPointsBuffer() {
+	/** ParticlesとConstraintsのバッファをビルドする処理。派生先で実装すること */
+	override protected void buildBuffers() {
 		// 質点リストを構築
-		var points = new List<ParticleMng>();
+		var particles = new List<ParticleMng>();
 		foreach ( var i in _boneInfos ) {
 			var cnvPrm = getCnvPrm(i);
-			var p = new ParticleMng(points.Count, i.endOfBone);
-			points.Add(p);
+			var p = new ParticleMng(particles.Count, i.endOfBone);
+			particles.Add(p);
 
 			int k = 1;
 			for (var j=p.trans; k<cnvPrm.depth; ++k) {
 				j=j.parent;
-				var newP = new ParticleMng(points.Count, j) {
+				var newP = new ParticleMng(particles.Count, j) {
 					child = p,
 				};
 				p.parent = newP;
 				p = newP;
-				points.Add(p);
+				particles.Add(p);
 			}
 
-			i.point = p;
+			i.particle = p;
 		}
-		_points = points.ToArray();
+		_particles = particles.ToArray();
 
 		// 制約リストを構築
 		var constraints = new List<ConstraintMng>();
@@ -108,22 +108,23 @@ public unsafe sealed class Plane : Base {
 				if (1 <= compliance) return;
 				constraints.Add( new ConstraintMng() {
 					mode = ConstraintMng.Mode.Distance,
-					srcPointIdx = p0.idx,
-					dstPointIdx = p1.idx,
+					srcPtclIdx = p0.idx,
+					dstPtclIdx = p1.idx,
+					param = length(p0.trans.position - p1.trans.position),
 				} );
 			}
 		);
 		_constraints = constraints.ToArray();
 	}
 
-	/** PointsとConstraintsを再構築する処理。派生先で実装すること */
-	override protected void rebuildPointsConstraints() {
+	/** ParticlesとConstraintsのパラメータを再構築する処理。派生先で実装すること */
+	override protected void rebuildParameters() {
 
 		// 質点パラメータを構築
 		int idx = -1;
 		foreach ( var i in _boneInfos ) {
 			var cnvPrm = getCnvPrm(i);
-			_points[++idx].setParams(
+			_particles[++idx].setParams(
 				cnvPrm.getM(cnvPrm.depth-1),
 				cnvPrm.getR(cnvPrm.depth-1),
 				cnvPrm.getMaxAgl(cnvPrm.depth-1),
@@ -132,7 +133,7 @@ public unsafe sealed class Plane : Base {
 
 			for (int k = 1; k<cnvPrm.depth; ++k) {
 				var bIdx = cnvPrm.depth - 1 - k;
-				_points[++idx].setParams(
+				_particles[++idx].setParams(
 					cnvPrm.getM(bIdx),
 					cnvPrm.getR(bIdx),
 					cnvPrm.getMaxAgl(bIdx),
@@ -148,7 +149,6 @@ public unsafe sealed class Plane : Base {
 					if (1 <= compliance) return;
 					var c = _constraints[++i];
 					c.compliance = compliance;
-					c.param = length(p0.trans.position - p1.trans.position);
 				}
 			);
 		}
@@ -158,9 +158,9 @@ public unsafe sealed class Plane : Base {
 	void processInAllConstraint(Action<float, ParticleMng, ParticleMng> proc) {
 		for (int i=0; i<_boneInfos.Length; ++i) {
 			var (bl1, bl0, bc, br0, br1) = getSideBoneInfos(i);
-			var c = bc.point;
-			var l0 = bl0?.point; var l1 = bl1?.point;
-			var r0 = br0?.point; var r1 = br1?.point;
+			var c = bc.particle;
+			var l0 = bl0?.particle; var l1 = bl1?.particle;
+			var r0 = br0?.particle; var r1 = br1?.particle;
 			var d0 = c.child;    var d1 = d0?.child;
 			var ld0 = l0?.child; var ld1 = l1?.child?.child;
 			var rd0 = r0?.child; var rd1 = r1?.child?.child;

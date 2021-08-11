@@ -24,39 +24,39 @@ namespace IzBone.PhysCloth.Core {
 		public float maxSpeed = 100;			// 最大速度
 
 		public World(
-			Controller.ParticleMng[] mngPoints,
+			Controller.ParticleMng[] mngParticles,
 			Controller.ConstraintMng[] mngConstraints
 		) {
-			// pointsを生成
-			var points = mngPoints
+			// particlesを生成
+			var ptcls = mngParticles
 				.Select(i=>{
 					var a = new Particle();
 					a.col.pos = i.trans.position;
 					return a;
 				}).ToArray();
-			_points = new NativeArray<Particle>(points, Allocator.Persistent);
+			_particles = new NativeArray<Particle>(ptcls, Allocator.Persistent);
 
 			// パラメータを同期
-			syncWithManage(mngPoints, mngConstraints);
+			syncWithManage(mngParticles, mngConstraints);
 		}
 
 		/** 各種パラメータをマネージ空間のものと同期する。これはEditorで実行中にパラメータが変更された際に呼ぶ */
 		public void syncWithManage(
-			Controller.ParticleMng[] mngPoints,
+			Controller.ParticleMng[] mngParticles,
 			Controller.ConstraintMng[] mngConstraints
 		) {
-			// pointsを更新
-			var pntsPtr0 = (Particle*)_points.GetUnsafePtr();
-			var pntsPtrEnd = pntsPtr0 + _points.Length;
+			// particlesを更新
+			var ptclPtr0 = (Particle*)_particles.GetUnsafePtr();
+			var ptclPtrEnd = ptclPtr0 + _particles.Length;
 			int i=0;
-			for (var p=pntsPtr0; p!=pntsPtrEnd; ++p,++i) {
-				var m = mngPoints[i];
+			for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
+				var m = mngParticles[i];
 				p->syncParams( m.m, m.r, m.restoreHL );
 			}
 
 			// constraintsを再生成
 			_constraints.Dispose();
-			_constraints = new Constraints(mngConstraints, _points);
+			_constraints = new Constraints(mngConstraints, _particles);
 			var cnstTtlLen = _constraints.distance.Length + _constraints.axis.Length;
 
 			// lambdasを生成
@@ -66,7 +66,7 @@ namespace IzBone.PhysCloth.Core {
 
 		/** 破棄する。必ず最後に呼ぶこと */
 		public void Dispose() {
-			_points.Dispose();
+			_particles.Dispose();
 			_lambdas.Dispose();
 			_constraints.Dispose();
 		}
@@ -75,21 +75,21 @@ namespace IzBone.PhysCloth.Core {
 		public void update(
 			float dt,
 			int iterationNum,
-			Controller.ParticleMng[] mngPoints,
+			Controller.ParticleMng[] mngParticles,
 			Common.Collider.Colliders colliders
 		) {
 			// 各種バッファのポインタを取得しておく
-			var pntsPtr0 = (Particle*)_points.GetUnsafePtr();
-			var pntsPtrEnd = pntsPtr0 + _points.Length;
+			var ptclPtr0 = (Particle*)_particles.GetUnsafePtr();
+			var ptclPtrEnd = ptclPtr0 + _particles.Length;
 			var lmdsPtr0 = (float*)_lambdas.GetUnsafePtr();
 			var lmdsPtrEnd = lmdsPtr0 + _lambdas.Length;
 
 			// イテレーションが0回の場合は位置キャッシュだけ更新する
 			if (iterationNum == 0) {
 				int i = 0;
-				for (var p=pntsPtr0; p!=pntsPtrEnd; ++p,++i) {
+				for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
 					var lastPos = p->col.pos;
-					p->col.pos = mngPoints[i].trans.position;
+					p->col.pos = mngParticles[i].trans.position;
 					p->v = (p->col.pos - lastPos) / dt;
 				}
 				return;
@@ -97,18 +97,18 @@ namespace IzBone.PhysCloth.Core {
 			
 			{// デフォルト姿勢でのL2Wを計算しておく
 				int i = 0;
-				for (var p=pntsPtr0; p!=pntsPtrEnd; ++p,++i) {
-					if (mngPoints[i].parent != null) continue;
+				for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
+					if (mngParticles[i].parent != null) continue;
 
-					var parentTrans = mngPoints[i].trans;
+					var parentTrans = mngParticles[i].trans;
 					var l2w = parentTrans == null
 						? Unity.Mathematics.float4x4.identity
-						: (float4x4)mngPoints[i].trans.parent.localToWorldMatrix;
+						: (float4x4)mngParticles[i].trans.parent.localToWorldMatrix;
 
-					for (var m=mngPoints[i]; m!=null; m=m.child) {
+					for (var m=mngParticles[i]; m!=null; m=m.child) {
 						l2w = mul( l2w, m.defaultL2P );
 
-						pntsPtr0[m.idx].defaultL2W = l2w;
+						ptclPtr0[m.idx].defaultL2W = l2w;
 					}
 				}
 			}
@@ -120,9 +120,9 @@ namespace IzBone.PhysCloth.Core {
 			// 質点の位置の更新
 			{
 				int i = 0;
-				for (var p=pntsPtr0; p!=pntsPtrEnd; ++p,++i) {
+				for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
 					if ( p->invM < MinimumM ) {
-						p->col.pos = mngPoints[i].trans.position;
+						p->col.pos = mngParticles[i].trans.position;
 					} else {
 						var v = p->v;
 						
@@ -180,7 +180,7 @@ namespace IzBone.PhysCloth.Core {
 				for (int i=0; i<iterationNum; ++i) {
 
 					// コライダとの衝突解決
-					for (var p=pntsPtr0; p!=pntsPtrEnd; ++p) {
+					for (var p=ptclPtr0; p!=ptclPtrEnd; ++p) {
 						if (p->invM == 0) continue;
 						solveCollider(p, colliders.spheres);
 						solveCollider(p, colliders.capsules);
@@ -195,7 +195,7 @@ namespace IzBone.PhysCloth.Core {
 				}
 
 				// 最後にもう一度コライダとの衝突解決
-				for (var p=pntsPtr0; p!=pntsPtrEnd; ++p) {
+				for (var p=ptclPtr0; p!=ptclPtrEnd; ++p) {
 					if (p->invM == 0) continue;
 					solveCollider(p, colliders.spheres);
 					solveCollider(p, colliders.capsules);
@@ -205,23 +205,23 @@ namespace IzBone.PhysCloth.Core {
 			}
 
 			// 速度の保存
-			for (var p=pntsPtr0; p!=pntsPtrEnd; ++p)
+			for (var p=ptclPtr0; p!=ptclPtrEnd; ++p)
 				p->v = (p->col.pos - p->v) / dt;
 
 			// 質点の反映
 			{
-				for (int i=0; i<_points.Length; ++i) {
+				for (int i=0; i<_particles.Length; ++i) {
 
-					var j=mngPoints[i];
+					var j=mngParticles[i];
 					if ( j.parent != null ) continue;
 
 					// 位置変化の適応はとりあえず無しで
 //					if (MinimumM <= j.m) {
-//						j.trans.position = _points[i].col.pos;
+//						j.trans.position = _particles[i].col.pos;
 //					}
 
 					for (j=j.child; j!=null; j=j.child) {
-						var point = pntsPtr0 + j.idx;
+						var ptcl = ptclPtr0 + j.idx;
 
 						j.trans.parent.localRotation = Unity.Mathematics.quaternion.identity;
 
@@ -229,7 +229,7 @@ namespace IzBone.PhysCloth.Core {
 						var from = mul( j.defaultParentRot, j.trans.localPosition );
 						var to = mul(
 							j.trans.parent.worldToLocalMatrix,
-							float4( point->col.pos, 1 )
+							float4( ptcl->col.pos, 1 )
 						).xyz;
 
 						// 回転軸と角度を計算 refer:Math8.fromToRotation
@@ -252,8 +252,8 @@ namespace IzBone.PhysCloth.Core {
 						q = mul(q, j.defaultParentRot);
 
 						j.trans.parent.localRotation = q;
-//						j.trans.position = point.pos;
-						point->col.pos = j.trans.position;
+//						j.trans.position = ptcl.pos;
+						ptcl->col.pos = j.trans.position;
 					}
 				}
 			}
@@ -261,12 +261,12 @@ namespace IzBone.PhysCloth.Core {
 
 	#if UNITY_EDITOR
 		public float3 DEBUG_getPos(int idx) {
-			if (!_points.IsCreated || _points.Length<=idx) return default;
-			return _points[idx].col.pos;
+			if (!_particles.IsCreated || _particles.Length<=idx) return default;
+			return _particles[idx].col.pos;
 		}
 		public float3 DEBUG_getV(int idx) {
-			if (!_points.IsCreated || _points.Length<=idx) return default;
-			return _points[idx].v;
+			if (!_particles.IsCreated || _particles.Length<=idx) return default;
+			return _particles[idx].v;
 		}
 	#endif
 
@@ -274,12 +274,12 @@ namespace IzBone.PhysCloth.Core {
 		// ----------------------------------- private/protected メンバ -------------------------------
 
 		const float MinimumM = 0.00000001f;
-		NativeArray<Particle> _points;
+		NativeArray<Particle> _particles;
 		Constraints _constraints;
 		NativeArray<float> _lambdas;
 
 		~World() {
-			if ( _points.IsCreated ) {
+			if ( _particles.IsCreated ) {
 				Debug.LogError("World is not disposed");
 				Dispose();
 			}

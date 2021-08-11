@@ -51,7 +51,7 @@ namespace IzBone.PhysCloth.Controller {
 	public sealed class ConstraintMng {
 		public enum Mode {Distance, Axis}
 		public Mode mode;
-		public int srcPointIdx, dstPointIdx;
+		public int srcPtclIdx, dstPtclIdx;
 
 		public float compliance;
 		public float3 param;

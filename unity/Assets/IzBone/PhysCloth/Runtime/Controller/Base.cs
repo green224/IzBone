@@ -36,14 +36,14 @@ public unsafe abstract class Base : MonoBehaviour {
 
 	protected Common.Collider.Colliders _coreColliders;
 	internal ConstraintMng[] _constraints;
-	internal ParticleMng[] _points;
+	internal ParticleMng[] _particles;
 	internal Core.World _world;
 
 	virtual protected void Start() {
 		_coreColliders = new Common.Collider.Colliders(_izColliders);
-		buildPointsBuffer();
-		rebuildPointsConstraints();
-		_world = new Core.World( _points, _constraints );
+		buildBuffers();
+		rebuildParameters();
+		_world = new Core.World( _particles, _constraints );
 	}
 
 	virtual protected void LateUpdate() {
@@ -68,8 +68,8 @@ public unsafe abstract class Base : MonoBehaviour {
 	#if UNITY_EDITOR
 		// インスペクタが更新された場合は同期を行う
 		if (__need2syncManage) {
-			rebuildPointsConstraints();
-			_world.syncWithManage(_points, _constraints);
+			rebuildParameters();
+			_world.syncWithManage(_particles, _constraints);
 			__need2syncManage = false;
 		}
 	#endif
@@ -81,15 +81,15 @@ public unsafe abstract class Base : MonoBehaviour {
 		_world.update(
 			dt,
 			useSimulation ? iterationNum : 0,
-			_points,
+			_particles,
 			_coreColliders
 		);
 	}
 
-	/** Pointsのバッファをビルドする処理。派生先で実装すること */
-	abstract protected void buildPointsBuffer();
-	/** PointsとConstraintsを再構築する処理。派生先で実装すること */
-	abstract protected void rebuildPointsConstraints();
+	/** ParticlesとConstraintsのバッファをビルドする処理。派生先で実装すること */
+	abstract protected void buildBuffers();
+	/** ParticlesとConstraintsのパラメータを再構築する処理。派生先で実装すること */
+	abstract protected void rebuildParameters();
 
 
 	// --------------------------------------------------------------------------------------------
