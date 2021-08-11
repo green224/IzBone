@@ -30,18 +30,24 @@ public unsafe abstract class Base : MonoBehaviour {
 	public float3 windSpeed = default;					// 風速
 	[HalfLifeDrag] public HalfLife airDrag = 0.1f;		// 空気抵抗による半減期
 	[Min(0)] public float maxSpeed = 100;				// 最大速度
-	[HalfLifeDrag] public HalfLife restorePow = 100;	// 初期位置への復元半減期
 
 
 	// ----------------------------------- private/protected メンバ -------------------------------
 
 	protected Common.Collider.Colliders _coreColliders;
-	internal List<Constraint> _constraints = new List<Constraint>();
-	internal Point[] _points;
+	internal ConstraintMng[] _constraints;
+	internal ParticleMng[] _points;
 	internal Core.World _world;
 
 	virtual protected void Start() {
 		_coreColliders = new Common.Collider.Colliders(_izColliders);
+		buildPointsBuffer();
+		rebuildPointsConstraints();
+		_world = new Core.World( _points, _constraints );
+	}
+
+	virtual protected void LateUpdate() {
+		coreUpdate(Time.deltaTime);
 	}
 
 	virtual protected void OnDestroy() {
@@ -49,12 +55,6 @@ public unsafe abstract class Base : MonoBehaviour {
 		_coreColliders = null;
 		_world?.Dispose();
 		_world = null;
-	}
-
-	/** 初期化処理。派生先から最初に一度だけ呼ぶ事 */
-	virtual protected void begin() {
-		// シミュレーション系を作成
-		_world = new Core.World( _points, _constraints );
 	}
 
 	/** コアの更新処理 */
@@ -65,11 +65,19 @@ public unsafe abstract class Base : MonoBehaviour {
 
 		_coreColliders.update();
 
+	#if UNITY_EDITOR
+		// インスペクタが更新された場合は同期を行う
+		if (__need2syncManage) {
+			rebuildPointsConstraints();
+			_world.syncWithManage(_points, _constraints);
+			__need2syncManage = false;
+		}
+	#endif
+
 		_world.g = g;
 		_world.windSpeed = windSpeed;
 		_world.airHL = airDrag;
 		_world.maxSpeed = maxSpeed;
-		_world.restoreHL = restorePow;
 		_world.update(
 			dt,
 			useSimulation ? iterationNum : 0,
@@ -78,26 +86,26 @@ public unsafe abstract class Base : MonoBehaviour {
 		);
 	}
 
-	/** 制約条件を追加する */
-	protected void addCstr(float compliance, Point p0, Point p1) {
-		if (1 <= compliance) return;
-		_constraints.Add( new Constraint() {
-			mode = Constraint.Mode.Distance,
-			srcPointIdx = p0.idx,
-			dstPointIdx = p1.idx,
-			compliance = compliance,
-		} );
-	}
+	/** Pointsのバッファをビルドする処理。派生先で実装すること */
+	abstract protected void buildPointsBuffer();
+	/** PointsとConstraintsを再構築する処理。派生先で実装すること */
+	abstract protected void rebuildPointsConstraints();
 
+
+	// --------------------------------------------------------------------------------------------
 #if UNITY_EDITOR
 	/** 配下のIzColliderを全登録する */
 	[ContextMenu("Collect child IzColliders")]
-	void collectChildIzCol() {
+	void __collectChildIzCol() {
 		_izColliders = GetComponentsInChildren< Common.Collider.IzCollider >();
 	}
-#endif
 
-	// --------------------------------------------------------------------------------------------
+	// 実行中にプロパティが変更された場合は、次回Update時に同期を行う
+	bool __need2syncManage = false;
+	virtual protected void OnValidate() {
+		if (Application.isPlaying) __need2syncManage = true;
+	}
+#endif
 }
 
 }

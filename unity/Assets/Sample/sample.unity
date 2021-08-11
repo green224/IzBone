@@ -241,21 +241,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f1a9f5f89f14f947a07fdbbd4cd7e22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _mode: 1
-  _center:
+  mode: 1
+  center:
     x: 0.004
     y: 0.08
     z: -0.012
-  _r:
+  r:
     x: 0.07
     y: 0.14
     z: 1
-  _rot:
+  rot:
     value:
       x: 0
       y: 0
       z: 0.05233605
       w: -0.9986295
+  forcePeneCancel: 0
 --- !u!1 &270552193 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
@@ -312,6 +313,11 @@ MonoBehaviour:
         end: 60
         curve: 0.5
         useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 987119312}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -331,6 +337,11 @@ MonoBehaviour:
       maxAngle:
         start: 60
         end: 60
+        curve: 0.5
+        useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 1358161451}
@@ -354,6 +365,11 @@ MonoBehaviour:
         end: 60
         curve: 0.5
         useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 1499566715}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -373,6 +389,11 @@ MonoBehaviour:
       maxAngle:
         start: 60
         end: 60
+        curve: 0.5
+        useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 498752577}
@@ -396,6 +417,11 @@ MonoBehaviour:
         end: 60
         curve: 0.5
         useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 441776339}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -415,6 +441,11 @@ MonoBehaviour:
       maxAngle:
         start: 60
         end: 60
+        curve: 0.5
+        useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 969631797}
@@ -438,6 +469,11 @@ MonoBehaviour:
         end: 60
         curve: 0.5
         useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 200810727}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -457,6 +493,11 @@ MonoBehaviour:
       maxAngle:
         start: 60
         end: 60
+        curve: 0.5
+        useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 1916999272}
@@ -480,6 +521,11 @@ MonoBehaviour:
         end: 60
         curve: 0.5
         useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 257705165}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -499,6 +545,11 @@ MonoBehaviour:
       maxAngle:
         start: 60
         end: 60
+        curve: 0.5
+        useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 1493243629}
@@ -522,6 +573,11 @@ MonoBehaviour:
         end: 60
         curve: 0.5
         useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 2143932416}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -541,6 +597,11 @@ MonoBehaviour:
       maxAngle:
         start: 60
         end: 60
+        curve: 0.5
+        useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 1162029844}
@@ -564,6 +625,11 @@ MonoBehaviour:
         end: 60
         curve: 0.5
         useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 840389567}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -585,6 +651,11 @@ MonoBehaviour:
         end: 60
         curve: 0.5
         useCurve: 0
+      restorePow:
+        start: 0
+        end: 0
+        curve: 0.5
+        useCurve: 0
   _cnvPrm:
     depth: 5
     fixCount: 2
@@ -602,6 +673,11 @@ MonoBehaviour:
     maxAngle:
       start: 60
       end: 60
+      curve: 0.5
+      useCurve: 0
+    restorePow:
+      start: 0
+      end: 0
       curve: 0.5
       useCurve: 0
   _isLoopConnect: 1
@@ -631,21 +707,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f1a9f5f89f14f947a07fdbbd4cd7e22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _mode: 1
-  _center:
+  mode: 1
+  center:
     x: 0
     y: -0.06
     z: 0.002
-  _r:
+  r:
     x: 0.088
     y: 0.14
     z: 1
-  _rot:
+  rot:
     value:
       x: 0
       y: 0
       z: 0.70710677
       w: 0.70710677
+  forcePeneCancel: 0
 --- !u!4 &498752577 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -5055978752528079418, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
@@ -1218,7 +1295,7 @@ PlayableDirector:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1099786728}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_PlayableAsset: {fileID: 11400000, guid: 8ead5a7f92f471c40953062005b35c9d, type: 2}
   m_InitialState: 1
@@ -1336,6 +1413,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1099786729}
     m_Modifications:
+    - target: {fileID: 1061709894, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
+      propertyPath: restorePow.value
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 6227744310331858603, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
       propertyPath: m_RootOrder
       value: 0
@@ -1413,21 +1494,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f1a9f5f89f14f947a07fdbbd4cd7e22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _mode: 1
-  _center:
+  mode: 1
+  center:
     x: -0.004
     y: 0.08
     z: -0.012
-  _r:
+  r:
     x: 0.07
     y: 0.14
     z: 1
-  _rot:
+  rot:
     value:
       x: 0
       y: 0
       z: 0.05233596
       w: 0.9986295
+  forcePeneCancel: 0
 --- !u!4 &1668801272 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1325022002604430665, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}

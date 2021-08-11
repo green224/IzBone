@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if false
+
+using System;
 using UnityEngine;
 
 using Unity.Mathematics;
@@ -43,25 +45,32 @@ namespace IzBone.PhysCloth.Controller {
 
 		// ----------------------------------- private/protected メンバ -------------------------------
 
-		override protected void Start() {
-			base.Start();
+		/** PointsとConstraintsをビルドする処理 */
+		override protected void rebuildPointsAndConstrains() {
 
 			// 質点リストを構築
 			var points = new List<Point>();
 			{
-				Point p = _boneInfo.point = new Point(points.Count, _boneInfo.boneTop) {
-					m = _boneInfo.getM(0),
-					r = _boneInfo.getR(0),
-				};
+				Point p = _boneInfo.point = new Point(
+					points.Count, _boneInfo.boneTop,
+					_boneInfo.getM(0),
+					_boneInfo.getR(0),
+					60,
+					100
+				);
 				points.Add(p);
 
 				int k = 1;
 				for (var j=p.trans; k<_boneInfo.depth; ++k) {
 					j=j.GetChild(0);
-					var newP = new Point(points.Count, j) {
+					var newP = new Point(
+						points.Count, j,
+						_boneInfo.getM(k),
+						_boneInfo.getR(k),
+						60,
+						100
+					) {
 						parent = p,
-						m = _boneInfo.getM(k),
-						r = _boneInfo.getR(k),
 					};
 					p.child = newP;
 					p = newP;
@@ -88,31 +97,25 @@ namespace IzBone.PhysCloth.Controller {
 					++depth;
 				}
 			}
-
-			begin();
 		}
 
-	#if UNITY_EDITOR
-		void OnValidate() {
-
-			if (_boneInfo == null) return;
-			{
-				// Depthを有効範囲に丸める
-				if ( _boneInfo.boneTop == null ) {
-					_boneInfo.depth = 0;
-				} else {
-					int depthMax = 1;
-					for (var j=_boneInfo.boneTop; j.childCount!=0; j=j.GetChild(0)) ++depthMax;
-
-					_boneInfo.depth = Mathf.Clamp(_boneInfo.depth, 1, depthMax);
-				}
-			}
-		}
-	#endif
-			
-		void LateUpdate() {
-			coreUpdate(Time.deltaTime);
-		}
+//	#if UNITY_EDITOR
+//		void OnValidate() {
+//
+//			if (_boneInfo == null) return;
+//			{
+//				// Depthを有効範囲に丸める
+//				if ( _boneInfo.boneTop == null ) {
+//					_boneInfo.depth = 0;
+//				} else {
+//					int depthMax = 1;
+//					for (var j=_boneInfo.boneTop; j.childCount!=0; j=j.GetChild(0)) ++depthMax;
+//
+//					_boneInfo.depth = Mathf.Clamp(_boneInfo.depth, 1, depthMax);
+//				}
+//			}
+//		}
+//	#endif
 
 
 		// --------------------------------------------------------------------------------------------
@@ -120,3 +123,4 @@ namespace IzBone.PhysCloth.Controller {
 
 }
 
+#endif

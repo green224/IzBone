@@ -6,45 +6,53 @@ using static Unity.Mathematics.math;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
-using System.Linq;
+
 
 namespace IzBone.PhysCloth.Core {
 	
-	/** 複数の拘束条件をまとめて保持するコンテナ */
-	public unsafe class Constraints : IDisposable
+	/** 複数の拘束条件をまとめて保持するコンテナ。Dotsから使用するのでStruct */
+	public unsafe struct Constraints : IDisposable
 	{
 		public NativeArray<Constraint_Distance>	distance;
 		public NativeArray<Constraint_Axis>		axis;
 		
-		public Constraints( List<Controller.Constraint> src, NativeArray<Point> points ) {
+		public Constraints( Controller.ConstraintMng[] src, NativeArray<Particle> points ) {
 			var d = new List<Constraint_Distance>();
 			var a = new List<Constraint_Axis>();
-			var pntsPtr = (Point*)points.GetUnsafePtr();
+			var pntsPtr = (Particle*)points.GetUnsafePtr();
+
 			foreach (var i in src) {
+				// 強度があまりにも弱い場合は高速条件を追加しない
+				if (Controller.ComplianceAttribute.LEFT_VAL*0.98f < i.compliance) continue;
+
 				switch (i.mode) {
-				case Controller.Constraint.Mode.Distance:
-					{
-						var b = new Constraint_Distance(){ compliance = i.compliance };
+				case Controller.ConstraintMng.Mode.Distance:
+					{// 距離制約
+						var b = new Constraint_Distance();
 						b.reset(
+							i.compliance,
 							pntsPtr + i.srcPointIdx,
-							pntsPtr + i.dstPointIdx
+							pntsPtr + i.dstPointIdx,
+							i.param.x
 						);
 						d.Add( b );
 					} break;
-				case Controller.Constraint.Mode.Axis:
-					{
-						var b = new Constraint_Axis(){ compliance = i.compliance, axis = i.axis };
+				case Controller.ConstraintMng.Mode.Axis:
+					{// 稼働軸制約
+						var b = new Constraint_Axis();
 						b.reset(
+							i.compliance,
 							pntsPtr + i.srcPointIdx,
-							pntsPtr + i.dstPointIdx
+							pntsPtr + i.dstPointIdx,
+							i.param
 						);
 						a.Add( b );
 					} break;
 				default:throw new InvalidProgramException();
 				}
 			}
+
 			distance = new NativeArray<Constraint_Distance>( d.ToArray(), Allocator.Persistent );
 			axis = new NativeArray<Constraint_Axis>( a.ToArray(), Allocator.Persistent );
 		}
@@ -55,15 +63,15 @@ namespace IzBone.PhysCloth.Core {
 			if (axis.IsCreated) axis.Dispose();
 		}
 
-		~Constraints() {
-			if (
-				distance.IsCreated ||
-				axis.IsCreated
-			) {
-				Debug.LogError("Constraints is not disposed");
-				Dispose();
-			}
-		}
+//		~Constraints() {
+//			if (
+//				distance.IsCreated ||
+//				axis.IsCreated
+//			) {
+//				Debug.LogError("Constraints is not disposed");
+//				Dispose();
+//			}
+//		}
 	}
 
 
@@ -74,15 +82,16 @@ namespace IzBone.PhysCloth.Core {
 
 	/** 距離による拘束条件 */
 	public unsafe struct Constraint_Distance : IConstraint {
-		public Point* src;
-		public Point* dst;
+		public Particle* src;
+		public Particle* dst;
 		public float compliance;
 		public float defLen;
 
-		public void reset(Point* src, Point* dst) {
+		public void reset(float compliance, Particle* src, Particle* dst, float defLen) {
+			this.compliance = compliance;
 			this.src = src;
 			this.dst = dst;
-			defLen = length(src->col.pos - dst->col.pos);
+			this.defLen = defLen;
 		}
 		public float solve(float sqDt, float lambda) {
 			var sumInvM = src->invM + dst->invM;
@@ -118,14 +127,16 @@ namespace IzBone.PhysCloth.Core {
 
 	/** 可動軸方向による拘束条件 */
 	public unsafe struct Constraint_Axis : IConstraint {
-		public Point* src;
-		public Point* dst;
+		public Particle* src;
+		public Particle* dst;
 		public float compliance;
 		public float3 axis;
 
-		public void reset(Point* src, Point* dst) {
+		public void reset(float compliance, Particle* src, Particle* dst, float3 axis) {
+			this.compliance = compliance;
 			this.src = src;
 			this.dst = dst;
+			this.axis = axis;
 		}
 		public float solve(float sqDt, float lambda) {
 			var sumInvM = src->invM + dst->invM;

@@ -31,10 +31,14 @@ public unsafe sealed class Plane : Base {
 		[RangeSC(0)] public SC m = 1;
 		[RangeSC(0)] public SC r = 1;
 		[RangeSC(0,180)] public SC maxAngle = 60;
+		[RangeSC(0,1)] public SC restorePow = 0;
 
 		public float getM(int idx) => idx<fixCount ? 0 : m.evaluate( idx2rate(idx) );
 		public float getR(int idx) => r.evaluate( idx2rate(idx) );
 		public float getMaxAgl(int idx) => maxAngle.evaluate( idx2rate(idx) );
+		public float getRestoreHL(int idx) => HalfLifeDragAttribute.showValue2HalfLife(
+			restorePow.evaluate( idx2rate(idx) )
+		);
 
 		float idx2rate(int idx) =>
 			depth-fixCount<=1 ? 0 : ( (idx-fixCount) / (depth-fixCount-1f) );
@@ -51,7 +55,7 @@ public unsafe sealed class Plane : Base {
 		public ConversionParam cnvPrm = new ConversionParam();
 
 		// 一番上のパーティクル
-		[NonSerialized] public Point point = null;
+		[NonSerialized] public ParticleMng point = null;
 	}
 
 	[Space]
@@ -73,29 +77,20 @@ public unsafe sealed class Plane : Base {
 
 	// ----------------------------------- private/protected メンバ -------------------------------
 
-	override protected void Start() {
-		base.Start();
-
+	/** Pointsのバッファをビルドする処理。派生先で実装すること */
+	override protected void buildPointsBuffer() {
 		// 質点リストを構築
-		var points = new List<Point>();
+		var points = new List<ParticleMng>();
 		foreach ( var i in _boneInfos ) {
 			var cnvPrm = getCnvPrm(i);
-			var p = new Point(points.Count, i.endOfBone) {
-				m = cnvPrm.getM(cnvPrm.depth-1),
-				r = cnvPrm.getR(cnvPrm.depth-1),
-				maxAngle = cnvPrm.getMaxAgl(cnvPrm.depth-1),
-			};
+			var p = new ParticleMng(points.Count, i.endOfBone);
 			points.Add(p);
 
 			int k = 1;
 			for (var j=p.trans; k<cnvPrm.depth; ++k) {
 				j=j.parent;
-				var idx = cnvPrm.depth - 1 - k;
-				var newP = new Point(points.Count, j) {
+				var newP = new ParticleMng(points.Count, j) {
 					child = p,
-					m = cnvPrm.getM(idx),
-					r = cnvPrm.getR(idx),
-					maxAngle = cnvPrm.getMaxAgl(idx),
 				};
 				p.parent = newP;
 				p = newP;
@@ -107,7 +102,60 @@ public unsafe sealed class Plane : Base {
 		_points = points.ToArray();
 
 		// 制約リストを構築
-		_constraints.Clear();
+		var constraints = new List<ConstraintMng>();
+		processInAllConstraint(
+			(compliance, p0, p1) => {
+				if (1 <= compliance) return;
+				constraints.Add( new ConstraintMng() {
+					mode = ConstraintMng.Mode.Distance,
+					srcPointIdx = p0.idx,
+					dstPointIdx = p1.idx,
+				} );
+			}
+		);
+		_constraints = constraints.ToArray();
+	}
+
+	/** PointsとConstraintsを再構築する処理。派生先で実装すること */
+	override protected void rebuildPointsConstraints() {
+
+		// 質点パラメータを構築
+		int idx = -1;
+		foreach ( var i in _boneInfos ) {
+			var cnvPrm = getCnvPrm(i);
+			_points[++idx].setParams(
+				cnvPrm.getM(cnvPrm.depth-1),
+				cnvPrm.getR(cnvPrm.depth-1),
+				cnvPrm.getMaxAgl(cnvPrm.depth-1),
+				cnvPrm.getRestoreHL(cnvPrm.depth-1)
+			);
+
+			for (int k = 1; k<cnvPrm.depth; ++k) {
+				var bIdx = cnvPrm.depth - 1 - k;
+				_points[++idx].setParams(
+					cnvPrm.getM(bIdx),
+					cnvPrm.getR(bIdx),
+					cnvPrm.getMaxAgl(bIdx),
+					cnvPrm.getRestoreHL(bIdx)
+				);
+			}
+		}
+
+		{// 制約パラメータを構築
+			int i = -1;
+			processInAllConstraint(
+				(compliance, p0, p1) => {
+					if (1 <= compliance) return;
+					var c = _constraints[++i];
+					c.compliance = compliance;
+					c.param = length(p0.trans.position - p1.trans.position);
+				}
+			);
+		}
+	}
+
+	/** 全ボーンに対して、ConstraintMng羅列する処理 */
+	void processInAllConstraint(Action<float, ParticleMng, ParticleMng> proc) {
 		for (int i=0; i<_boneInfos.Length; ++i) {
 			var (bl1, bl0, bc, br0, br1) = getSideBoneInfos(i);
 			var c = bc.point;
@@ -119,14 +167,14 @@ public unsafe sealed class Plane : Base {
 
 			int depth=0;
 			while (c!=null) {
-				if (d0 !=null && isChain(4,i,depth)) addCstr(_cmpl_direct, c, d0);
-				if (d1 !=null && isChain(5,i,depth)) addCstr(_cmpl_bend,   c, d1);
-				if (r0 !=null && isChain(0,i,depth)) addCstr(_cmpl_side,   c, r0);
-				if (r1 !=null && isChain(1,i,depth)) addCstr(_cmpl_bend,   c, r1);
-				if (rd0!=null && isChain(2,i,depth)) addCstr(_cmpl_diag,   c, rd0);
-				if (rd1!=null && isChain(3,i,depth)) addCstr(_cmpl_bend,   c, rd1);
-				if (ld0!=null && isChain(6,i,depth)) addCstr(_cmpl_diag,   c, ld0);
-				if (ld1!=null && isChain(7,i,depth)) addCstr(_cmpl_bend,   c, ld1);
+				if (d0 !=null && isChain(4,i,depth)) proc(_cmpl_direct, c, d0);
+				if (d1 !=null && isChain(5,i,depth)) proc(_cmpl_bend,   c, d1);
+				if (r0 !=null && isChain(0,i,depth)) proc(_cmpl_side,   c, r0);
+				if (r1 !=null && isChain(1,i,depth)) proc(_cmpl_bend,   c, r1);
+				if (rd0!=null && isChain(2,i,depth)) proc(_cmpl_diag,   c, rd0);
+				if (rd1!=null && isChain(3,i,depth)) proc(_cmpl_bend,   c, rd1);
+				if (ld0!=null && isChain(6,i,depth)) proc(_cmpl_diag,   c, ld0);
+				if (ld1!=null && isChain(7,i,depth)) proc(_cmpl_bend,   c, ld1);
 
 				c=c.child;
 				r0=r0?.child;
@@ -140,12 +188,6 @@ public unsafe sealed class Plane : Base {
 				++depth;
 			}
 		}
-
-		begin();
-	}
-
-	void LateUpdate() {
-		coreUpdate(Time.deltaTime);
 	}
 
 	/** BoneInfoから、グローバルConversionParamを使用するか否かを考慮して、ConversionParamを取得する */
@@ -218,7 +260,9 @@ public unsafe sealed class Plane : Base {
 
 	// --------------------------------------------------------------------------------------------
 #if UNITY_EDITOR
-	void OnValidate() {
+	override protected void OnValidate() {
+		base.OnValidate();
+
 		if (_boneInfos == null) return;
 		foreach ( var i in _boneInfos ) {
 			// Depthを有効範囲に丸める

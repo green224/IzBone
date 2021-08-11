@@ -22,18 +22,45 @@ namespace IzBone.PhysCloth.Core {
 		public float3 windSpeed = default;		// 風速
 		public HalfLife airHL = 0.1f;			// 空気抵抗による半減期
 		public float maxSpeed = 100;			// 最大速度
-		public HalfLife restoreHL = 100;		// 初期位置への復元半減期
 
 		public World(
-			Controller.Point[] mngPoints,
-			List<Controller.Constraint> mngConstraints
+			Controller.ParticleMng[] mngPoints,
+			Controller.ConstraintMng[] mngConstraints
 		) {
-			var points = mngPoints.Select(i=>new Point(i.trans.position, i.m, i.r)).ToArray();
-			_points = new NativeArray<Point>(points, Allocator.Persistent);
+			// pointsを生成
+			var points = mngPoints
+				.Select(i=>{
+					var a = new Particle();
+					a.col.pos = i.trans.position;
+					return a;
+				}).ToArray();
+			_points = new NativeArray<Particle>(points, Allocator.Persistent);
 
+			// パラメータを同期
+			syncWithManage(mngPoints, mngConstraints);
+		}
+
+		/** 各種パラメータをマネージ空間のものと同期する。これはEditorで実行中にパラメータが変更された際に呼ぶ */
+		public void syncWithManage(
+			Controller.ParticleMng[] mngPoints,
+			Controller.ConstraintMng[] mngConstraints
+		) {
+			// pointsを更新
+			var pntsPtr0 = (Particle*)_points.GetUnsafePtr();
+			var pntsPtrEnd = pntsPtr0 + _points.Length;
+			int i=0;
+			for (var p=pntsPtr0; p!=pntsPtrEnd; ++p,++i) {
+				var m = mngPoints[i];
+				p->syncParams( m.m, m.r, m.restoreHL );
+			}
+
+			// constraintsを再生成
+			_constraints.Dispose();
 			_constraints = new Constraints(mngConstraints, _points);
 			var cnstTtlLen = _constraints.distance.Length + _constraints.axis.Length;
 
+			// lambdasを生成
+			if (_lambdas.IsCreated) _lambdas.Dispose();
 			_lambdas = new NativeArray<float>(cnstTtlLen, Allocator.Persistent);
 		}
 
@@ -48,11 +75,11 @@ namespace IzBone.PhysCloth.Core {
 		public void update(
 			float dt,
 			int iterationNum,
-			Controller.Point[] mngPoints,
+			Controller.ParticleMng[] mngPoints,
 			Common.Collider.Colliders colliders
 		) {
 			// 各種バッファのポインタを取得しておく
-			var pntsPtr0 = (Point*)_points.GetUnsafePtr();
+			var pntsPtr0 = (Particle*)_points.GetUnsafePtr();
 			var pntsPtrEnd = pntsPtr0 + _points.Length;
 			var lmdsPtr0 = (float*)_lambdas.GetUnsafePtr();
 			var lmdsPtrEnd = lmdsPtr0 + _lambdas.Length;
@@ -89,7 +116,6 @@ namespace IzBone.PhysCloth.Core {
 			// 空気抵抗の値を計算
 			var airResRate = HalfLifeDragAttribute.evaluate( airHL, dt );
 			var airResRateIntegral = HalfLifeDragAttribute.evaluateIntegral( airHL, dt );
-			var restoreRate = HalfLifeDragAttribute.evaluate( restoreHL, dt );
 
 			// 質点の位置の更新
 			{
@@ -128,14 +154,14 @@ namespace IzBone.PhysCloth.Core {
 						p->col.pos = lerp(
 							p->defaultL2W.c3.xyz,
 							p->col.pos,
-							restoreRate
+							HalfLifeDragAttribute.evaluate( p->restoreHL, dt )
 						);
 					}
 				}
 			}
 
 			{// XPBDによるフィッティング処理
-				static void solveCollider<T>(Point* p, NativeArray<T> colliders)
+				static void solveCollider<T>(Particle* p, NativeArray<T> colliders)
 				where T : struct, Common.Collider.ICollider {
 					if (!colliders.IsCreated) return;
 					for (int i=0; i<colliders.Length; ++i) colliders[i].solve(&p->col);
@@ -153,6 +179,7 @@ namespace IzBone.PhysCloth.Core {
 				var sqDt = dt*dt/iterationNum/iterationNum;
 				for (int i=0; i<iterationNum; ++i) {
 
+					// コライダとの衝突解決
 					for (var p=pntsPtr0; p!=pntsPtrEnd; ++p) {
 						if (p->invM == 0) continue;
 						solveCollider(p, colliders.spheres);
@@ -161,9 +188,19 @@ namespace IzBone.PhysCloth.Core {
 						solveCollider(p, colliders.planes);
 					}
 
+					// フィッティング
 					var lambda = lmdsPtr0;
 					solveConstraints(sqDt, ref lambda, _constraints.distance);
 					solveConstraints(sqDt, ref lambda, _constraints.axis);
+				}
+
+				// 最後にもう一度コライダとの衝突解決
+				for (var p=pntsPtr0; p!=pntsPtrEnd; ++p) {
+					if (p->invM == 0) continue;
+					solveCollider(p, colliders.spheres);
+					solveCollider(p, colliders.capsules);
+					solveCollider(p, colliders.boxes);
+					solveCollider(p, colliders.planes);
 				}
 			}
 
@@ -187,12 +224,6 @@ namespace IzBone.PhysCloth.Core {
 						var point = pntsPtr0 + j.idx;
 
 						j.trans.parent.localRotation = Unity.Mathematics.quaternion.identity;
-//var x = j.defaultParentRot * j.trans.localPosition.normalized;
-//var a = j.trans.parent.worldToLocalMatrix.MultiplyPoint( point.pos ).normalized;
-//var z = Vector3.Cross(x,a).normalized;
-//var y = Vector3.Cross(z,x).normalized;
-//var agl = Mathf.Atan2(Vector3.Dot(y,a), Vector3.Dot(x,a));
-//var q = Quaternion.AngleAxis( agl*Mathf.Rad2Deg, z ) * j.defaultParentRot;
 
 						// 回転する元方向と先方向
 						var from = mul( j.defaultParentRot, j.trans.localPosition );
@@ -223,10 +254,6 @@ namespace IzBone.PhysCloth.Core {
 						j.trans.parent.localRotation = q;
 //						j.trans.position = point.pos;
 						point->col.pos = j.trans.position;
-
-//						var p = j.trans.position - point.pos;
-//						point.pos += p;
-//						point.oldPos += p;
 					}
 				}
 			}
@@ -247,7 +274,7 @@ namespace IzBone.PhysCloth.Core {
 		// ----------------------------------- private/protected メンバ -------------------------------
 
 		const float MinimumM = 0.00000001f;
-		NativeArray<Point> _points;
+		NativeArray<Particle> _points;
 		Constraints _constraints;
 		NativeArray<float> _lambdas;
 
