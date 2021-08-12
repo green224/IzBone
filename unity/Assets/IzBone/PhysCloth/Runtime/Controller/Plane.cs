@@ -97,13 +97,19 @@ public unsafe sealed class Plane : Base {
 			var cnvPrm = getCnvPrm(i);
 			var trans = i.endOfBone;
 
+			// 1Chain分のParticleリストを作成
 			ParticleMng p = null;
+			var oneChain = new ParticleMng[cnvPrm.depth];
 			for (int k = 0; k<cnvPrm.depth; ++k) {
-				var newP = new ParticleMng(particles.Count, trans);
+				var idxInChain = cnvPrm.depth - 1 - k;
+				var newP = new ParticleMng(particles.Count + idxInChain, trans);
 				if (p != null) { newP.child = p; p.parent = newP; }
-				particles.Add( p = newP );
+				oneChain[idxInChain] = p = newP;
 				trans = trans.parent;
 			}
+
+			// paticlesにはparentから順番に入るようにする
+			particles.AddRange(oneChain);
 
 			i.particle = p;
 		}
@@ -140,20 +146,12 @@ public unsafe sealed class Plane : Base {
 		int idx = -1;
 		foreach ( var i in _boneInfos ) {
 			var cnvPrm = getCnvPrm(i);
-			_particles[++idx].setParams(
-				cnvPrm.getM(cnvPrm.depth-1),
-				cnvPrm.getR(cnvPrm.depth-1),
-				cnvPrm.getMaxAgl(cnvPrm.depth-1),
-				cnvPrm.getRestoreHL(cnvPrm.depth-1)
-			);
-
-			for (int k = 1; k<cnvPrm.depth; ++k) {
-				var bIdx = cnvPrm.depth - 1 - k;
+			for (int k = 0; k<cnvPrm.depth; ++k) {
 				_particles[++idx].setParams(
-					cnvPrm.getM(bIdx),
-					cnvPrm.getR(bIdx),
-					cnvPrm.getMaxAgl(bIdx),
-					cnvPrm.getRestoreHL(bIdx)
+					cnvPrm.getM(k),
+					cnvPrm.getR(k),
+					cnvPrm.getMaxAgl(k),
+					cnvPrm.getRestoreHL(k)
 				);
 			}
 		}

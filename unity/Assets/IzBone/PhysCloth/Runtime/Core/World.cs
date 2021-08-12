@@ -49,6 +49,18 @@ namespace IzBone.PhysCloth.Core {
 				}).ToArray();
 			_particles = new NativeArray<Particle>(ptcls, Allocator.Persistent);
 
+			// particleChainsを生成
+			var ptclPtr0 = (Particle*)_particles.GetUnsafePtr();
+			var chains = mngParticles
+				.Where(i => i.parent==null)
+				.Select(i => {
+					int length = 0;
+					for (var j=i; j!=null; j=j.child) ++length;
+
+					return new ParticleChain( ptclPtr0+i.idx, length );
+				}).ToArray();
+			_particleChains = new NativeArray<ParticleChain>(chains, Allocator.Persistent);
+
 			// パラメータを同期
 			syncWithManage(mngParticles, mngConstraints);
 		}
@@ -80,6 +92,7 @@ namespace IzBone.PhysCloth.Core {
 		/** 破棄する。必ず最後に呼ぶこと */
 		public void Dispose() {
 			_particles.Dispose();
+			_particleChains.Dispose();
 			_lambdas.Dispose();
 			_constraints.Dispose();
 		}
@@ -130,7 +143,7 @@ namespace IzBone.PhysCloth.Core {
 			var airResRate = HalfLifeDragAttribute.evaluate( airHL, dt );
 			var airResRateIntegral = HalfLifeDragAttribute.evaluateIntegral( airHL, dt );
 
-			// 質点の位置の更新
+			// 質点の位置を更新
 			{
 				int i = 0;
 				for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
@@ -174,6 +187,7 @@ namespace IzBone.PhysCloth.Core {
 			}
 
 			{// XPBDによるフィッティング処理
+
 				static void solveCollider<T>(Particle* p, NativeArray<T> colliders)
 				where T : struct, Common.Collider.ICollider {
 					if (!colliders.IsCreated) return;
@@ -190,7 +204,10 @@ namespace IzBone.PhysCloth.Core {
 				for (var p=lmdsPtr0; p!=lmdsPtrEnd; ++p) *p=0;
 
 				var sqDt = dt*dt/iterationNum/iterationNum;
-				for (int i=0; i<iterationNum; ++i) {
+				for (int i=0; i<iterationNum+1; ++i) {
+
+					// まず現在の位置での角度制限を適応する
+
 
 					// コライダとの衝突解決
 					for (var p=ptclPtr0; p!=ptclPtrEnd; ++p) {
@@ -201,19 +218,13 @@ namespace IzBone.PhysCloth.Core {
 						solveCollider(p, colliders.planes);
 					}
 
-					// フィッティング
-					var lambda = lmdsPtr0;
-					solveConstraints(sqDt, ref lambda, _constraints.distance);
-					solveConstraints(sqDt, ref lambda, _constraints.axis);
-				}
-
-				// 最後にもう一度コライダとの衝突解決
-				for (var p=ptclPtr0; p!=ptclPtrEnd; ++p) {
-					if (p->invM == 0) continue;
-					solveCollider(p, colliders.spheres);
-					solveCollider(p, colliders.capsules);
-					solveCollider(p, colliders.boxes);
-					solveCollider(p, colliders.planes);
+					// フィッティング処理。
+					// ループの最後は衝突解決までを行い、フィッティングは行わない
+					if (i!=iterationNum) {
+						var lambda = lmdsPtr0;
+						solveConstraints(sqDt, ref lambda, _constraints.distance);
+						solveConstraints(sqDt, ref lambda, _constraints.axis);
+					}
 				}
 			}
 
@@ -288,6 +299,7 @@ namespace IzBone.PhysCloth.Core {
 
 		const float MinimumM = 0.00000001f;
 		NativeArray<Particle> _particles;
+		NativeArray<ParticleChain> _particleChains;
 		Constraints _constraints;
 		NativeArray<float> _lambdas;
 

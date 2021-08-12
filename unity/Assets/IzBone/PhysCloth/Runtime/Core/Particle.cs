@@ -12,7 +12,7 @@ namespace IzBone.PhysCloth.Core {
 	using Common.Field;
 	
 	/** シミュレート単位となるパーティクル1粒子分の情報 */
-	public struct Particle
+	public unsafe struct Particle
 	{
 		// 初期化時のワールド座標と法線。
 		// これはアニメーションなどで同期されない真に初期化時の位置
@@ -28,6 +28,9 @@ namespace IzBone.PhysCloth.Core {
 		public float3 v;
 		public float invM;
 
+		// 現在の姿勢値。デフォルト姿勢からの差分値
+		public quaternion rot;
+
 		// Default位置への復元半減期
 		public HalfLife restoreHL;
 
@@ -39,6 +42,7 @@ namespace IzBone.PhysCloth.Core {
 			col.pos = initWPos;
 			v = default;
 			invM = default;
+			rot = Unity.Mathematics.quaternion.identity;
 			restoreHL = default;
 		}
 
@@ -49,6 +53,29 @@ namespace IzBone.PhysCloth.Core {
 		}
 
 		const float MinimumM = 0.00000001f;
+	}
+
+	/** ひとつなぎのボーンに対応するパーティクル一式を扱う情報 */
+	public unsafe struct ParticleChain
+	{
+		readonly public Particle* begin;
+		readonly public int length;
+
+		public ParticleChain(Particle* begin, int length) {
+			this.begin = begin;
+			this.length = length;
+		}
+
+		public Particle this[int index] {
+			get {
+				Unity.Assertions.Assert.IsTrue(0<=index && index<length);
+				return begin[index];
+			}
+			set {
+				Unity.Assertions.Assert.IsTrue(0<=index && index<length);
+				begin[index] = value;
+			}
+		}
 	}
 
 }
