@@ -30,9 +30,22 @@ namespace IzBone.PhysCloth.Core {
 			// particlesを生成
 			var ptcls = mngParticles
 				.Select(i=>{
-					var a = new Particle();
-					a.col.pos = i.trans.position;
-					return a;
+					var p0 = i.trans.position;
+					var pp = i.parent?.trans?.position;
+					var pc = i.child?.trans?.position;
+					var pl = i.left?.trans?.position;
+					var pr = i.right?.trans?.position;
+					float3 nml = 0;
+					if ( pp.HasValue && pl.HasValue )
+						nml += normalize(cross( pp.Value - p0, pl.Value - p0 ));
+					if ( pl.HasValue && pc.HasValue )
+						nml += normalize(cross( pl.Value - p0, pc.Value - p0 ));
+					if ( pc.HasValue && pr.HasValue )
+						nml += normalize(cross( pc.Value - p0, pr.Value - p0 ));
+					if ( pr.HasValue && pp.HasValue )
+						nml += normalize(cross( pr.Value - p0, pp.Value - p0 ));
+
+					return new Particle( p0, normalizesafe(nml) );
 				}).ToArray();
 			_particles = new NativeArray<Particle>(ptcls, Allocator.Persistent);
 

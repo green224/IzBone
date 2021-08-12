@@ -77,29 +77,45 @@ public unsafe sealed class Plane : Base {
 
 	// ----------------------------------- private/protected メンバ -------------------------------
 
-	/** ParticlesとConstraintsのバッファをビルドする処理。派生先で実装すること */
+	// 接続方向
+	internal enum ChainDir : int {
+		Right=0, RightX2,	// boneIdx+1方向
+		DownRight, DownRightX2,
+		Down, DownX2,		// child方向
+		DownLeft, DownLeftX2,
+		Left, LeftX2,		// boneIdx-1方向
+		UpLeft, UpLeftX2,
+		Up, UpX2,			// parent方向
+		UpRight, UpRightX2,
+	}
+
+	/** ParticlesとConstraintsのバッファをビルドする処理 */
 	override protected void buildBuffers() {
 		// 質点リストを構築
 		var particles = new List<ParticleMng>();
 		foreach ( var i in _boneInfos ) {
 			var cnvPrm = getCnvPrm(i);
-			var p = new ParticleMng(particles.Count, i.endOfBone);
-			particles.Add(p);
+			var trans = i.endOfBone;
 
-			int k = 1;
-			for (var j=p.trans; k<cnvPrm.depth; ++k) {
-				j=j.parent;
-				var newP = new ParticleMng(particles.Count, j) {
-					child = p,
-				};
-				p.parent = newP;
-				p = newP;
-				particles.Add(p);
+			ParticleMng p = null;
+			for (int k = 0; k<cnvPrm.depth; ++k) {
+				var newP = new ParticleMng(particles.Count, trans);
+				if (p != null) { newP.child = p; p.parent = newP; }
+				particles.Add( p = newP );
+				trans = trans.parent;
 			}
 
 			i.particle = p;
 		}
 		_particles = particles.ToArray();
+
+		// 質点の横の接続を構築
+		processInAllChain( (dir, p0, p1) => {
+			if (dir == ChainDir.Right) {
+				p0.right = p1;
+				p1.left = p0;
+			}
+		}, false );
 
 		// 制約リストを構築
 		var constraints = new List<ConstraintMng>();
@@ -117,7 +133,7 @@ public unsafe sealed class Plane : Base {
 		_constraints = constraints.ToArray();
 	}
 
-	/** ParticlesとConstraintsのパラメータを再構築する処理。派生先で実装すること */
+	/** ParticlesとConstraintsのパラメータを再構築する処理 */
 	override protected void rebuildParameters() {
 
 		// 質点パラメータを構築
@@ -155,36 +171,51 @@ public unsafe sealed class Plane : Base {
 	}
 
 	/** 全ボーンに対して、ConstraintMng羅列する処理 */
-	void processInAllConstraint(Action<float, ParticleMng, ParticleMng> proc) {
+	void processInAllConstraint(Action<float, ParticleMng, ParticleMng> proc) =>
+		processInAllChain((dir, p0, p1) => {
+			switch (dir) {
+				case ChainDir.Right:		proc(_cmpl_side, p0, p1); break;
+				case ChainDir.RightX2:		proc(_cmpl_bend, p0, p1); break;
+				case ChainDir.DownRight:	proc(_cmpl_diag, p0, p1); break;
+				case ChainDir.DownRightX2:	proc(_cmpl_bend, p0, p1); break;
+				case ChainDir.Down:			proc(_cmpl_direct, p0, p1); break;
+				case ChainDir.DownX2:		proc(_cmpl_bend, p0, p1); break;
+				case ChainDir.DownLeft:		proc(_cmpl_diag, p0, p1); break;
+				case ChainDir.DownLeftX2:	proc(_cmpl_bend, p0, p1); break;
+			}
+		}, true);
+
+	/** 全ボーンに対して、接続を羅列する処理 */
+	void processInAllChain(Action<ChainDir, ParticleMng, ParticleMng> proc, bool ignoreFixed) {
 		for (int i=0; i<_boneInfos.Length; ++i) {
 			var (bl1, bl0, bc, br0, br1) = getSideBoneInfos(i);
+
 			var c = bc.particle;
 			var l0 = bl0?.particle; var l1 = bl1?.particle;
 			var r0 = br0?.particle; var r1 = br1?.particle;
-			var d0 = c.child;    var d1 = d0?.child;
-			var ld0 = l0?.child; var ld1 = l1?.child?.child;
-			var rd0 = r0?.child; var rd1 = r1?.child?.child;
 
 			int depth=0;
 			while (c!=null) {
-				if (d0 !=null && isChain(4,i,depth)) proc(_cmpl_direct, c, d0);
-				if (d1 !=null && isChain(5,i,depth)) proc(_cmpl_bend,   c, d1);
-				if (r0 !=null && isChain(0,i,depth)) proc(_cmpl_side,   c, r0);
-				if (r1 !=null && isChain(1,i,depth)) proc(_cmpl_bend,   c, r1);
-				if (rd0!=null && isChain(2,i,depth)) proc(_cmpl_diag,   c, rd0);
-				if (rd1!=null && isChain(3,i,depth)) proc(_cmpl_bend,   c, rd1);
-				if (ld0!=null && isChain(6,i,depth)) proc(_cmpl_diag,   c, ld0);
-				if (ld1!=null && isChain(7,i,depth)) proc(_cmpl_bend,   c, ld1);
+				var pms = new [] {
+					r0, r1,
+					r0?.child,	r1?.child?.child,
+					c.child,	c.child?.child,
+					l0?.child,	l1?.child?.child,
+					l0, l1,
+					l0?.parent,	l1?.parent?.parent,
+					c.parent,	c.parent?.parent,
+					r0?.parent,	r1?.parent?.parent,
+				};
 
-				c=c.child;
-				r0=r0?.child;
-				r1=r1?.child;
-				d0=d0?.child;
-				d1=d1?.child;
-				ld0=ld0?.child;
-				ld1=ld1?.child;
-				rd0=rd0?.child;
-				rd1=rd1?.child;
+				for (int dir=0; dir<pms.Length; ++dir) {
+					var tgt = pms[dir];
+					if ( tgt!=null && isChain((ChainDir)dir, i, depth, ignoreFixed) )
+						proc( (ChainDir)dir, c, tgt );
+				}
+
+				c = c.child;
+				l0 = l0?.child; l1 = l1?.child;
+				r0 = r0?.child; r1 = r1?.child;
 				++depth;
 			}
 		}
@@ -214,47 +245,77 @@ public unsafe sealed class Plane : Base {
 		);
 	}
 
-	/** dir:0上,1上x2,2右上,3右上x2,4右,5右x2,6右下,7右下x2 */
-	internal bool isChain(int dir, int boneIdx, int depthIdx) {
+	/** 指定位置のパーティクル同士が接続しているか否かをチェックする */
+	internal bool isChain(ChainDir dir, int boneIdx, int depthIdx, bool ignoreFixed) {
 
-		static bool checkDepth(Plane self, BoneInfo from, BoneInfo to, int depth) {
+		static bool checkDepth(
+			Plane self, BoneInfo from, BoneInfo to,
+			int depth, int depthOfs, bool reverse
+		) {
+			if (reverse)	(from, to) = (to, from);
+			else			depth += depthOfs;
 			if ( to==null || self.getCnvPrm(to).depth<=depth ) return false;
 			return from==null || depth<self.getCnvPrm(from).sideChainDepth;
+		}
+
+		static bool checkIsFixed(
+			Plane self,
+			BoneInfo from, BoneInfo to,
+			int fromDepth, int toDepth
+		) {
+			var fromIsFixed = from==null || fromDepth < self.getCnvPrm(from).fixCount;
+			var toIsFixed   = to  ==null || toDepth   < self.getCnvPrm(to).fixCount;
+			return fromIsFixed && toIsFixed;
 		}
 
 		static bool checkProc(
 			Plane self,
 			BoneInfo from,
 			BoneInfo to1, BoneInfo to2,
-			int fromDepth, int depthOfs
+			int fromDepth, int depthOfs,
+			bool reverse,
+			bool ignoreFixed
 		) {
 			if (to1==null && to2==null) return false;
-			if (to1!=null && !checkDepth(self, from, to1, fromDepth+depthOfs)) return false;
-			if (to2!=null && !checkDepth(self, to1, to2, fromDepth+depthOfs*2)) return false;
+			if (to1!=null && !checkDepth(self, from, to1, fromDepth, depthOfs, reverse)) return false;
+			if (to2!=null && !checkDepth(self, to1, to2, fromDepth, depthOfs*2, reverse)) return false;
 
-			var fromIsFixed = from == null ? true
-				: fromDepth < self.getCnvPrm(from).fixCount;
-			var toIsFixed = to2 == null
-				? fromDepth+depthOfs   < self.getCnvPrm(to1).fixCount
-				: fromDepth+depthOfs*2 < self.getCnvPrm(to2).fixCount;
+			return !ignoreFixed || !(
+				to2 == null
+				? checkIsFixed(self, from, to1, fromDepth, fromDepth+depthOfs)
+				: checkIsFixed(self, from, to2, fromDepth, fromDepth+depthOfs*2)
+			);
+		}
 
-			return !fromIsFixed || !toIsFixed;
+		static bool checkProcDirect(
+			Plane self,
+			BoneInfo from,
+			int fromDepth, int depthOfs,
+			bool ignoreFixed
+		) {
+			if (from==null) return false;
+			if (!checkDepth(self, null, from, fromDepth, depthOfs, false)) return false;
+
+			return !ignoreFixed ||
+				!checkIsFixed(self, from, from, fromDepth, fromDepth+depthOfs);
 		}
 
 		var (bl1, bl0, bc, br0, br1) = getSideBoneInfos(boneIdx);
 
-		switch (dir) {
-		case 0: case 1:
-			return checkProc(this, bc, br0, dir==1?br1:null, depthIdx, 0);
-		case 2: case 3:
-			return checkProc(this, bc, br0, dir==3?br1:null, depthIdx, 1);
-		case 4: case 5:
-			return checkProc(this, null, dir==5?null:bc, dir==5?bc:null, depthIdx, 1);
-		case 6: case 7:
-			return checkProc(this, bc, bl0, dir==7?bl1:null, depthIdx, 1);
-		default:
-			throw new ArgumentException("dir:" + dir);
-		}
+		int dirIdx = (int)dir/2;
+		var dirIsX2 = (int)dir%2 == 1;
+		var isReverse = (int)ChainDir.Left <= (int)dir;
+		return dirIdx switch {
+			0 => checkProc(this, bc, br0, dirIsX2?br1:null, depthIdx, 0, isReverse, ignoreFixed),
+			1 => checkProc(this, bc, br0, dirIsX2?br1:null, depthIdx, 1, isReverse, ignoreFixed),
+			2 => checkProcDirect(this, bc, depthIdx, dirIsX2?2:1, ignoreFixed),
+			3 => checkProc(this, bc, bl0, dirIsX2?bl1:null, depthIdx, 1, isReverse, ignoreFixed),
+			4 => checkProc(this, bc, bl0, dirIsX2?bl1:null, depthIdx, 0, isReverse, ignoreFixed),
+			5 => checkProc(this, bc, bl0, dirIsX2?bl1:null, depthIdx, -1, isReverse, ignoreFixed),
+			6 => checkProcDirect(this, bc, depthIdx, dirIsX2?-2:-1, ignoreFixed),
+			7 => checkProc(this, bc, br0, dirIsX2?br1:null, depthIdx, -1, isReverse, ignoreFixed),
+			_ => throw new ArgumentException("dir:" + dir)
+		};
 	}
 
 

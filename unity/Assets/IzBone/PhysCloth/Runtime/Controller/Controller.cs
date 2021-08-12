@@ -14,7 +14,7 @@ namespace IzBone.PhysCloth.Controller {
 		public readonly Transform trans;
 		public quaternion defaultParentRot;		// 親の初期姿勢
 		public float4x4 defaultL2P;				// 初期L2P行列
-		public ParticleMng parent, child;
+		public ParticleMng parent, child, left, right;
 		public float m;
 		public float r;
 		public float maxAngle;

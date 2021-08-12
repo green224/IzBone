@@ -53,25 +53,25 @@ sealed class PlaneInspector : BaseInspector
 						var bi = tgt._boneInfos[ boneIdx ];
 						var cp = tgt.getCnvPrm(bi);
 						var ret = bi.endOfBone;
-						for (int dCnt2=0; dCnt2!=cp.depth-1-depthIdx; ++dCnt2) {
+						for (int dCnt2=0; dCnt2<cp.depth-1-depthIdx; ++dCnt2) {
 							if ( ret.parent==null ) break; else ret=ret.parent;
 						}
 						return ret;
 					}
 
-					if (tgt.isChain(0,i,idx)) {
+					if (tgt.isChain(Plane.ChainDir.Right,i,idx, true)) {
 						var trans2 = getJointTrans(tgt, i+1, idx);
 						Gizmos8.drawLine( trans.position, trans2.position );
 					}
-					if (tgt.isChain(2,i,idx)) {
+					if (tgt.isChain(Plane.ChainDir.DownRight,i,idx, true)) {
 						var trans2 = getJointTrans(tgt, i+1, idx+1);
 						Gizmos8.drawLine( trans.position, trans2.position );
 					}
-					if (tgt.isChain(4,i,idx)) {
+					if (tgt.isChain(Plane.ChainDir.Down,i,idx, true)) {
 						var trans2 = getJointTrans(tgt, i, idx+1);
 						Gizmos8.drawLine( trans.position, trans2.position );
 					}
-					if (tgt.isChain(6,i,idx)) {
+					if (tgt.isChain(Plane.ChainDir.DownLeft,i,idx, true)) {
 						var trans2 = getJointTrans(tgt, i-1, idx+1);
 						Gizmos8.drawLine( trans.position, trans2.position );
 					}
