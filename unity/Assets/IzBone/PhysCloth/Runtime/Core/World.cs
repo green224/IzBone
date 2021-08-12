@@ -76,7 +76,7 @@ namespace IzBone.PhysCloth.Core {
 			int i=0;
 			for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
 				var m = mngParticles[i];
-				p->syncParams( m.m, m.r, m.restoreHL );
+				p->syncParams( m.m, m.r, radians(m.maxAngle), m.restoreHL );
 			}
 
 			// constraintsを再生成
@@ -107,6 +107,8 @@ namespace IzBone.PhysCloth.Core {
 			// 各種バッファのポインタを取得しておく
 			var ptclPtr0 = (Particle*)_particles.GetUnsafePtr();
 			var ptclPtrEnd = ptclPtr0 + _particles.Length;
+			var chainPtr0 = (ParticleChain*)_particleChains.GetUnsafePtr();
+			var chainPtrEnd = chainPtr0 + _particleChains.Length;
 			var lmdsPtr0 = (float*)_lambdas.GetUnsafePtr();
 			var lmdsPtrEnd = lmdsPtr0 + _lambdas.Length;
 
@@ -207,7 +209,32 @@ namespace IzBone.PhysCloth.Core {
 				for (int i=0; i<iterationNum+1; ++i) {
 
 					// まず現在の位置での角度制限を適応する
+					for (var c=chainPtr0; c!=chainPtrEnd; ++c) {
+						if (c->length == 1) {
+							c->begin->dWRot = Unity.Mathematics.quaternion.identity;
+						} else {
+							var q = Unity.Mathematics.quaternion.identity;
+							var p0 = c->begin;
+							var p1 = p0 + 1;
+							var pEnd = p0 + c->length;
+							for (; p1!=pEnd; ++p0,++p1) {
 
+								// 回転する元方向と先方向
+								var from = p1->defaultL2W.c3.xyz - p0->defaultL2W.c3.xyz;
+								var to = p1->col.pos - p0->col.pos;
+
+								// 角度制限を掛けて姿勢を計算
+								p0->dWRot = q = mul(
+									Math8.fromToRotation( mul(q, from), to, p0->maxDRotAngle ),
+									q
+								);
+
+								// 角度制限を位置に反映する
+								p1->col.pos = p0->col.pos +
+									mul( q, from ) * ( length(to) / length(from) );
+							}
+						}
+					}
 
 					// コライダとの衝突解決
 					for (var p=ptclPtr0; p!=ptclPtrEnd; ++p) {
@@ -255,22 +282,7 @@ namespace IzBone.PhysCloth.Core {
 							j.trans.parent.worldToLocalMatrix,
 							float4( ptcl->col.pos, 1 )
 						).xyz;
-
-						// 回転軸と角度を計算 refer:Math8.fromToRotation
-						var axis = normalizesafe( cross(from, to) );
-						var theta = acos( clamp(
-							dot( normalizesafe(from), normalizesafe(to) ),
-							-1, 1
-						) );
-
-						// 角度制限を反映
-						// TODO : 角度制限はここではなく、Constraintで行うようにする
-						theta = min( theta, radians(j.maxAngle) );
-
-						// Quaternionを生成
-						var s = sin(theta / 2);
-						var c = cos(theta / 2);
-						var q = quaternion(axis.x*s, axis.y*s, axis.z*s, c);
+						var q = Math8.fromToRotation( from, to );
 
 						// 初期姿勢を反映
 						q = mul(q, j.defaultParentRot);

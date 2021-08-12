@@ -28,11 +28,15 @@ namespace IzBone.PhysCloth.Core {
 		public float3 v;
 		public float invM;
 
-		// 現在の姿勢値。デフォルト姿勢からの差分値
-		public quaternion rot;
+		// 現在の姿勢値。デフォルト姿勢からの差分値。ワールド座標で計算する
+		public quaternion dWRot;
+
+		// 最大差分角度(ラジアン)
+		public float maxDRotAngle;
 
 		// Default位置への復元半減期
 		public HalfLife restoreHL;
+
 
 		public Particle(float3 initWPos, float3 initWNml) {
 			this.initWPos = initWPos;
@@ -42,13 +46,15 @@ namespace IzBone.PhysCloth.Core {
 			col.pos = initWPos;
 			v = default;
 			invM = default;
-			rot = Unity.Mathematics.quaternion.identity;
+			dWRot = Unity.Mathematics.quaternion.identity;
+			maxDRotAngle = default;
 			restoreHL = default;
 		}
 
-		public void syncParams(float m, float r, HalfLife restoreHL) {
+		public void syncParams(float m, float r, float maxDRotAngle, HalfLife restoreHL) {
 			col.r = r;
 			invM = m < MinimumM ? 0 : (1f/m);
+			this.maxDRotAngle = maxDRotAngle;
 			this.restoreHL = restoreHL;
 		}
 
