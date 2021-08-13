@@ -11,6 +11,19 @@ using Common;
 
 abstract class BaseInspector : Editor
 {
+	override public void OnInspectorGUI() {
+
+		// ギズモ表示用のボタンを表示
+		using (new EditorGUILayout.HorizontalScope()) {
+			EditorGUILayout.Space();
+			if ( GUILayout.Button("Gizmos", GUILayout.Width(60)) ) {
+				Common.Windows.GizmoOptionsWindow.open();
+			}
+		}
+
+		base.OnInspectorGUI();
+	}
+
 	virtual protected void OnSceneGUI() {
 		Gizmos8.drawMode = Gizmos8.DrawMode.Handle;
 		var tgt = (Base)target;

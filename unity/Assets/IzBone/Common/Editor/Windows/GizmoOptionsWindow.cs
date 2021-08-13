@@ -29,7 +29,7 @@ public sealed class GizmoOptionsWindow : EditorWindow
 	static public GizmoOptionsWindow Instance {get{
 		if (s_instance == null) {
 			var a = Resources.FindObjectsOfTypeAll<GizmoOptionsWindow>();
-			if (a!=null || 1<a.Length) s_instance = a[0];
+			if (a!=null && 0!=a.Length) s_instance = a[0];
 			if (s_instance == null) s_instance = CreateInstance<GizmoOptionsWindow>();
 		}
 		return s_instance;
@@ -38,6 +38,7 @@ public sealed class GizmoOptionsWindow : EditorWindow
 	/** ウィンドウを表示する */
 	[MenuItem(LZ.MenuName_Open)]
 	static public void open() {
+		Instance.titleContent = new GUIContent(LZ.Title);
 		Instance.Show();
 	}
 

@@ -13,6 +13,12 @@ using Common;
 [CanEditMultipleObjects]
 sealed class PlaneInspector : BaseInspector
 {
+
+	override public void OnInspectorGUI() {
+		base.OnInspectorGUI();
+	}
+
+
 	/** １オブジェクトに対するOnSceneGUI。基本的に派生先からはこれを拡張すればOK */
 	override protected void OnSceneGUI() {
 		base.OnSceneGUI();
