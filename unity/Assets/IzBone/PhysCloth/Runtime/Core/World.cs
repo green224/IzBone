@@ -28,26 +28,41 @@ namespace IzBone.PhysCloth.Core {
 			Controller.ConstraintMng[] mngConstraints
 		) {
 			// particlesを生成
-			var ptcls = mngParticles
-				.Select(i=>{
-					var p0 = i.trans.position;
-					var pp = i.parent?.trans?.position;
-					var pc = i.child?.trans?.position;
-					var pl = i.left?.trans?.position;
-					var pr = i.right?.trans?.position;
-					float3 nml = 0;
-					if ( pp.HasValue && pl.HasValue )
-						nml += normalize(cross( pp.Value - p0, pl.Value - p0 ));
-					if ( pl.HasValue && pc.HasValue )
-						nml += normalize(cross( pl.Value - p0, pc.Value - p0 ));
-					if ( pc.HasValue && pr.HasValue )
-						nml += normalize(cross( pc.Value - p0, pr.Value - p0 ));
-					if ( pr.HasValue && pp.HasValue )
-						nml += normalize(cross( pr.Value - p0, pp.Value - p0 ));
+			_particles = new NativeArray<Particle>(mngParticles.Length, Allocator.Persistent);
+			for (int i=0; i<mngParticles.Length; ++i) {
+				var mp = mngParticles[i];
 
-					return new Particle( p0, normalizesafe(nml) );
-				}).ToArray();
-			_particles = new NativeArray<Particle>(ptcls, Allocator.Persistent);
+				var p0 = mp.trans.position;
+				var pp = mp.parent?.trans?.position;
+				var pc = mp.child?.trans?.position;
+				var pl = mp.left?.trans?.position;
+				var pr = mp.right?.trans?.position;
+				float3 nml = 0;
+				if ( pp.HasValue && pl.HasValue )
+					nml += normalize(cross( pp.Value - p0, pl.Value - p0 ));
+				if ( pl.HasValue && pc.HasValue )
+					nml += normalize(cross( pl.Value - p0, pc.Value - p0 ));
+				if ( pc.HasValue && pr.HasValue )
+					nml += normalize(cross( pc.Value - p0, pr.Value - p0 ));
+				if ( pr.HasValue && pp.HasValue )
+					nml += normalize(cross( pr.Value - p0, pp.Value - p0 ));
+
+				// 法線が得られなかった場合は、とりあえず親の法線をコピーする
+				if (nml.Equals(0)) {
+					if (mp.parent != null) nml = _particles[i-1].initWNml;
+				} else {
+					nml = normalize(nml);
+				}
+
+				// 法線の変換は逆転置行列
+				// 参考:https://raytracing.hatenablog.com/entry/20130325/1364229762
+				var lNml = mul(
+					transpose( (float3x3)(float4x4)mp.trans.localToWorldMatrix ),
+					nml
+				);
+
+				_particles[i] = new Particle( p0, nml, lNml );
+			}
 
 			// particleChainsを生成
 			var ptclPtr0 = (Particle*)_particles.GetUnsafePtr();
@@ -123,7 +138,7 @@ namespace IzBone.PhysCloth.Core {
 				return;
 			}
 			
-			{// デフォルト姿勢でのL2Wを計算しておく
+			{// デフォルト姿勢でのL2Wと法線を計算しておく
 				int i = 0;
 				for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
 					if (mngParticles[i].parent != null) continue;
@@ -137,6 +152,8 @@ namespace IzBone.PhysCloth.Core {
 						l2w = mul( l2w, m.defaultL2P );
 
 						ptclPtr0[m.idx].defaultL2W = l2w;
+						ptclPtr0[m.idx].defaultWNml =
+							mul( (float3x3)l2w, ptclPtr0[m.idx].initLNml );
 					}
 				}
 			}
@@ -232,6 +249,12 @@ namespace IzBone.PhysCloth.Core {
 								// 角度制限を位置に反映する
 								p1->col.pos = p0->col.pos +
 									mul( q, from ) * ( length(to) / length(from) );
+
+								// 法線を更新する
+								var nml0 = mul( q, p0->defaultWNml );
+								var nml1 = mul( q, p1->defaultWNml );
+								p0->wNml = p0==c->begin ? nml0 : normalize(p0->wNml + nml0);
+								p1->wNml = nml1;
 							}
 						}
 					}
@@ -296,13 +319,17 @@ namespace IzBone.PhysCloth.Core {
 		}
 
 	#if UNITY_EDITOR
-		public float3 DEBUG_getPos(int idx) {
+		internal float3 DEBUG_getPos(int idx) {
 			if (!_particles.IsCreated || _particles.Length<=idx) return default;
 			return _particles[idx].col.pos;
 		}
-		public float3 DEBUG_getV(int idx) {
+		internal float3 DEBUG_getV(int idx) {
 			if (!_particles.IsCreated || _particles.Length<=idx) return default;
 			return _particles[idx].v;
+		}
+		internal float3 DEBUG_getNml(int idx) {
+			if (!_particles.IsCreated || _particles.Length<=idx) return default;
+			return _particles[idx].wNml;
 		}
 	#endif
 

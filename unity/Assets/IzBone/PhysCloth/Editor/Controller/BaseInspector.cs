@@ -28,13 +28,18 @@ abstract class BaseInspector : Editor
 		}
 
 		// 質点を描画
-		// TODO : ここ、矢印にする
-		Gizmos8.color = new Color(0,0,1);
 		if (tgt._particles != null) foreach (var i in tgt._particles) {
 			if (i.m < 0.000001f) continue;
-			var v = tgt._world.DEBUG_getV( i.idx );
 			var p = tgt._world.DEBUG_getPos( i.idx );
+
+			// TODO : ここ、矢印にする
+			var v = tgt._world.DEBUG_getV( i.idx );
+			Gizmos8.color = new Color(0,0,1);
 			Gizmos8.drawLine( p, p+v*0.03f );
+
+			var nml = tgt._world.DEBUG_getNml( i.idx );
+			Gizmos8.color = new Color(1,0,0);
+			Gizmos8.drawLine( p, p+nml*0.03f );
 		}
 	}
 }
