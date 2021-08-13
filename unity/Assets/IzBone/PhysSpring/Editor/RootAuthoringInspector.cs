@@ -39,21 +39,28 @@ sealed class RootAuthoringInspector : Editor
 				var iRate = (float)(bone.depth-1-i) / max(bone.depth-1, 1);
 
 				// パーティクル本体を描画
-				Gizmos8.color = Gizmos8.Colors.JointMovable;
-				Gizmos8.drawSphere(trns.position, bone.radius.evaluate(iRate));
-				if (i == bone.depth-1) {
-					Gizmos8.color = Gizmos8.Colors.JointFixed;
-					var r = length(trns.position - next.position) * 0.15f;
-					Gizmos8.drawSphere(next.position, r);
+				if ( Common.Windows.GizmoOptionsWindow.isShowPtclR ) {
+					Gizmos8.color = Gizmos8.Colors.JointMovable;
+					Gizmos8.drawSphere(trns.position, bone.radius.evaluate(iRate));
+					if (i == bone.depth-1) {
+						Gizmos8.color = Gizmos8.Colors.JointFixed;
+						var r = length(trns.position - next.position) * 0.15f;
+						Gizmos8.drawSphere(next.position, r);
+					}
 				}
 
 				// つながりを描画
-				Gizmos8.color = Gizmos8.Colors.BoneMovable;
-				Gizmos8.drawLine(next.position, trns.position);
+				if ( Common.Windows.GizmoOptionsWindow.isShowConnections ) {
+					Gizmos8.color = Gizmos8.Colors.BoneMovable;
+					Gizmos8.drawLine(next.position, trns.position);
+				}
 
 				// 角度範囲を描画
 				var l2w = (float4x4)next.localToWorldMatrix;
-				if (bone.rotShiftRate < 0.9999f) {
+				if (
+					Common.Windows.GizmoOptionsWindow.isShowLimitAgl
+					&& bone.rotShiftRate < 0.9999f
+				) {
 					var pos = l2w.c3.xyz;
 					var rot = mul(
 						Math8.fromToRotation(
@@ -73,7 +80,10 @@ sealed class RootAuthoringInspector : Editor
 				}
 
 				// 移動可能範囲を描画
-				if (0.00001f < bone.rotShiftRate) {
+				if (
+					Common.Windows.GizmoOptionsWindow.isShowLimitPos
+					&& 0.00001f < bone.rotShiftRate
+				) {
 					var sft = bone.shiftMax.evaluate(iRate);
 					var scl1 = Unity.Mathematics.float4x4.TRS(
 						0, Unity.Mathematics.quaternion.identity, sft

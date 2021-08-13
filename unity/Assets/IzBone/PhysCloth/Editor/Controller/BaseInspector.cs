@@ -16,15 +16,19 @@ abstract class BaseInspector : Editor
 		var tgt = (Base)target;
 
 		// 登録されているコライダを表示
-		if (tgt._izColliders!=null) foreach (var i in tgt._izColliders)
-			i.DEBUG_drawGizmos();
+		if ( Common.Windows.GizmoOptionsWindow.isShowCollider ) {
+			if (tgt._izColliders!=null) foreach (var i in tgt._izColliders)
+				i.DEBUG_drawGizmos();
+		}
 
 		// コンストレイントを描画
-		Gizmos8.color = Gizmos8.Colors.BoneMovable;
-		if (tgt._constraints != null) foreach (var i in tgt._constraints) {
-			var p0 = tgt._world.DEBUG_getPos( i.srcPtclIdx );
-			var p1 = tgt._world.DEBUG_getPos( i.dstPtclIdx );
-			Gizmos8.drawLine( p0, p1 );
+		if ( Common.Windows.GizmoOptionsWindow.isShowConnections ) {
+			Gizmos8.color = Gizmos8.Colors.BoneMovable;
+			if (tgt._constraints != null) foreach (var i in tgt._constraints) {
+				var p0 = tgt._world.DEBUG_getPos( i.srcPtclIdx );
+				var p1 = tgt._world.DEBUG_getPos( i.dstPtclIdx );
+				Gizmos8.drawLine( p0, p1 );
+			}
 		}
 
 		// 質点を描画
@@ -33,13 +37,17 @@ abstract class BaseInspector : Editor
 			var p = tgt._world.DEBUG_getPos( i.idx );
 
 			// TODO : ここ、矢印にする
-			var v = tgt._world.DEBUG_getV( i.idx );
-			Gizmos8.color = new Color(0,0,1);
-			Gizmos8.drawLine( p, p+v*0.03f );
+			if ( Common.Windows.GizmoOptionsWindow.isShowPtclV ) {
+				var v = tgt._world.DEBUG_getV( i.idx );
+				Gizmos8.color = new Color(0,0,1);
+				Gizmos8.drawLine( p, p+v*0.03f );
+			}
 
-			var nml = tgt._world.DEBUG_getNml( i.idx );
-			Gizmos8.color = new Color(1,0,0);
-			Gizmos8.drawLine( p, p+nml*0.03f );
+			if ( Common.Windows.GizmoOptionsWindow.isShowPtclNml ) {
+				var nml = tgt._world.DEBUG_getNml( i.idx );
+				Gizmos8.color = new Color(1,0,0);
+				Gizmos8.drawLine( p, p+nml*0.03f );
+			}
 		}
 	}
 }

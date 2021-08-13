@@ -11,7 +11,7 @@ using MIO = System.Runtime.CompilerServices.MethodImplOptions;
 
 
 namespace IzBone.Common {
-static public partial class Math8  {
+static public partial class Math8 {
 
 	//#	var iTypeList = new [] { "float", "double", };
 	//#	foreach ( var iType in iTypeList ) {

@@ -4,7 +4,7 @@ using Unity.Mathematics;
 
 
 namespace IzBone.Common {
-static public partial class Math8  {
+static public partial class Math8 {
 
 	/**
 	 * 値を一定区間蓄積して、そこから平均を求めるためのモジュール

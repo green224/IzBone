@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 
 namespace IzBone.Common {
-static public partial class Math8  {
+static public partial class Math8 {
 
 // とりあえず不要そうなものはコメントアウトした
 //	const double Pi = 3.1415926535897932384626433832795;

@@ -32,21 +32,24 @@ sealed class PlaneInspector : BaseInspector
 
 				// パーティクルを描画
 				var boneLen = length(trans.position - trans.parent.position);
-				var isFixedJoint = idx < cnvPrm.fixCount;
-				Gizmos8.color = isFixedJoint
-					? Gizmos8.Colors.JointFixed
-					: Gizmos8.Colors.JointMovable;
-				var viewR = isFixedJoint
-//					? min(boneLen, lastBoneLen) * 0.1f
-					? lastBoneLen * 0.15f
-					: cnvPrm.getR(idx);
-				Gizmos8.drawSphere(trans.position, viewR);
+				if ( Common.Windows.GizmoOptionsWindow.isShowPtclR ) {
+					var isFixedJoint = idx < cnvPrm.fixCount;
+					Gizmos8.color = isFixedJoint
+						? Gizmos8.Colors.JointFixed
+						: Gizmos8.Colors.JointMovable;
+					var viewR = isFixedJoint
+	//					? min(boneLen, lastBoneLen) * 0.1f
+						? lastBoneLen * 0.15f
+						: cnvPrm.getR(idx);
+					Gizmos8.drawSphere(trans.position, viewR);
+				}
 
 				// Editor停止中はConstraintがまだ未生成なので、適当にチェインを描画
-				if (!Application.isPlaying) {
+				if (
+					Common.Windows.GizmoOptionsWindow.isShowConnections
+					&& !Application.isPlaying
+				) {
 					Gizmos8.color = Gizmos8.Colors.BoneMovable;
-//					if (dCnt != cnvPrm.depth-1)
-//						Gizmos8.drawLine( trans.position, trans.parent.position );
 
 					static Transform getJointTrans(Plane tgt, int boneIdx, int depthIdx) {
 						boneIdx = (boneIdx + tgt._boneInfos.Length) % tgt._boneInfos.Length;

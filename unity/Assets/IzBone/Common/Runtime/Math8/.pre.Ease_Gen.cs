@@ -9,7 +9,7 @@ using MO = System.Runtime.CompilerServices.MethodImplOptions;
 
 
 namespace IzBone.Common {
-static public partial class Math8  {
+static public partial class Math8 {
 	static public class Ease {
 
 		//#	var axisName = new [] { "x", "y", "z", "w" };
