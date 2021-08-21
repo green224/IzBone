@@ -20,6 +20,7 @@ namespace IzBone.PhysCloth.Core {
 
 		public float3 g = float3(0,-1,0);		// 重力加速度
 		public float3 windSpeed = default;		// 風速
+		// TODO : これをカーブで設定できるようにする
 		public HalfLife airHL = 0.1f;			// 空気抵抗による半減期
 		public float maxSpeed = 100;			// 最大速度
 
@@ -172,7 +173,7 @@ namespace IzBone.PhysCloth.Core {
 						var v = p->v;
 						
 						// 速度制限を適応
-						v = clamp(-maxSpeed, v, maxSpeed);
+						v = clamp(v, -maxSpeed, maxSpeed);
 
 						// 更新前の位置をvに入れておく。これは後で参照するための一時的なキャッシュ用
 						p->v = p->col.pos;
@@ -207,21 +208,13 @@ namespace IzBone.PhysCloth.Core {
 
 			{// XPBDによるフィッティング処理
 
-				static void solveCollider<T>(Particle* p, NativeArray<T> colliders)
-				where T : struct, Common.Collider.ICollider {
-					if (!colliders.IsCreated) return;
-					for (int i=0; i<colliders.Length; ++i) colliders[i].solve(&p->col);
-				}
-
-				static void solveConstraints<T>(float sqDt, ref float* lambda, NativeArray<T> constraints)
-				where T : struct, IConstraint {
-					if (!constraints.IsCreated) return;
-					for (int i=0; i<constraints.Length; ++i,++lambda)
-						*lambda += constraints[i].solve( sqDt, *lambda );
-				}
-
+				// λを初期化
 				for (var p=lmdsPtr0; p!=lmdsPtrEnd; ++p) *p=0;
+				var cldCstLmd = new NativeArray<float>(_particles.Length, Allocator.Temp);
+				var cldCstLmdPtr0 = (float*)cldCstLmd.GetUnsafePtr();
+				var cldCstLmdPtrEnd = cldCstLmdPtr0 + cldCstLmd.Length;
 
+				// フィッティングループ
 				var sqDt = dt*dt/iterationNum/iterationNum;
 				for (int i=0; i<iterationNum+1; ++i) {
 
@@ -260,22 +253,81 @@ namespace IzBone.PhysCloth.Core {
 					}
 
 					// コライダとの衝突解決
-					for (var p=ptclPtr0; p!=ptclPtrEnd; ++p) {
-						if (p->invM == 0) continue;
-						solveCollider(p, colliders.spheres);
-						solveCollider(p, colliders.capsules);
-						solveCollider(p, colliders.boxes);
-						solveCollider(p, colliders.planes);
+					var cldCst = new NativeArray<Constraint_MinDistN>(_particles.Length, Allocator.Temp);
+					var cldCstPtr0 = (Constraint_MinDistN*)cldCst.GetUnsafePtr();
+					var cldCstPtrEnd = cldCstPtr0 + cldCst.Length;
+					static bool solveCollider<T>(
+						Common.Collider.Collider_Sphere* s,
+						NativeArray<T> colliders
+					) where T : struct, Common.Collider.ICollider {
+						if (!colliders.IsCreated) return false;
+
+						// 衝突を検知して、衝突がない位置まで引き離した時の位置を計算する
+						float3 colN;
+						float colDepth;
+						var isCol = false;
+						for (int i=0; i<colliders.Length; ++i) {
+							if ( !colliders[i].solve(s, &colN, &colDepth) ) continue;
+							s->pos += colN * colDepth;
+							isCol = true;
+						}
+
+						return isCol;
+					}
+					{
+						var c = cldCstPtr0;
+						var compliance = i==iterationNum ? 0 : 1e-10f;
+//						var compliance = 1e-10f;
+						for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++c) {
+							if (p->invM == 0) continue;
+
+							var colS = p->col;
+							var isCol = false;
+							isCol |= solveCollider(&colS, colliders.spheres);
+							isCol |= solveCollider(&colS, colliders.capsules);
+							isCol |= solveCollider(&colS, colliders.boxes);
+							isCol |= solveCollider(&colS, colliders.planes);
+
+							// 何かしらに衝突している場合は、引き離し用拘束条件を作成。
+							if (isCol) {
+								var dPos = colS.pos - p->col.pos;
+								var dPosLen = length(dPos);
+								var dPosN = dPos / (dPosLen + 0.0000001f);
+
+								c->reset(
+									compliance,
+									p->col.pos,
+									dPosN,
+									p,
+									dPosLen
+								);
+							} else {
+								*c = default;
+							}
+						}
 					}
 
 					// フィッティング処理。
-					// ループの最後は衝突解決までを行い、フィッティングは行わない
+					// ループの最後は衝突解決のみのフィッティングを行う
+					static void solveConstraints<T>(float sqDt, ref float* lambda, NativeArray<T> constraints)
+					where T : struct, IConstraint {
+						if (!constraints.IsCreated) return;
+						for (int i=0; i<constraints.Length; ++i,++lambda)
+							*lambda += constraints[i].solve( sqDt, *lambda );
+					}
 					if (i!=iterationNum) {
 						var lambda = lmdsPtr0;
 						solveConstraints(sqDt, ref lambda, _constraints.distance);
 						solveConstraints(sqDt, ref lambda, _constraints.axis);
 					}
+					{
+						var lambda = cldCstLmdPtr0;
+						solveConstraints(sqDt, ref lambda, cldCst);
+					}
+
+					cldCst.Dispose();
 				}
+				cldCstLmd.Dispose();
 			}
 
 			// 速度の保存

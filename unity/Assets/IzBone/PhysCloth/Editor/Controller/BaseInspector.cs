@@ -30,8 +30,10 @@ abstract class BaseInspector : Editor
 
 		// 登録されているコライダを表示
 		if ( Common.Windows.GizmoOptionsWindow.isShowCollider ) {
-			if (tgt._izColliders!=null) foreach (var i in tgt._izColliders)
+			if (tgt._izColliders!=null) foreach (var i in tgt._izColliders) {
+				if (i == null) continue;
 				i.DEBUG_drawGizmos();
+			}
 		}
 
 		// コンストレイントを描画

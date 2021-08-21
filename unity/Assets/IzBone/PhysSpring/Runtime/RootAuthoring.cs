@@ -109,7 +109,7 @@ public sealed class RootAuthoring : MonoBehaviour {
 				depthMax = max(s, depthMax);
 			}
 
-			i.depth = Mathf.Clamp(i.depth, 1, depthMax);
+			i.depth = clamp(i.depth, 1, depthMax);
 		}
 	}
 #endif

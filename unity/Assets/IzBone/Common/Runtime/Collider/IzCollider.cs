@@ -88,7 +88,7 @@ namespace IzBone.Common.Collider {
 
 			if (mode == Mode.Sphere) {
 				var pos = l2wMtx.c3.xyz;
-				var size = mul( (float3x3)l2wMtx, (float3)(r.x / Mathf.Sqrt(3)) );
+				var size = mul( (float3x3)l2wMtx, (float3)(r.x / sqrt(3)) );
 				Gizmos8.drawWireSphere( pos, length(size) );
 
 			} else if (mode == Mode.Capsule) {
@@ -101,9 +101,9 @@ namespace IzBone.Common.Collider {
 				float3 p0 = default;
 				float3 p1 = default;
 				for (int i=0; i<=30; ++i) {
-					var theta = (float)i/30 * (Mathf.PI*2);
-					var c = Mathf.Cos(theta);
-					var s = Mathf.Sin(theta);
+					var theta = (float)i/30 * (PI*2);
+					var c = cos(theta);
+					var s = sin(theta);
 					var pN0 = pos + sizeY0 + c*sizeX + s*sizeZ;
 					var pN1 = pos - sizeY0 + c*sizeX + s*sizeZ;
 					if (i!=0) {
@@ -114,9 +114,9 @@ namespace IzBone.Common.Collider {
 					p1 = pN1;
 				}
 				for (int i=0; i<=15; ++i) {
-					var theta = (float)i/15 * Mathf.PI;
-					var c = Mathf.Cos(theta);
-					var s = Mathf.Sin(theta);
+					var theta = (float)i/15 * PI;
+					var c = cos(theta);
+					var s = sin(theta);
 					var pN0 = c*sizeX + s*sizeY1;
 					var pN1 = c*sizeZ + s*sizeY1;
 					if (i!=0) {

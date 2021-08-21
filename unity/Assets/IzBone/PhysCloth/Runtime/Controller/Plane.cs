@@ -332,7 +332,7 @@ public unsafe sealed class Plane : Base {
 				int depthMax = 0;
 				for (var j=i.endOfBone; j.parent!=null; j=j.parent) ++depthMax;
 
-				cnvPrm.depth = Mathf.Clamp(cnvPrm.depth, 1, depthMax);
+				cnvPrm.depth = clamp(cnvPrm.depth, 1, depthMax);
 			}
 
 			// fixCountを有効範囲に丸める
