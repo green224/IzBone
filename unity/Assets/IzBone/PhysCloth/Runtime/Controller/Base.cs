@@ -47,8 +47,12 @@ public unsafe abstract class Base : MonoBehaviour {
 	}
 
 	virtual protected void LateUpdate() {
-		coreUpdate(Time.deltaTime);
+		coreUpdate(Time.smoothDeltaTime);
+		_world.applyToBone(_particles);
 	}
+//	virtual protected void FixedUpdate() {
+//		coreUpdate(Time.fixedDeltaTime);
+//	}
 
 	virtual protected void OnDestroy() {
 		_coreColliders?.Dispose();

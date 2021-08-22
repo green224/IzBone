@@ -14,6 +14,8 @@ namespace IzBone.PhysCloth.Core {
 	/** シミュレート単位となるパーティクル1粒子分の情報 */
 	public unsafe struct Particle
 	{
+		readonly public int index;
+
 		// 初期化時のワールド座標と法線。
 		// これはアニメーションなどで同期されない真に初期化時の位置
 		readonly public float3 initWPos;
@@ -39,11 +41,19 @@ namespace IzBone.PhysCloth.Core {
 		// 最大差分角度(ラジアン)
 		public float maxDRotAngle;
 
+		// 角度変位の拘束条件へのコンプライアンス値
+		public float angleCompliance;
+
 		// Default位置への復元半減期
-		public HalfLife restoreHL;
+//		public HalfLife restoreHL;
 
 
-		public Particle(float3 initWPos, float3 initWNml, float3 initLNml) {
+		public Particle(
+			int index,
+			float3 initWPos, float3 initWNml, float3 initLNml,
+			float angleCompliance
+		) {
+			this.index = index;
 			this.initWPos = initWPos;
 			this.initWNml = initWNml;
 			this.initLNml = initLNml;
@@ -57,14 +67,21 @@ namespace IzBone.PhysCloth.Core {
 			dWRot = Unity.Mathematics.quaternion.identity;
 			wNml = default;
 			maxDRotAngle = default;
-			restoreHL = default;
+//			restoreHL = default;
+			this.angleCompliance = angleCompliance;
 		}
 
-		public void syncParams(float m, float r, float maxDRotAngle, HalfLife restoreHL) {
+		public void syncParams(
+			float m, float r,
+			float maxDRotAngle,
+			float angleCompliance
+//			HalfLife restoreHL
+		) {
 			col.r = r;
 			invM = m < MinimumM ? 0 : (1f/m);
 			this.maxDRotAngle = maxDRotAngle;
-			this.restoreHL = restoreHL;
+			this.angleCompliance = angleCompliance;
+//			this.restoreHL = restoreHL;
 		}
 
 		const float MinimumM = 0.00000001f;

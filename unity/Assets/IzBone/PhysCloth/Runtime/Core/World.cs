@@ -62,7 +62,7 @@ namespace IzBone.PhysCloth.Core {
 					nml
 				);
 
-				_particles[i] = new Particle( p0, nml, lNml );
+				_particles[i] = new Particle(i, p0, nml, lNml, mp.angleCompliance);
 			}
 
 			// particleChainsを生成
@@ -92,7 +92,8 @@ namespace IzBone.PhysCloth.Core {
 			int i=0;
 			for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
 				var m = mngParticles[i];
-				p->syncParams( m.m, m.r, radians(m.maxAngle), m.restoreHL );
+//				p->syncParams( m.m, m.r, radians(m.maxAngle), m.restoreHL );
+				p->syncParams( m.m, m.r, radians(m.maxAngle), m.angleCompliance );
 			}
 
 			// constraintsを再生成
@@ -164,11 +165,24 @@ namespace IzBone.PhysCloth.Core {
 			var airResRateIntegral = HalfLifeDragAttribute.evaluateIntegral( airHL, dt );
 
 			// 質点の位置を更新
-			{
-				int i = 0;
-				for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
-					if ( p->invM < MinimumM ) {
-						p->col.pos = mngParticles[i].trans.position;
+			for (var c=chainPtr0; c!=chainPtrEnd; ++c) {
+				for (int i=0; i!=c->length; ++i) {
+					var p = c->begin + i;
+
+					if (p->invM < MinimumM) {
+						var mngP = mngParticles[p->index];
+//						if (i==0) {
+							p->col.pos = mngP.trans.position;
+//						} else {
+//							var l2w =
+//								mngP.trans.parent.localToWorldMatrix *
+//								Matrix4x4.TRS(
+//									mngP.trans.localPosition,
+//									mngP.trans.localRotation,
+//									mngP.trans.localScale
+//								);
+//							p->col.pos = ( (float4x4)l2w ).c3.xyz;
+//						}
 					} else {
 						var v = p->v;
 						
@@ -196,12 +210,12 @@ namespace IzBone.PhysCloth.Core {
 							(v + g*dt) * airResRateIntegral +
 							windSpeed * (dt - airResRateIntegral);
 
-						// 初期位置に戻すようなフェードを掛ける
-						p->col.pos = lerp(
-							p->defaultL2W.c3.xyz,
-							p->col.pos,
-							HalfLifeDragAttribute.evaluate( p->restoreHL, dt )
-						);
+//						// 初期位置に戻すようなフェードを掛ける
+//						p->col.pos = lerp(
+//							p->defaultL2W.c3.xyz,
+//							p->col.pos,
+//							HalfLifeDragAttribute.evaluate( p->restoreHL, dt )
+//						);
 					}
 				}
 			}
@@ -213,41 +227,80 @@ namespace IzBone.PhysCloth.Core {
 				var cldCstLmd = new NativeArray<float>(_particles.Length, Allocator.Temp);
 				var cldCstLmdPtr0 = (float*)cldCstLmd.GetUnsafePtr();
 				var cldCstLmdPtrEnd = cldCstLmdPtr0 + cldCstLmd.Length;
+				var aglLmtLmd = new NativeArray<float>(_particles.Length, Allocator.Temp);
+				var aglLmtLmdPtr0 = (float*)aglLmtLmd.GetUnsafePtr();
+				var aglLmtLmdPtrEnd = aglLmtLmdPtr0 + aglLmtLmd.Length;
 
 				// フィッティングループ
 				var sqDt = dt*dt/iterationNum/iterationNum;
-				for (int i=0; i<iterationNum+1; ++i) {
+				for (int i=0; i<iterationNum; ++i) {
 
-					// まず現在の位置での角度制限を適応する
+					// まず現在の位置での角度制限の拘束条件を適応
 					for (var c=chainPtr0; c!=chainPtrEnd; ++c) {
 						if (c->length == 1) {
 							c->begin->dWRot = Unity.Mathematics.quaternion.identity;
 						} else {
-							var q = Unity.Mathematics.quaternion.identity;
-							var p0 = c->begin;
-							var p1 = p0 + 1;
-							var pEnd = p0 + c->length;
-							for (; p1!=pEnd; ++p0,++p1) {
+							var q0 = Unity.Mathematics.quaternion.identity;
+							var q1 = Unity.Mathematics.quaternion.identity;
+							var q2 = Unity.Mathematics.quaternion.identity;
+							Particle* p0 = null;
+							Particle* p1 = null;
+							Particle* p2 = c->begin;
+							Particle* p3 = p2 + 1;
+							var pEnd = c->begin + c->length;
+							var lmd2 = aglLmtLmdPtr0 + p2->index;
+							for (; p3!=pEnd;) {
 
-								// 回転する元方向と先方向
-								var from = p1->defaultL2W.c3.xyz - p0->defaultL2W.c3.xyz;
-								var to = p1->col.pos - p0->col.pos;
+								// 回転する元方向と先方向を計算する処理
+								static (float3 fromDir, float3 toDir) getFromToDir(
+									Particle* src, Particle* dst, Quaternion q
+								) {
+									var from = dst->defaultL2W.c3.xyz - src->defaultL2W.c3.xyz;
+									var to = dst->col.pos - src->col.pos;
+									return ( mul(q, from), to );
+								}
 
-								// 角度制限を掛けて姿勢を計算
-								p0->dWRot = q = mul(
-									Math8.fromToRotation( mul(q, from), to, p0->maxDRotAngle ),
-									q
-								);
+								// 拘束条件を適応
+								float3 from, to;
+								if (p1 != null) {
+									(from, to) = getFromToDir(p2,p3,q2);
+									var constraint = new Constraint_Angle{
+										parent = p1,
+										self = p2,
+										child = p3,
+										compliance = p2->angleCompliance,
+										defChildPos = from + p2->col.pos
+									};
+									*lmd2 += constraint.solve(sqDt, *lmd2);
+								}
 
-								// 角度制限を位置に反映する
-								p1->col.pos = p0->col.pos +
-									mul( q, from ) * ( length(to) / length(from) );
+								// 位置が変わったので、再度姿勢を計算
+								if (p0 != null) {
+									(from, to) = getFromToDir(p0,p1,q0);
+									q0 = q1 = q2 =
+										mul( Math8.fromToRotation(from, to), q0 );
+								}
+								if (p1 != null) {
+									(from, to) = getFromToDir(p1,p2,q1);
+									q1 = q2 =
+										mul( Math8.fromToRotation(from, to), q1 );
+								}
+								(from, to) = getFromToDir(p2,p3,q2);
+								p2->dWRot = q2 =
+//									mul( Math8.fromToRotation(from, to), q2 );
+									mul( Math8.fromToRotation(from, to, p2->maxDRotAngle), q2 );
+
+//								// 角度制限を位置に反映する
+//								p1->col.pos = p0->col.pos +
+//									mul( q, from ) * ( length(to) / length(from) );
 
 								// 法線を更新する
-								var nml0 = mul( q, p0->defaultWNml );
-								var nml1 = mul( q, p1->defaultWNml );
-								p0->wNml = p0==c->begin ? nml0 : normalize(p0->wNml + nml0);
-								p1->wNml = nml1;
+								var nml2 = mul( q2, p2->defaultWNml );
+								var nml3 = mul( q2, p3->defaultWNml );
+								p2->wNml = p2==c->begin ? nml2 : normalize(p2->wNml + nml2);
+								p3->wNml = nml3;
+
+								p0=p1; p1=p2; p2=p3; ++p3; ++lmd2;
 							}
 						}
 					}
@@ -276,8 +329,8 @@ namespace IzBone.PhysCloth.Core {
 					}
 					{
 						var c = cldCstPtr0;
-						var compliance = i==iterationNum ? 0 : 1e-10f;
-//						var compliance = 1e-10f;
+//						var compliance = i==iterationNum ? 0 : 1e-10f;
+						var compliance = 1e-10f;
 						for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++c) {
 							if (p->invM == 0) continue;
 
@@ -307,65 +360,64 @@ namespace IzBone.PhysCloth.Core {
 						}
 					}
 
-					// フィッティング処理。
-					// ループの最後は衝突解決のみのフィッティングを行う
+					// その他の拘束条件を適応する。
 					static void solveConstraints<T>(float sqDt, ref float* lambda, NativeArray<T> constraints)
 					where T : struct, IConstraint {
 						if (!constraints.IsCreated) return;
 						for (int i=0; i<constraints.Length; ++i,++lambda)
 							*lambda += constraints[i].solve( sqDt, *lambda );
 					}
-					if (i!=iterationNum) {
+					{
 						var lambda = lmdsPtr0;
 						solveConstraints(sqDt, ref lambda, _constraints.distance);
 						solveConstraints(sqDt, ref lambda, _constraints.axis);
 					}
 					{
+					// TODO : これ上にもってくる
 						var lambda = cldCstLmdPtr0;
 						solveConstraints(sqDt, ref lambda, cldCst);
 					}
 
 					cldCst.Dispose();
 				}
+
 				cldCstLmd.Dispose();
+				aglLmtLmd.Dispose();
 			}
 
 			// 速度の保存
 			for (var p=ptclPtr0; p!=ptclPtrEnd; ++p)
 				p->v = (p->col.pos - p->v) / dt;
+		}
 
-			// 質点の反映
-			{
-				for (int i=0; i<_particles.Length; ++i) {
+		// シミュレーション結果をボーンにフィードバックする
+		// TODO : particlesChainを使用するようにする
+		public void applyToBone( Controller.ParticleMng[] mngParticles ) {
+			var ptclPtr0 = (Particle*)_particles.GetUnsafePtr();
+			for (int i=0; i<_particles.Length; ++i) {
 
-					var j=mngParticles[i];
-					if ( j.parent != null ) continue;
+				var j=mngParticles[i];
+				if ( j.parent != null ) continue;
 
-					// 位置変化の適応はとりあえず無しで
-//					if (MinimumM <= j.m) {
-//						j.trans.position = _particles[i].col.pos;
-//					}
+				for (j=j.child; j!=null; j=j.child) {
+					var ptcl = ptclPtr0 + j.idx;
 
-					for (j=j.child; j!=null; j=j.child) {
-						var ptcl = ptclPtr0 + j.idx;
+					j.trans.parent.localRotation = Unity.Mathematics.quaternion.identity;
 
-						j.trans.parent.localRotation = Unity.Mathematics.quaternion.identity;
+					// 回転する元方向と先方向
+					var from = mul( j.defaultParentRot, j.trans.localPosition );
+					var to = mul(
+						j.trans.parent.worldToLocalMatrix,
+						float4( ptcl->col.pos, 1 )
+					).xyz;
+					var q = Math8.fromToRotation( from, to );
 
-						// 回転する元方向と先方向
-						var from = mul( j.defaultParentRot, j.trans.localPosition );
-						var to = mul(
-							j.trans.parent.worldToLocalMatrix,
-							float4( ptcl->col.pos, 1 )
-						).xyz;
-						var q = Math8.fromToRotation( from, to );
+					// 初期姿勢を反映
+					q = mul(q, j.defaultParentRot);
 
-						// 初期姿勢を反映
-						q = mul(q, j.defaultParentRot);
-
-						j.trans.parent.localRotation = q;
-//						j.trans.position = ptcl.pos;
-						ptcl->col.pos = j.trans.position;
-					}
+					j.trans.parent.localRotation = q;
+//					j.trans.position = ptcl->col.pos;
+//					ptcl->col.pos = j.trans.position;
 				}
 			}
 		}

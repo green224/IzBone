@@ -31,14 +31,18 @@ public unsafe sealed class Plane : Base {
 		[RangeSC(0)] public SC m = 1;
 		[RangeSC(0)] public SC r = 1;
 		[RangeSC(0,180)] public SC maxAngle = 60;
-		[RangeSC(0,1)] public SC restorePow = 0;
+		[RangeSC(0,1)] public SC aglRestorePow = 0;
+//		[RangeSC(0,1)] public SC restorePow = 0;
 
 		public float getM(int idx) => idx<fixCount ? 0 : m.evaluate( idx2rate(idx) );
 		public float getR(int idx) => r.evaluate( idx2rate(idx) );
 		public float getMaxAgl(int idx) => maxAngle.evaluate( idx2rate(idx) );
-		public float getRestoreHL(int idx) => HalfLifeDragAttribute.showValue2HalfLife(
-			restorePow.evaluate( idx2rate(idx) )
+		public float getAglCompliance(int idx) => ComplianceAttribute.showValue2Compliance(
+			aglRestorePow.evaluate( idx2rate(idx) ) * 0.2f
 		);
+//		public float getRestoreHL(int idx) => HalfLifeDragAttribute.showValue2HalfLife(
+//			restorePow.evaluate( idx2rate(idx) )
+//		);
 
 		float idx2rate(int idx) =>
 			depth-fixCount<=1 ? 0 : ( (idx-fixCount) / (depth-fixCount-1f) );
@@ -151,7 +155,8 @@ public unsafe sealed class Plane : Base {
 					cnvPrm.getM(k),
 					cnvPrm.getR(k),
 					cnvPrm.getMaxAgl(k),
-					cnvPrm.getRestoreHL(k)
+					cnvPrm.getAglCompliance(k)
+//					cnvPrm.getRestoreHL(k)
 				);
 			}
 		}

@@ -18,7 +18,8 @@ namespace IzBone.PhysCloth.Controller {
 		public float m;
 		public float r;
 		public float maxAngle;
-		public HalfLife restoreHL;		// 初期位置への復元半減期
+		public float angleCompliance;
+//		public HalfLife restoreHL;		// 初期位置への復元半減期
 
 		public ParticleMng(int idx, Transform trans) {
 			this.idx = idx;
@@ -30,12 +31,14 @@ namespace IzBone.PhysCloth.Controller {
 			float m,
 			float r,
 			float maxAngle,
-			HalfLife restoreHL
+			float angleCompliance
+//			HalfLife restoreHL
 		) {
 			this.m = m;
 			this.r = r;
+			this.angleCompliance = angleCompliance;
 			this.maxAngle = maxAngle;
-			this.restoreHL = restoreHL;
+//			this.restoreHL = restoreHL;
 		}
 
 		public void resetDefaultPose() {
