@@ -92,8 +92,7 @@ namespace IzBone.PhysCloth.Core {
 			int i=0;
 			for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
 				var m = mngParticles[i];
-//				p->syncParams( m.m, m.r, radians(m.maxAngle), m.restoreHL );
-				p->syncParams( m.m, m.r, radians(m.maxAngle), m.angleCompliance );
+				p->syncParams( m.m, m.r, radians(m.maxAngle), m.angleCompliance, m.restoreHL );
 			}
 
 			// constraintsを再生成
@@ -210,12 +209,12 @@ namespace IzBone.PhysCloth.Core {
 							(v + g*dt) * airResRateIntegral +
 							windSpeed * (dt - airResRateIntegral);
 
-//						// 初期位置に戻すようなフェードを掛ける
-//						p->col.pos = lerp(
-//							p->defaultL2W.c3.xyz,
-//							p->col.pos,
-//							HalfLifeDragAttribute.evaluate( p->restoreHL, dt )
-//						);
+						// 初期位置に戻すようなフェードを掛ける
+						p->col.pos = lerp(
+							p->defaultL2W.c3.xyz,
+							p->col.pos,
+							HalfLifeDragAttribute.evaluate( p->restoreHL, dt )
+						);
 					}
 				}
 			}

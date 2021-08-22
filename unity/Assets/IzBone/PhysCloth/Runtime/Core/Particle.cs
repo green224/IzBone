@@ -45,7 +45,7 @@ namespace IzBone.PhysCloth.Core {
 		public float angleCompliance;
 
 		// Default位置への復元半減期
-//		public HalfLife restoreHL;
+		public HalfLife restoreHL;
 
 
 		public Particle(
@@ -67,21 +67,21 @@ namespace IzBone.PhysCloth.Core {
 			dWRot = Unity.Mathematics.quaternion.identity;
 			wNml = default;
 			maxDRotAngle = default;
-//			restoreHL = default;
+			restoreHL = default;
 			this.angleCompliance = angleCompliance;
 		}
 
 		public void syncParams(
 			float m, float r,
 			float maxDRotAngle,
-			float angleCompliance
-//			HalfLife restoreHL
+			float angleCompliance,
+			HalfLife restoreHL
 		) {
 			col.r = r;
 			invM = m < MinimumM ? 0 : (1f/m);
 			this.maxDRotAngle = maxDRotAngle;
 			this.angleCompliance = angleCompliance;
-//			this.restoreHL = restoreHL;
+			this.restoreHL = restoreHL;
 		}
 
 		const float MinimumM = 0.00000001f;

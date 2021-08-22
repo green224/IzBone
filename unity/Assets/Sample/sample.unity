@@ -689,7 +689,6 @@ MonoBehaviour:
   _cmpl_direct: 0.00000001
   _cmpl_side: 0.00017782794
   _cmpl_diag: 0.007943284
-  _cmpl_bend: 0.1
 --- !u!4 &441776339 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -7610557644028257055, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
@@ -1453,7 +1452,6 @@ MonoBehaviour:
   _cmpl_direct: 0.00000001
   _cmpl_side: 0.00017782794
   _cmpl_diag: 0.007943284
-  _cmpl_bend: 0.007943284
 --- !u!4 &1162029844 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -3965162603962145374, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
@@ -1548,6 +1546,14 @@ PrefabInstance:
     - target: {fileID: 1061709894, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
       propertyPath: restorePow.value
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1061709894, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
+      propertyPath: _cnvPrm.aglRestorePow.end
+      value: 0.06
+      objectReference: {fileID: 0}
+    - target: {fileID: 1061709894, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
+      propertyPath: _cnvPrm.aglRestorePow.start
+      value: 0.06
       objectReference: {fileID: 0}
     - target: {fileID: 6227744310331858603, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
       propertyPath: m_RootOrder

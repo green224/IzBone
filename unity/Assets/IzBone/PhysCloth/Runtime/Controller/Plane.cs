@@ -32,7 +32,7 @@ public unsafe sealed class Plane : Base {
 		[RangeSC(0)] public SC r = 1;
 		[RangeSC(0,180)] public SC maxAngle = 60;
 		[RangeSC(0,1)] public SC aglRestorePow = 0;
-//		[RangeSC(0,1)] public SC restorePow = 0;
+		[RangeSC(0,1)] public SC restorePow = 0;
 
 		public float getM(int idx) => idx<fixCount ? 0 : m.evaluate( idx2rate(idx) );
 		public float getR(int idx) => r.evaluate( idx2rate(idx) );
@@ -40,9 +40,9 @@ public unsafe sealed class Plane : Base {
 		public float getAglCompliance(int idx) => ComplianceAttribute.showValue2Compliance(
 			aglRestorePow.evaluate( idx2rate(idx) ) * 0.2f
 		);
-//		public float getRestoreHL(int idx) => HalfLifeDragAttribute.showValue2HalfLife(
-//			restorePow.evaluate( idx2rate(idx) )
-//		);
+		public float getRestoreHL(int idx) => HalfLifeDragAttribute.showValue2HalfLife(
+			restorePow.evaluate( idx2rate(idx) )
+		);
 
 		float idx2rate(int idx) =>
 			depth-fixCount<=1 ? 0 : ( (idx-fixCount) / (depth-fixCount-1f) );
@@ -74,7 +74,6 @@ public unsafe sealed class Plane : Base {
 	[Compliance][SerializeField] float _cmpl_direct = 0.000000001f;		//!< Compliance値 直接接続
 	[Compliance][SerializeField] float _cmpl_side = 0.000000001f;		//!< Compliance値 横方向の接続
 	[Compliance][SerializeField] float _cmpl_diag = 0.0000001f;			//!< Compliance値 捻じれ用の対角線接続
-	[Compliance][SerializeField] float _cmpl_bend = 0.00002f;			//!< Compliance値 曲げ用の１つ飛ばし接続
 
 
 	// --------------------------------------- publicメンバ -------------------------------------
@@ -155,8 +154,8 @@ public unsafe sealed class Plane : Base {
 					cnvPrm.getM(k),
 					cnvPrm.getR(k),
 					cnvPrm.getMaxAgl(k),
-					cnvPrm.getAglCompliance(k)
-//					cnvPrm.getRestoreHL(k)
+					cnvPrm.getAglCompliance(k),
+					cnvPrm.getRestoreHL(k)
 				);
 			}
 		}
@@ -178,13 +177,13 @@ public unsafe sealed class Plane : Base {
 		processInAllChain((dir, p0, p1) => {
 			switch (dir) {
 				case ChainDir.Right:		proc(_cmpl_side, p0, p1); break;
-				case ChainDir.RightX2:		proc(_cmpl_bend, p0, p1); break;
+//				case ChainDir.RightX2:		proc(_cmpl_bend, p0, p1); break;
 				case ChainDir.DownRight:	proc(_cmpl_diag, p0, p1); break;
-				case ChainDir.DownRightX2:	proc(_cmpl_bend, p0, p1); break;
+//				case ChainDir.DownRightX2:	proc(_cmpl_bend, p0, p1); break;
 				case ChainDir.Down:			proc(_cmpl_direct, p0, p1); break;
-				case ChainDir.DownX2:		proc(_cmpl_bend, p0, p1); break;
+//				case ChainDir.DownX2:		proc(_cmpl_bend, p0, p1); break;
 				case ChainDir.DownLeft:		proc(_cmpl_diag, p0, p1); break;
-				case ChainDir.DownLeftX2:	proc(_cmpl_bend, p0, p1); break;
+//				case ChainDir.DownLeftX2:	proc(_cmpl_bend, p0, p1); break;
 			}
 		}, true);
 
