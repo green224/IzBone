@@ -65,11 +65,10 @@ namespace IzBone.PhysCloth.Core {
 		public float compliance;
 		public float maxLen;
 
-		public bool isValid() => MinimumM < tgt->invM;
+		public bool isValid() => MinimumM < tgt->invM && 0 <= maxLen;
 		public float solve(float sqDt, float lambda) {
 
 			// XPBDでの拘束条件の解決
-			var at = compliance / sqDt;    // a~
 			//   P = (x,y,z)
 			// とすると、Distanceのときと同様に、
 			//   Cj = |P| - d
@@ -78,12 +77,13 @@ namespace IzBone.PhysCloth.Core {
 			//   Cj = ∇Cj = 0
 			var p = tgt->col.pos - src;
 			var pLen = length(p);
-			if ( pLen < maxLen ) return -lambda;
+			if ( pLen <= maxLen ) return -lambda;
 
+			var at = compliance / sqDt;    // a~
 			var dlambda = (maxLen - pLen - at * lambda) / (tgt->invM + at);	// eq.18
 			var correction = p * (dlambda / pLen);				// eq.17
 
-			tgt->col.pos -= tgt->invM * correction;
+			tgt->col.pos += tgt->invM * correction;
 
 			return dlambda;
 		}
@@ -103,7 +103,6 @@ namespace IzBone.PhysCloth.Core {
 		public float solve(float sqDt, float lambda) {
 
 			// XPBDでの拘束条件の解決
-			var at = compliance / sqDt;    // a~
 			//   P = (x,y,z)
 			// とすると、
 			//   P・n <  minDist  ならば  Cj = P・n - minDist
@@ -121,6 +120,7 @@ namespace IzBone.PhysCloth.Core {
 				dlambda = -lambda;		// eq.18
 
 			} else {
+				var at = compliance / sqDt;    // a~
 				dlambda = (-cj - at * lambda) / (tgt->invM + at);	// eq.18
 				var correction = dlambda * n;						// eq.17
 

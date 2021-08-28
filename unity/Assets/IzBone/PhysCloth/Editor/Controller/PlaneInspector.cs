@@ -36,10 +36,10 @@ sealed class PlaneInspector : BaseInspector
 			for (int dCnt=0; dCnt!=cnvPrm.depth; ++dCnt) {
 				var idx = cnvPrm.depth - 1 - dCnt;
 
-				// パーティクルを描画
+				// パーティクル半径を描画
 				var boneLen = length(trans.position - trans.parent.position);
+				var isFixedJoint = idx < cnvPrm.fixCount;
 				if ( Common.Windows.GizmoOptionsWindow.isShowPtclR ) {
-					var isFixedJoint = idx < cnvPrm.fixCount;
 					Gizmos8.color = isFixedJoint
 						? Gizmos8.Colors.JointFixed
 						: Gizmos8.Colors.JointMovable;
@@ -48,6 +48,15 @@ sealed class PlaneInspector : BaseInspector
 						? lastBoneLen * 0.15f
 						: cnvPrm.getR(idx);
 					Gizmos8.drawSphere(trans.position, viewR);
+				}
+
+				// 移動可能距離を描画
+				if ( Common.Windows.GizmoOptionsWindow.isShowLimitPos ) {
+					var shiftLimit = cnvPrm.getMaxMovableRange(idx);
+					if (!isFixedJoint && 0 <= shiftLimit) {
+						Gizmos8.color = Gizmos8.Colors.ShiftLimit;
+						Gizmos8.drawWireCube(trans.position, trans.rotation, shiftLimit*2);
+					}
 				}
 
 				// Editor停止中はConstraintがまだ未生成なので、適当にチェインを描画

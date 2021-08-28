@@ -20,6 +20,7 @@ namespace IzBone.PhysCloth.Controller {
 		public float maxAngle;
 		public float angleCompliance;
 		public HalfLife restoreHL;		// 初期位置への復元半減期
+		public float maxMovableRange;	// デフォルト位置からの移動可能距離
 
 		public ParticleMng(int idx, Transform trans) {
 			this.idx = idx;
@@ -32,13 +33,15 @@ namespace IzBone.PhysCloth.Controller {
 			float r,
 			float maxAngle,
 			float angleCompliance,
-			HalfLife restoreHL
+			HalfLife restoreHL,
+			float maxMovableRange
 		) {
 			this.m = m;
 			this.r = r;
 			this.angleCompliance = angleCompliance;
 			this.maxAngle = maxAngle;
 			this.restoreHL = restoreHL;
+			this.maxMovableRange = maxMovableRange;
 		}
 
 		public void resetDefaultPose() {

@@ -62,7 +62,7 @@ namespace IzBone.PhysCloth.Core {
 					nml
 				);
 
-				_particles[i] = new Particle(i, p0, nml, lNml, mp.angleCompliance);
+				_particles[i] = new Particle(i, p0, nml, lNml);
 			}
 
 			// particleChainsを生成
@@ -92,7 +92,12 @@ namespace IzBone.PhysCloth.Core {
 			int i=0;
 			for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
 				var m = mngParticles[i];
-				p->syncParams( m.m, m.r, radians(m.maxAngle), m.angleCompliance, m.restoreHL );
+				p->syncParams(
+					m.m, m.r, radians(m.maxAngle),
+					m.angleCompliance,
+					m.restoreHL,
+					m.maxMovableRange
+				);
 			}
 
 			// constraintsを再生成
@@ -125,6 +130,7 @@ namespace IzBone.PhysCloth.Core {
 			var ptclPtrEnd = ptclPtr0 + _particles.Length;
 			var chainPtr0 = (ParticleChain*)_particleChains.GetUnsafePtr();
 			var chainPtrEnd = chainPtr0 + _particleChains.Length;
+// TODO : lambdaをTmpで作成するようにする
 			var lmdsPtr0 = (float*)_lambdas.GetUnsafePtr();
 			var lmdsPtrEnd = lmdsPtr0 + _lambdas.Length;
 
@@ -227,6 +233,8 @@ namespace IzBone.PhysCloth.Core {
 				var cldCstLmdPtr0 = (float*)cldCstLmd.GetUnsafePtr();
 				var aglLmtLmd = new NativeArray<float>(_particles.Length, Allocator.Temp);
 				var aglLmtLmdPtr0 = (float*)aglLmtLmd.GetUnsafePtr();
+				var mvblRngLmd = new NativeArray<float>(_particles.Length, Allocator.Temp);
+				var mvblRngLmdPtr0 = (float*)mvblRngLmd.GetUnsafePtr();
 
 				// フィッティングループ
 				var sqDt = dt*dt/iterationNum/iterationNum;
@@ -302,6 +310,21 @@ namespace IzBone.PhysCloth.Core {
 						}
 					}
 
+					{// デフォルト位置からの移動可能距離での拘束条件を解決
+						var lambda = mvblRngLmdPtr0;
+						var compliance = 1e-10f;
+						for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++lambda) {
+							if (p->invM < 0.00000001f || p->maxMovableRange < 0) continue;
+							var cstr = new Constraint_MaxDistance{
+								compliance = compliance,
+								src = p->defaultL2W.c3.xyz,
+								tgt = p,
+								maxLen = p->maxMovableRange,
+							};
+							*lambda += cstr.solve(sqDt, *lambda);
+						}
+					}
+
 					{// コライダとの衝突解決
 						static bool solveCollider<T>(
 							Common.Collider.Collider_Sphere* s,
@@ -355,14 +378,13 @@ namespace IzBone.PhysCloth.Core {
 						}
 					}
 
-					// その他の拘束条件を適応する。
-					static void solveConstraints<T>(float sqDt, ref float* lambda, NativeArray<T> constraints)
-					where T : struct, IConstraint {
-						if (!constraints.IsCreated) return;
-						for (int i=0; i<constraints.Length; ++i,++lambda)
-							*lambda += constraints[i].solve( sqDt, *lambda );
-					}
-					{
+					{// その他の拘束条件を適応する。
+						static void solveConstraints<T>(float sqDt, ref float* lambda, NativeArray<T> constraints)
+						where T : struct, IConstraint {
+							if (!constraints.IsCreated) return;
+							for (int i=0; i<constraints.Length; ++i,++lambda)
+								*lambda += constraints[i].solve( sqDt, *lambda );
+						}
 						var lambda = lmdsPtr0;
 						solveConstraints(sqDt, ref lambda, _constraints.distance);
 						solveConstraints(sqDt, ref lambda, _constraints.axis);
@@ -371,6 +393,7 @@ namespace IzBone.PhysCloth.Core {
 
 				cldCstLmd.Dispose();
 				aglLmtLmd.Dispose();
+				mvblRngLmd.Dispose();
 			}
 
 			// 速度の保存

@@ -366,6 +366,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 987119312}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -395,6 +400,11 @@ MonoBehaviour:
       restorePow:
         start: 0
         end: 0
+        curve: 0.5
+        useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 1358161451}
@@ -428,6 +438,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 1499566715}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -457,6 +472,11 @@ MonoBehaviour:
       restorePow:
         start: 0
         end: 0
+        curve: 0.5
+        useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 498752577}
@@ -490,6 +510,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 441776339}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -519,6 +544,11 @@ MonoBehaviour:
       restorePow:
         start: 0
         end: 0
+        curve: 0.5
+        useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 969631797}
@@ -552,6 +582,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 200810727}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -581,6 +616,11 @@ MonoBehaviour:
       restorePow:
         start: 0
         end: 0
+        curve: 0.5
+        useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 1916999272}
@@ -614,6 +654,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 257705165}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -643,6 +688,11 @@ MonoBehaviour:
       restorePow:
         start: 0
         end: 0
+        curve: 0.5
+        useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 1493243629}
@@ -676,6 +726,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 2143932416}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -705,6 +760,11 @@ MonoBehaviour:
       restorePow:
         start: 0
         end: 0
+        curve: 0.5
+        useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 1162029844}
@@ -738,6 +798,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 840389567}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -769,6 +834,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   _cnvPrm:
     depth: 5
     fixCount: 2
@@ -796,6 +866,11 @@ MonoBehaviour:
     restorePow:
       start: 0
       end: 0
+      curve: 0.5
+      useCurve: 0
+    maxMovableRange:
+      start: 0.05
+      end: -1
       curve: 0.5
       useCurve: 0
   _isLoopConnect: 1
@@ -867,6 +942,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 212099271}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -896,6 +976,11 @@ MonoBehaviour:
       restorePow:
         start: 0
         end: 0
+        curve: 0.5
+        useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 2104376625}
@@ -929,6 +1014,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 1389794195}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -958,6 +1048,11 @@ MonoBehaviour:
       restorePow:
         start: 0
         end: 0
+        curve: 0.5
+        useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 524330944}
@@ -991,6 +1086,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 537126514}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -1020,6 +1120,11 @@ MonoBehaviour:
       restorePow:
         start: 0
         end: 0
+        curve: 0.5
+        useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 1855685041}
@@ -1053,6 +1158,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 570364482}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -1082,6 +1192,11 @@ MonoBehaviour:
       restorePow:
         start: 0
         end: 0
+        curve: 0.5
+        useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
         curve: 0.5
         useCurve: 0
   - endOfBone: {fileID: 1672850832}
@@ -1115,6 +1230,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   - endOfBone: {fileID: 913556437}
     useLocalCnvPrm: 0
     cnvPrm:
@@ -1146,6 +1266,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   _cnvPrm:
     depth: 6
     fixCount: 2
@@ -1173,6 +1298,11 @@ MonoBehaviour:
     restorePow:
       start: 0
       end: 0
+      curve: 0.5
+      useCurve: 0
+    maxMovableRange:
+      start: -1
+      end: -1
       curve: 0.5
       useCurve: 0
   _isLoopConnect: 1
@@ -1302,6 +1432,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
       propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+      propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
@@ -1977,6 +2111,11 @@ MonoBehaviour:
         end: 0
         curve: 0.5
         useCurve: 0
+      maxMovableRange:
+        start: -1
+        end: -1
+        curve: 0.5
+        useCurve: 0
   _cnvPrm:
     depth: 5
     fixCount: 2
@@ -2004,6 +2143,11 @@ MonoBehaviour:
     restorePow:
       start: 0
       end: 0
+      curve: 0.5
+      useCurve: 0
+    maxMovableRange:
+      start: -1
+      end: -1
       curve: 0.5
       useCurve: 0
   _isLoopConnect: 1

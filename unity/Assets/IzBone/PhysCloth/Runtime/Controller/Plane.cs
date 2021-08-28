@@ -33,6 +33,7 @@ public unsafe sealed class Plane : Base {
 		[RangeSC(0,180)] public SC maxAngle = 60;
 		[RangeSC(0,1)] public SC aglRestorePow = 0;
 		[RangeSC(0,1)] public SC restorePow = 0;
+		public SC maxMovableRange = -1;
 
 		public float getM(int idx) => idx<fixCount ? 0 : m.evaluate( idx2rate(idx) );
 		public float getR(int idx) => r.evaluate( idx2rate(idx) );
@@ -43,6 +44,7 @@ public unsafe sealed class Plane : Base {
 		public float getRestoreHL(int idx) => HalfLifeDragAttribute.showValue2HalfLife(
 			restorePow.evaluate( idx2rate(idx) )
 		);
+		public float getMaxMovableRange(int idx) => maxMovableRange.evaluate( idx2rate(idx) );
 
 		float idx2rate(int idx) =>
 			depth-fixCount<=1 ? 0 : ( (idx-fixCount) / (depth-fixCount-1f) );
@@ -155,7 +157,8 @@ public unsafe sealed class Plane : Base {
 					cnvPrm.getR(k),
 					cnvPrm.getMaxAgl(k),
 					cnvPrm.getAglCompliance(k),
-					cnvPrm.getRestoreHL(k)
+					cnvPrm.getRestoreHL(k),
+					cnvPrm.getMaxMovableRange(k)
 				);
 			}
 		}

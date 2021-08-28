@@ -18,7 +18,6 @@ namespace IzBone.Common.Collider {
 	public unsafe struct Collider_Sphere : ICollider {
 		public float3 pos;
 		public float r;
-//		public bool forcePeneCancel;		//!< 強制突き抜け防止処理を使用するか否か
 
 		/** 指定の球がぶつかっていた場合、引き離しベクトルを得る */
 		public bool solve(Collider_Sphere* s, float3* oColN, float* oColDepth) {
@@ -41,7 +40,6 @@ namespace IzBone.Common.Collider {
 		public float r_s;		//!< 横方向の半径
 		public float3 dir;		//!< 縦方向の向き
 		public float r_h;		//!< 縦方向の長さ
-//		public bool forcePeneCancel;		//!< 強制突き抜け防止処理を使用するか否か
 
 		/** 指定の球がぶつかっていた場合、引き離しベクトルを得る */
 		public bool solve(Collider_Sphere* s, float3* oColN, float* oColDepth) {

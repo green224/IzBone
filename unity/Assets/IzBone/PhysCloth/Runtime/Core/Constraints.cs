@@ -28,12 +28,12 @@ namespace IzBone.PhysCloth.Core {
 			var pntsPtr = (Particle*)points.GetUnsafePtr();
 
 			foreach (var i in src) {
-				// 強度があまりにも弱い場合は高速条件を追加しない
+				// 強度があまりにも弱い場合は拘束条件を追加しない
 				if (Controller.ComplianceAttribute.LEFT_VAL*0.98f < i.compliance) continue;
 
 				switch (i.mode) {
 				case Controller.ConstraintMng.Mode.Distance:
-					{// 距離制約
+					{// 距離拘束
 						var b = new Constraint_Distance{
 							compliance = i.compliance,
 							src = pntsPtr + i.srcPtclIdx,
@@ -43,7 +43,7 @@ namespace IzBone.PhysCloth.Core {
 						if ( b.isValid() ) d.Add( b );
 					} break;
 				case Controller.ConstraintMng.Mode.MaxDistance:
-					{// 距離制約
+					{// 最大距離拘束
 						var b = new Constraint_MaxDistance{
 							compliance = i.compliance,
 							src = i.param.xyz,
@@ -53,7 +53,7 @@ namespace IzBone.PhysCloth.Core {
 						if ( b.isValid() ) md.Add( b );
 					} break;
 				case Controller.ConstraintMng.Mode.Axis:
-					{// 稼働軸制約
+					{// 稼働軸拘束
 						var b = new Constraint_Axis{
 							compliance = i.compliance,
 							src = pntsPtr + i.srcPtclIdx,

@@ -47,11 +47,14 @@ namespace IzBone.PhysCloth.Core {
 		// Default位置への復元半減期
 		public HalfLife restoreHL;
 
+		// デフォルト位置からの移動可能距離
+		public float maxMovableRange;
+
+
 
 		public Particle(
 			int index,
-			float3 initWPos, float3 initWNml, float3 initLNml,
-			float angleCompliance
+			float3 initWPos, float3 initWNml, float3 initLNml
 		) {
 			this.index = index;
 			this.initWPos = initWPos;
@@ -68,20 +71,23 @@ namespace IzBone.PhysCloth.Core {
 			wNml = default;
 			maxDRotAngle = default;
 			restoreHL = default;
-			this.angleCompliance = angleCompliance;
+			angleCompliance = default;
+			maxMovableRange = default;
 		}
 
 		public void syncParams(
 			float m, float r,
 			float maxDRotAngle,
 			float angleCompliance,
-			HalfLife restoreHL
+			HalfLife restoreHL,
+			float maxMovableRange
 		) {
 			col.r = r;
 			invM = m < MinimumM ? 0 : (1f/m);
 			this.maxDRotAngle = maxDRotAngle;
 			this.angleCompliance = angleCompliance;
 			this.restoreHL = restoreHL;
+			this.maxMovableRange = maxMovableRange;
 		}
 
 		const float MinimumM = 0.00000001f;
