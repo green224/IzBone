@@ -13,6 +13,9 @@ namespace IzBone.PhysCloth.Core {
 	
 	/** 拘束条件のinterface */
 	public interface IConstraint {
+		// 与えられたパラメータで拘束条件をする意味があるか否かをチェックする
+		public bool isValid();
+		// 拘束条件を解決する処理
 		public float solve(float sqDt, float lambda);
 	}
 
@@ -23,15 +26,9 @@ namespace IzBone.PhysCloth.Core {
 		public float compliance;
 		public float defLen;
 
-		public void reset(float compliance, Particle* src, Particle* dst, float defLen) {
-			this.compliance = compliance;
-			this.src = src;
-			this.dst = dst;
-			this.defLen = defLen;
-		}
+		public bool isValid() => MinimumM < src->invM + dst->invM;
 		public float solve(float sqDt, float lambda) {
 			var sumInvM = src->invM + dst->invM;
-			if (sumInvM < MinimumM) return 0;
 
 			// XPBDでの拘束条件の解決
 			// 参考:
@@ -50,10 +47,43 @@ namespace IzBone.PhysCloth.Core {
 			var pLen = length(p);
 
 			var dlambda = (defLen - pLen - at * lambda) / (sumInvM + at);	// eq.18
-			var correction = dlambda * (p / (pLen+0.0000001f));				// eq.17
+			var correction = p * (dlambda / (pLen+0.0000001f));				// eq.17
 
 			src->col.pos += +src->invM * correction;
 			dst->col.pos += -dst->invM * correction;
+
+			return dlambda;
+		}
+
+		const float MinimumM = 0.00000001f;
+	}
+
+	/**	最大距離による拘束条件。指定距離未満になるように拘束する */
+	public unsafe struct Constraint_MaxDistance : IConstraint {
+		public float3 src;
+		public Particle* tgt;
+		public float compliance;
+		public float maxLen;
+
+		public bool isValid() => MinimumM < tgt->invM;
+		public float solve(float sqDt, float lambda) {
+
+			// XPBDでの拘束条件の解決
+			var at = compliance / sqDt;    // a~
+			//   P = (x,y,z)
+			// とすると、Distanceのときと同様に、
+			//   Cj = |P| - d
+			//   ∇Cj = P / |P|
+			// また |P| < d のときは
+			//   Cj = ∇Cj = 0
+			var p = tgt->col.pos - src;
+			var pLen = length(p);
+			if ( pLen < maxLen ) return -lambda;
+
+			var dlambda = (maxLen - pLen - at * lambda) / (tgt->invM + at);	// eq.18
+			var correction = p * (dlambda / pLen);				// eq.17
+
+			tgt->col.pos -= tgt->invM * correction;
 
 			return dlambda;
 		}
@@ -69,29 +99,8 @@ namespace IzBone.PhysCloth.Core {
 		public float minDist;	// 最小距離。srcからのn方向の距離がこれ未満の場合は押し出しを行う
 		public float compliance;
 
-		public void reset(
-			float compliance,
-			float3 src,
-			float3 n,
-			Particle* tgt,
-			float minDist
-		) {
-			this.compliance = compliance;
-			this.src = src;
-			this.n = n;
-			this.tgt = tgt;
-			this.minDist = minDist;
-		}
+		public bool isValid() => MinimumM < tgt->invM;
 		public float solve(float sqDt, float lambda) {
-
-			// この拘束条件はコライダの衝突解決用に使用される。
-			// 衝突がない場合はdefaultで初期化されるので、
-			// その場合はλを0に初期化する。
-			// （正直に計算してもΔλが-λになるため同一）
-			if (tgt == null) return -lambda;
-
-
-			if (tgt->invM < MinimumM) return 0;
 
 			// XPBDでの拘束条件の解決
 			var at = compliance / sqDt;    // a~
@@ -124,58 +133,6 @@ namespace IzBone.PhysCloth.Core {
 		const float MinimumM = 0.00000001f;
 	}
 
-#if false
-	/**
-	 * コライダによる指定距離押し出し拘束条件。
-	 * 処理的にはConstraint_MinDistNと同じだが、
-	 * 毎フレーム生成するために、Constraint_MinDistNよりパラメータを工夫している
-	 */
-	public unsafe struct Constraint_ColliderPush : IConstraint {
-		public bool isEnable;	// 押し出しが必要か否か
-		public Particle* tgt;	// 押し出し対象
-		public float3 amount;	// 押し出し量
-		public float compliance;
-
-		public void reset(
-			bool isEnable,
-			float compliance,
-			Particle* tgt,
-			float3 amount
-		) {
-			this.isEnable = isEnable;
-			this.compliance = compliance;
-			this.tgt = tgt;
-			this.amount = amount;
-		}
-		public float solve(float sqDt, float lambda) {
-			if (tgt->invM < MinimumM) return 0;
-
-			// 押し出し不要なときは、Cj=0として処理
-			if ( !isEnable ) return -lambda;
-
-			// XPBDでの拘束条件の解決
-			var at = compliance / sqDt;    // a~
-			//   押し出し量 : P = (x,y,z)
-			// とすると、
-			//   Cj = |P|
-			// であるので、
-			//   ∇Cj = P / |P|
-			// また
-			//   ∇Cj・∇Cj = 1
-			var cj = length( amount );
-
-			var dlambda = (-cj - at * lambda) / (tgt->invM + at);	// eq.18
-			var correction = dlambda * (amount / (cj+0.0000001f));	// eq.17
-
-			tgt->col.pos += tgt->invM * correction;
-
-			return dlambda;
-		}
-
-		const float MinimumM = 0.00000001f;
-	}
-#endif
-
 	/** 可動軸方向による拘束条件 */
 	public unsafe struct Constraint_Axis : IConstraint {
 		public Particle* src;
@@ -183,15 +140,9 @@ namespace IzBone.PhysCloth.Core {
 		public float compliance;
 		public float3 axis;
 
-		public void reset(float compliance, Particle* src, Particle* dst, float3 axis) {
-			this.compliance = compliance;
-			this.src = src;
-			this.dst = dst;
-			this.axis = axis;
-		}
+		public bool isValid() => MinimumM < src->invM + dst->invM;
 		public float solve(float sqDt, float lambda) {
 			var sumInvM = src->invM + dst->invM;
-			if (sumInvM < MinimumM) return 0;
 
 			// XPBDでの拘束条件の解決
 			var at = compliance / sqDt;    // a~
@@ -225,12 +176,8 @@ namespace IzBone.PhysCloth.Core {
 		public float compliance;
 		public float3 defChildPos;	// 初期姿勢でのchildの位置
 
+		public bool isValid() => MinimumM < parent->invM + self->invM + child->invM;
 		public float solve(float sqDt, float lambda) {
-			if (
-				parent->invM < MinimumM &&
-				self->invM < MinimumM &&
-				child->invM < MinimumM
-			) return 0;
 
 			// XPBDでの拘束条件の解決
 			var at = compliance / sqDt;    // a~

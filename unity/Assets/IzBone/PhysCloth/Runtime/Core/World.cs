@@ -302,26 +302,26 @@ namespace IzBone.PhysCloth.Core {
 						}
 					}
 
-					// コライダとの衝突解決
-					static bool solveCollider<T>(
-						Common.Collider.Collider_Sphere* s,
-						NativeArray<T> colliders
-					) where T : struct, Common.Collider.ICollider {
-						if (!colliders.IsCreated) return false;
+					{// コライダとの衝突解決
+						static bool solveCollider<T>(
+							Common.Collider.Collider_Sphere* s,
+							NativeArray<T> colliders
+						) where T : struct, Common.Collider.ICollider {
+							if (!colliders.IsCreated) return false;
 
-						// 衝突を検知して、衝突がない位置まで引き離した時の位置を計算する
-						float3 colN;
-						float colDepth;
-						var isCol = false;
-						for (int i=0; i<colliders.Length; ++i) {
-							if ( !colliders[i].solve(s, &colN, &colDepth) ) continue;
-							s->pos += colN * colDepth;
-							isCol = true;
+							// 衝突を検知して、衝突がない位置まで引き離した時の位置を計算する
+							float3 colN;
+							float colDepth;
+							var isCol = false;
+							for (int i=0; i<colliders.Length; ++i) {
+								if ( !colliders[i].solve(s, &colN, &colDepth) ) continue;
+								s->pos += colN * colDepth;
+								isCol = true;
+							}
+
+							return isCol;
 						}
 
-						return isCol;
-					}
-					{
 						var lambda = cldCstLmdPtr0;
 //						var compliance = i==iterationNum ? 0 : 1e-10f;
 						var compliance = 1e-10f;
