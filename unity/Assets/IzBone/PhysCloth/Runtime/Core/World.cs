@@ -20,7 +20,7 @@ namespace IzBone.PhysCloth.Core {
 
 		public float3 g = float3(0,-1,0);		// 重力加速度
 		public float3 windSpeed = default;		// 風速
-		// TODO : これをカーブで設定できるようにする
+// TODO : これをカーブで設定できるようにする
 		public HalfLife airHL = 0.1f;			// 空気抵抗による半減期
 		public float maxSpeed = 100;			// 最大速度
 
@@ -103,18 +103,12 @@ namespace IzBone.PhysCloth.Core {
 			// constraintsを再生成
 			_constraints.Dispose();
 			_constraints = new Constraints(mngConstraints, _particles);
-			var cnstTtlLen = _constraints.distance.Length + _constraints.axis.Length;
-
-			// lambdasを生成
-			if (_lambdas.IsCreated) _lambdas.Dispose();
-			_lambdas = new NativeArray<float>(cnstTtlLen, Allocator.Persistent);
 		}
 
 		/** 破棄する。必ず最後に呼ぶこと */
 		public void Dispose() {
 			_particles.Dispose();
 			_particleChains.Dispose();
-			_lambdas.Dispose();
 			_constraints.Dispose();
 		}
 
@@ -130,9 +124,6 @@ namespace IzBone.PhysCloth.Core {
 			var ptclPtrEnd = ptclPtr0 + _particles.Length;
 			var chainPtr0 = (ParticleChain*)_particleChains.GetUnsafePtr();
 			var chainPtrEnd = chainPtr0 + _particleChains.Length;
-// TODO : lambdaをTmpで作成するようにする
-			var lmdsPtr0 = (float*)_lambdas.GetUnsafePtr();
-			var lmdsPtrEnd = lmdsPtr0 + _lambdas.Length;
 
 			// イテレーションが0回の場合は位置キャッシュだけ更新する
 			if (iterationNum == 0) {
@@ -228,19 +219,20 @@ namespace IzBone.PhysCloth.Core {
 			{// XPBDによるフィッティング処理
 
 				// λを初期化
-				for (var p=lmdsPtr0; p!=lmdsPtrEnd; ++p) *p=0;
 				var cldCstLmd = new NativeArray<float>(_particles.Length, Allocator.Temp);
 				var cldCstLmdPtr0 = (float*)cldCstLmd.GetUnsafePtr();
 				var aglLmtLmd = new NativeArray<float>(_particles.Length, Allocator.Temp);
 				var aglLmtLmdPtr0 = (float*)aglLmtLmd.GetUnsafePtr();
 				var mvblRngLmd = new NativeArray<float>(_particles.Length, Allocator.Temp);
 				var mvblRngLmdPtr0 = (float*)mvblRngLmd.GetUnsafePtr();
+				var otherCstrLmd = new NativeArray<float>(_constraints.TotalLength, Allocator.Temp);
+				var otherCstrLmdPtr0 = (float*)otherCstrLmd.GetUnsafePtr();
 
 				// フィッティングループ
 				var sqDt = dt*dt/iterationNum/iterationNum;
 				for (int i=0; i<iterationNum; ++i) {
 
-					// まず現在の位置での角度制限の拘束条件を適応
+					// 角度制限の拘束条件を解決
 					for (var c=chainPtr0; c!=chainPtrEnd; ++c) {
 						if (c->length == 1) {
 							c->begin->dWRot = Unity.Mathematics.quaternion.identity;
@@ -378,15 +370,16 @@ namespace IzBone.PhysCloth.Core {
 						}
 					}
 
-					{// その他の拘束条件を適応する。
+					{// その他の拘束条件を解決
 						static void solveConstraints<T>(float sqDt, ref float* lambda, NativeArray<T> constraints)
 						where T : struct, IConstraint {
 							if (!constraints.IsCreated) return;
 							for (int i=0; i<constraints.Length; ++i,++lambda)
 								*lambda += constraints[i].solve( sqDt, *lambda );
 						}
-						var lambda = lmdsPtr0;
+						var lambda = otherCstrLmdPtr0;
 						solveConstraints(sqDt, ref lambda, _constraints.distance);
+						solveConstraints(sqDt, ref lambda, _constraints.maxDistance);
 						solveConstraints(sqDt, ref lambda, _constraints.axis);
 					}
 				}
@@ -394,6 +387,7 @@ namespace IzBone.PhysCloth.Core {
 				cldCstLmd.Dispose();
 				aglLmtLmd.Dispose();
 				mvblRngLmd.Dispose();
+				otherCstrLmd.Dispose();
 			}
 
 			// 速度の保存
@@ -402,7 +396,7 @@ namespace IzBone.PhysCloth.Core {
 		}
 
 		// シミュレーション結果をボーンにフィードバックする
-		// TODO : particlesChainを使用するようにする
+// TODO : particlesChainを使用するようにする
 		public void applyToBone( Controller.ParticleMng[] mngParticles ) {
 			var ptclPtr0 = (Particle*)_particles.GetUnsafePtr();
 			for (int i=0; i<_particles.Length; ++i) {
@@ -455,7 +449,6 @@ namespace IzBone.PhysCloth.Core {
 		NativeArray<Particle> _particles;
 		NativeArray<ParticleChain> _particleChains;
 		Constraints _constraints;
-		NativeArray<float> _lambdas;
 
 		~World() {
 			if ( _particles.IsCreated ) {

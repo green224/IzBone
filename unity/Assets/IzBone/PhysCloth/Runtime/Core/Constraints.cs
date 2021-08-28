@@ -18,6 +18,9 @@ namespace IzBone.PhysCloth.Core {
 		public NativeArray<Constraint_MaxDistance>	maxDistance;
 		public NativeArray<Constraint_Axis>			axis;
 		
+		public int TotalLength =>
+			distance.Length + maxDistance.Length + axis.Length;
+
 		public Constraints(
 			Controller.ConstraintMng[] src,
 			NativeArray<Particle> points
