@@ -225,10 +225,8 @@ namespace IzBone.PhysCloth.Core {
 				for (var p=lmdsPtr0; p!=lmdsPtrEnd; ++p) *p=0;
 				var cldCstLmd = new NativeArray<float>(_particles.Length, Allocator.Temp);
 				var cldCstLmdPtr0 = (float*)cldCstLmd.GetUnsafePtr();
-				var cldCstLmdPtrEnd = cldCstLmdPtr0 + cldCstLmd.Length;
 				var aglLmtLmd = new NativeArray<float>(_particles.Length, Allocator.Temp);
 				var aglLmtLmdPtr0 = (float*)aglLmtLmd.GetUnsafePtr();
-				var aglLmtLmdPtrEnd = aglLmtLmdPtr0 + aglLmtLmd.Length;
 
 				// フィッティングループ
 				var sqDt = dt*dt/iterationNum/iterationNum;
@@ -305,9 +303,6 @@ namespace IzBone.PhysCloth.Core {
 					}
 
 					// コライダとの衝突解決
-					var cldCst = new NativeArray<Constraint_MinDistN>(_particles.Length, Allocator.Temp);
-					var cldCstPtr0 = (Constraint_MinDistN*)cldCst.GetUnsafePtr();
-					var cldCstPtrEnd = cldCstPtr0 + cldCst.Length;
 					static bool solveCollider<T>(
 						Common.Collider.Collider_Sphere* s,
 						NativeArray<T> colliders
@@ -327,10 +322,10 @@ namespace IzBone.PhysCloth.Core {
 						return isCol;
 					}
 					{
-						var c = cldCstPtr0;
+						var lambda = cldCstLmdPtr0;
 //						var compliance = i==iterationNum ? 0 : 1e-10f;
 						var compliance = 1e-10f;
-						for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++c) {
+						for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++lambda) {
 							if (p->invM == 0) continue;
 
 							var colS = p->col;
@@ -340,21 +335,22 @@ namespace IzBone.PhysCloth.Core {
 							isCol |= solveCollider(&colS, colliders.boxes);
 							isCol |= solveCollider(&colS, colliders.planes);
 
-							// 何かしらに衝突している場合は、引き離し用拘束条件を作成。
+							// 何かしらに衝突している場合は、引き離し用拘束条件を適応
 							if (isCol) {
 								var dPos = colS.pos - p->col.pos;
 								var dPosLen = length(dPos);
 								var dPosN = dPos / (dPosLen + 0.0000001f);
 
-								c->reset(
-									compliance,
-									p->col.pos,
-									dPosN,
-									p,
-									dPosLen
-								);
+								var cstr = new Constraint_MinDistN{
+									compliance = compliance,
+									src = p->col.pos,
+									n = dPosN,
+									tgt = p,
+									minDist = dPosLen,
+								};
+								*lambda += cstr.solve( sqDt, *lambda );
 							} else {
-								*c = default;
+								*lambda = 0;
 							}
 						}
 					}
@@ -371,13 +367,6 @@ namespace IzBone.PhysCloth.Core {
 						solveConstraints(sqDt, ref lambda, _constraints.distance);
 						solveConstraints(sqDt, ref lambda, _constraints.axis);
 					}
-					{
-					// TODO : これ上にもってくる
-						var lambda = cldCstLmdPtr0;
-						solveConstraints(sqDt, ref lambda, cldCst);
-					}
-
-					cldCst.Dispose();
 				}
 
 				cldCstLmd.Dispose();
