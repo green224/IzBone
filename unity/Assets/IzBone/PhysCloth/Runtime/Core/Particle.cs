@@ -18,7 +18,6 @@ namespace IzBone.PhysCloth.Core {
 
 		// 初期化時のワールド座標と法線。
 		// これはアニメーションなどで同期されない真に初期化時の位置
-		readonly public float3 initWPos;
 		readonly public float3 initWNml;
 		readonly public float3 initLNml;
 
@@ -57,7 +56,6 @@ namespace IzBone.PhysCloth.Core {
 			float3 initWPos, float3 initWNml, float3 initLNml
 		) {
 			this.index = index;
-			this.initWPos = initWPos;
 			this.initWNml = initWNml;
 			this.initLNml = initLNml;
 

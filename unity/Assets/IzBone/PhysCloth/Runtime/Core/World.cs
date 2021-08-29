@@ -137,6 +137,7 @@ namespace IzBone.PhysCloth.Core {
 			}
 			
 			{// デフォルト姿勢でのL2Wと法線を計算しておく
+// TODO : ここChainを使用するようにする
 				int i = 0;
 				for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
 					if (mngParticles[i].parent != null) continue;

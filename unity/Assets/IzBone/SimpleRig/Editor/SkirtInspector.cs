@@ -43,21 +43,14 @@ sealed class SkirtInspector : Editor
 				Gizmos8.drawSphere( p1, r );
 			}
 			
-			Handles.Label(
-				bone.transTree[0].trans.position,
-				bone.transTree[0].trans.name
-			);
+//			Handles.Label(
+//				bone.transTree[0].trans.position,
+//				bone.transTree[0].trans.name
+//			);
 		}
 
 		// ふとももを表示
 		if (tgt._legDatas!=null && tgt._boneDatas!=null && tgt._rootData!=null) {
-
-			// 何もふとももを動かしていないときの、ボーン方向
-			var initBoneDir = Math8.transVector(
-				tgt._rootData.init2curW,
-				tgt._initSkirtWDir
-			);
-			initBoneDir = normalize(initBoneDir);
 
 			// スカートのボーン長さの平均
 			float boneLen=default;

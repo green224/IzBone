@@ -31,6 +31,10 @@ public unsafe abstract class Base : MonoBehaviour {
 	[HalfLifeDrag] public HalfLife airDrag = 0.1f;		// 空気抵抗による半減期
 	[Min(0)] public float maxSpeed = 100;				// 最大速度
 
+	[Space]
+	// 毎フレーム位置をアップデートするか否か
+	public bool updateDefaultPosEveryFrame = false;
+
 
 	// ----------------------------------- private/protected メンバ -------------------------------
 
@@ -47,6 +51,9 @@ public unsafe abstract class Base : MonoBehaviour {
 	}
 
 	virtual protected void LateUpdate() {
+		if (updateDefaultPosEveryFrame)
+			foreach (var i in _particles) i.resetDefaultPose();
+
 		coreUpdate(Time.smoothDeltaTime);
 		_world.applyToBone(_particles);
 	}

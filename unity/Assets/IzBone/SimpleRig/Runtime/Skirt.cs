@@ -260,9 +260,11 @@ public sealed class Skirt : MonoBehaviour {
 
 
 		foreach (var i in _boneDatas) {
+			var transTree = i.transTree;
+
 			var pB0 = Math8.trans(
 				_rootData.curL2W,
-				i.transTree[0].l2p.c3.xyz
+				transTree[0].l2p.c3.xyz
 			);
 
 			// スカートの方向にどのくらい傾いているかの影響度一覧を計算する
@@ -328,9 +330,16 @@ public sealed class Skirt : MonoBehaviour {
 				initBoneDirL,
 				Math8.transVector( _rootData.curW2L, initBoneDir + dDir )
 			);
-			i.transTree[0].trans.localRotation = mul(rot, i.transTree[0].rotL);
-			i.transTree[0].trans.localPosition = i.transTree[0].posL;
-			i.transTree[0].trans.localScale = i.transTree[0].sclL;
+			transTree[0].trans.localRotation = mul(rot, transTree[0].rotL);
+			transTree[0].trans.localPosition = transTree[0].posL;
+			transTree[0].trans.localScale = transTree[0].sclL;
+
+			// 根本以外のボーンも初期姿勢にリセットする
+			for (int j=1; j<transTree.Length; ++j) {
+				transTree[j].trans.localRotation = transTree[j].rotL;
+				transTree[j].trans.localPosition = transTree[j].posL;
+				transTree[j].trans.localScale = transTree[j].sclL;
+			}
 		}
 	}
 
