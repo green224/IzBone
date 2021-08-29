@@ -135,14 +135,17 @@ static public partial class Math8 {
 		return ret;
 	}		
 
-	/** 指定のfrom方向をto方向に向ける回転を得る。必要であれば角度制限を付けることができる */
-	static public quaternion fromToRotation(float3 from, float3 to, float maxAngle=math.PI) {
+	/** 指定のfrom方向をto方向に向ける回転を得る。必要であれば角度制限や角度係数を付けることができる */
+	static public quaternion fromToRotation(
+		float3 from, float3 to,
+		float maxAngle=math.PI, float angleScl=1
+	) {
 		var axis = math.normalizesafe( math.cross(from, to) );
 		var theta = math.acos( math.clamp(
 			math.dot( math.normalizesafe(from), math.normalizesafe(to) ),
 			-1, 1
 		) );
-		theta = math.min(maxAngle, theta);
+		theta = math.min(maxAngle, theta*angleScl);
 		var s = math.sin(theta / 2);
 		var c = math.cos(theta / 2);
 		return math.quaternion(axis.x*s, axis.y*s, axis.z*s, c);

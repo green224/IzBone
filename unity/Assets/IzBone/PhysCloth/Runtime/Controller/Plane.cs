@@ -5,6 +5,7 @@ using Unity.Mathematics;
 using static Unity.Mathematics.math;
 
 using System.Collections.Generic;
+using System.Linq;
 
 
 namespace IzBone.PhysCloth.Controller {
@@ -79,6 +80,10 @@ public unsafe sealed class Plane : Base {
 
 
 	// --------------------------------------- publicメンバ -------------------------------------
+
+	// 対象のEndOfBonesを配列で得る
+	public Transform[] EndOfBones => _boneInfos?.Select(i=>i.endOfBone)?.ToArray();
+
 
 	// ----------------------------------- private/protected メンバ -------------------------------
 

@@ -63,7 +63,13 @@ namespace IzBone.Common {
 			var b = src.y;
 			var attr = ( Vec2RangeAttribute )attribute;
 
-			rect = EditorGUI.PrefixLabel(rect, label);
+			if (Screen.width < 333) {
+				EditorGUI.PrefixLabel(rect, label);
+				rect.yMin += 18;
+			} else {
+				rect = EditorGUI.PrefixLabel(rect, label);
+			}
+
 			float ffsize = 50;
 			var rct0 = new Rect(rect.x, rect.y, ffsize, rect.height);
 			var rct1 = new Rect(rect.x+ffsize+5, rect.y, rect.width-ffsize*2-10, rect.height);
