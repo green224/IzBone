@@ -18,6 +18,7 @@ sealed class RootAuthoringInspector : Editor
 		var tgt = (RootAuthoring)target;
 
 		foreach (var bone in tgt._bones)
+		if (bone.targets != null)
 		foreach (var boneTgt in bone.targets) {
 
 			var trns = boneTgt.endOfBone;

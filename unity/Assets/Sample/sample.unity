@@ -223,6 +223,21 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -2757179387930339556, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
   m_PrefabInstance: {fileID: 1904150903}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &85452401 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -1080979909345703601, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &89100340 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6007893162109930326, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_PrefabInstance: {fileID: 1904150903}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &142647318 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3126770995219528027, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_PrefabInstance: {fileID: 1904150903}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &163933260
 GameObject:
   m_ObjectHideFlags: 0
@@ -922,6 +937,147 @@ MonoBehaviour:
   _effectRaiseRange:
     x: 0.19
     y: 0.4101696
+--- !u!114 &270552196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 270552193}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4c742b0fff834b40897f786ab94deb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _bones:
+  - name: ear
+    targets:
+    - endOfBone: {fileID: 1335360063}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    - endOfBone: {fileID: 2112756296}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    angleMax:
+      start: 15
+      end: 10
+      curve: 0.5
+      useCurve: 1
+    angleMargin:
+      start: 0.5
+      end: 0.5
+      curve: 0.5
+      useCurve: 0
+    omgMax:
+      start: 20
+      end: 20
+      curve: 0.5
+      useCurve: 0
+    rotKpm:
+      start: 70
+      end: 30
+      curve: 0.5
+      useCurve: 1
+    omgDrag:
+      start: 0.6
+      end: 0.8
+      curve: 0.5
+      useCurve: 1
+    shiftMax:
+      start: 0.01
+      end: 0.01
+      curve: 0.5
+      useCurve: 0
+    shiftMargin:
+      start: 0.3
+      end: 0.3
+      curve: 0.5
+      useCurve: 0
+    vMax:
+      start: 1
+      end: 1
+      curve: 0.5
+      useCurve: 0
+    shiftKpm:
+      start: 300
+      end: 300
+      curve: 0.5
+      useCurve: 0
+    vDrag:
+      start: 0.5
+      end: 0.5
+      curve: 0.5
+      useCurve: 0
+    radius:
+      start: 0.02
+      end: 0.02
+      curve: 0.5
+      useCurve: 0
+    depth: 2
+    iterationNum: 1
+    rotShiftRate: 0
+    withAnimation: 0
+  - name: tail
+    targets:
+    - endOfBone: {fileID: 85452401}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    angleMax:
+      start: 10
+      end: 80
+      curve: 0.41318503
+      useCurve: 1
+    angleMargin:
+      start: 0.3
+      end: 0.3
+      curve: 0.5
+      useCurve: 0
+    omgMax:
+      start: 20
+      end: 20
+      curve: 0.5
+      useCurve: 0
+    rotKpm:
+      start: 54
+      end: 54
+      curve: 0.5
+      useCurve: 0
+    omgDrag:
+      start: 0.8
+      end: 0.532
+      curve: 0.34807378
+      useCurve: 1
+    shiftMax:
+      start: 0.01
+      end: 0.01
+      curve: 0.5
+      useCurve: 0
+    shiftMargin:
+      start: 0.3
+      end: 0.3
+      curve: 0.5
+      useCurve: 0
+    vMax:
+      start: 1
+      end: 1
+      curve: 0.5
+      useCurve: 0
+    shiftKpm:
+      start: 300
+      end: 300
+      curve: 0.5
+      useCurve: 0
+    vDrag:
+      start: 0.5
+      end: 0.5
+      curve: 0.5
+      useCurve: 0
+    radius:
+      start: 0.02
+      end: 0.02
+      curve: 0.5
+      useCurve: 0
+    depth: 7
+    iterationNum: 3
+    rotShiftRate: 0
+    withAnimation: 0
 --- !u!1 &380784466 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
@@ -953,7 +1109,7 @@ MonoBehaviour:
     y: 0
     z: 0
   airDrag:
-    value: 3.041252
+    value: 0.40354052
   maxSpeed: 10
   updateDefaultPosEveryFrame: 1
   _boneInfos:
@@ -1390,6 +1546,403 @@ MonoBehaviour:
   _effectRaiseRange:
     x: 0.19
     y: 0.4101696
+--- !u!114 &380784469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 380784466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4c742b0fff834b40897f786ab94deb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _bones:
+  - name: ear
+    targets:
+    - endOfBone: {fileID: 1529786441}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    - endOfBone: {fileID: 962745731}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    angleMax:
+      start: 26
+      end: 26
+      curve: 0.5
+      useCurve: 0
+    angleMargin:
+      start: 0.532
+      end: 0.532
+      curve: 0.5
+      useCurve: 0
+    omgMax:
+      start: 20
+      end: 20
+      curve: 0.5
+      useCurve: 0
+    rotKpm:
+      start: 70
+      end: 70
+      curve: 0.5
+      useCurve: 0
+    omgDrag:
+      start: 0.452
+      end: 0.452
+      curve: 0.5
+      useCurve: 0
+    shiftMax:
+      start: 0.001
+      end: 0.001
+      curve: 0.5
+      useCurve: 0
+    shiftMargin:
+      start: 0.47
+      end: 0.47
+      curve: 0.5
+      useCurve: 0
+    vMax:
+      start: 1
+      end: 1
+      curve: 0.5
+      useCurve: 0
+    shiftKpm:
+      start: 300
+      end: 300
+      curve: 0.5
+      useCurve: 0
+    vDrag:
+      start: 0.5
+      end: 0.5
+      curve: 0.5
+      useCurve: 0
+    radius:
+      start: 0.03
+      end: 0.03
+      curve: 0.5
+      useCurve: 0
+    depth: 1
+    iterationNum: 1
+    rotShiftRate: 0
+    withAnimation: 0
+  - name: oppai
+    targets:
+    - endOfBone: {fileID: 2141341085}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    - endOfBone: {fileID: 142647318}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    angleMax:
+      start: 15
+      end: 15
+      curve: 0.5
+      useCurve: 0
+    angleMargin:
+      start: 0.532
+      end: 0.532
+      curve: 0.5
+      useCurve: 0
+    omgMax:
+      start: 20
+      end: 20
+      curve: 0.5
+      useCurve: 0
+    rotKpm:
+      start: 143
+      end: 143
+      curve: 0.5
+      useCurve: 0
+    omgDrag:
+      start: 0.7
+      end: 0.7
+      curve: 0.5
+      useCurve: 0
+    shiftMax:
+      start: 0.001
+      end: 0.001
+      curve: 0.5
+      useCurve: 0
+    shiftMargin:
+      start: 0.3
+      end: 0.3
+      curve: 0.5
+      useCurve: 0
+    vMax:
+      start: 1
+      end: 1
+      curve: 0.5
+      useCurve: 0
+    shiftKpm:
+      start: 400
+      end: 400
+      curve: 0.5
+      useCurve: 0
+    vDrag:
+      start: 0.585
+      end: 0.585
+      curve: 0.5
+      useCurve: 0
+    radius:
+      start: 0.03
+      end: 0.03
+      curve: 0.5
+      useCurve: 0
+    depth: 1
+    iterationNum: 1
+    rotShiftRate: 0.5
+    withAnimation: 0
+  - name: tail
+    targets:
+    - endOfBone: {fileID: 1050330404}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    angleMax:
+      start: 36
+      end: 36
+      curve: 0.5
+      useCurve: 0
+    angleMargin:
+      start: 0.532
+      end: 0.532
+      curve: 0.5
+      useCurve: 0
+    omgMax:
+      start: 20
+      end: 20
+      curve: 0.5
+      useCurve: 0
+    rotKpm:
+      start: 196
+      end: 196
+      curve: 0.5
+      useCurve: 0
+    omgDrag:
+      start: 0.576
+      end: 0.576
+      curve: 0.5
+      useCurve: 0
+    shiftMax:
+      start: 0.001
+      end: 0.001
+      curve: 0.5
+      useCurve: 0
+    shiftMargin:
+      start: 0.3
+      end: 0.3
+      curve: 0.5
+      useCurve: 0
+    vMax:
+      start: 1
+      end: 1
+      curve: 0.5
+      useCurve: 0
+    shiftKpm:
+      start: 300
+      end: 300
+      curve: 0.5
+      useCurve: 0
+    vDrag:
+      start: 0.5
+      end: 0.5
+      curve: 0.5
+      useCurve: 0
+    radius:
+      start: 0.03
+      end: 0.03
+      curve: 0.5
+      useCurve: 0
+    depth: 1
+    iterationNum: 1
+    rotShiftRate: 0
+    withAnimation: 0
+  - name: hair_f
+    targets:
+    - endOfBone: {fileID: 1892798006}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    angleMax:
+      start: 7
+      end: 7
+      curve: 0.5
+      useCurve: 0
+    angleMargin:
+      start: 0.532
+      end: 0.532
+      curve: 0.5
+      useCurve: 0
+    omgMax:
+      start: 20
+      end: 20
+      curve: 0.5
+      useCurve: 0
+    rotKpm:
+      start: 70
+      end: 70
+      curve: 0.5
+      useCurve: 0
+    omgDrag:
+      start: 0.7
+      end: 0.7
+      curve: 0.5
+      useCurve: 0
+    shiftMax:
+      start: 0.0004
+      end: 0.0004
+      curve: 0.5
+      useCurve: 0
+    shiftMargin:
+      start: 0.3
+      end: 0.3
+      curve: 0.5
+      useCurve: 0
+    vMax:
+      start: 1
+      end: 1
+      curve: 0.5
+      useCurve: 0
+    shiftKpm:
+      start: 300
+      end: 300
+      curve: 0.5
+      useCurve: 0
+    vDrag:
+      start: 0.814
+      end: 0.814
+      curve: 0.5
+      useCurve: 0
+    radius:
+      start: 0.03
+      end: 0.03
+      curve: 0.5
+      useCurve: 0
+    depth: 1
+    iterationNum: 1
+    rotShiftRate: 0.867
+    withAnimation: 0
+  - name: hair_lr
+    targets:
+    - endOfBone: {fileID: 914959889}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    - endOfBone: {fileID: 89100340}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    angleMax:
+      start: 56
+      end: 56
+      curve: 0.5
+      useCurve: 0
+    angleMargin:
+      start: 0.532
+      end: 0.532
+      curve: 0.5
+      useCurve: 0
+    omgMax:
+      start: 20
+      end: 20
+      curve: 0.5
+      useCurve: 0
+    rotKpm:
+      start: 35
+      end: 35
+      curve: 0.5
+      useCurve: 0
+    omgDrag:
+      start: 0.612
+      end: 0.612
+      curve: 0.5
+      useCurve: 0
+    shiftMax:
+      start: 0.0004
+      end: 0.0004
+      curve: 0.5
+      useCurve: 0
+    shiftMargin:
+      start: 0.3
+      end: 0.3
+      curve: 0.5
+      useCurve: 0
+    vMax:
+      start: 1
+      end: 1
+      curve: 0.5
+      useCurve: 0
+    shiftKpm:
+      start: 100
+      end: 100
+      curve: 0.5
+      useCurve: 0
+    vDrag:
+      start: 0.708
+      end: 0.708
+      curve: 0.5
+      useCurve: 0
+    radius:
+      start: 0.03
+      end: 0.03
+      curve: 0.5
+      useCurve: 0
+    depth: 1
+    iterationNum: 1
+    rotShiftRate: 0.504
+    withAnimation: 0
+  - name: hair_b
+    targets:
+    - endOfBone: {fileID: 582329623}
+      defaultRot: {x: 0, y: 0, z: 0, w: 0}
+    angleMax:
+      start: 46
+      end: 46
+      curve: 0.5
+      useCurve: 0
+    angleMargin:
+      start: 0.532
+      end: 0.532
+      curve: 0.5
+      useCurve: 0
+    omgMax:
+      start: 20
+      end: 20
+      curve: 0.5
+      useCurve: 0
+    rotKpm:
+      start: 35
+      end: 35
+      curve: 0.5
+      useCurve: 0
+    omgDrag:
+      start: 0.612
+      end: 0.612
+      curve: 0.5
+      useCurve: 0
+    shiftMax:
+      start: 0.001
+      end: 0.001
+      curve: 0.5
+      useCurve: 0
+    shiftMargin:
+      start: 0.3
+      end: 0.3
+      curve: 0.5
+      useCurve: 0
+    vMax:
+      start: 1
+      end: 1
+      curve: 0.5
+      useCurve: 0
+    shiftKpm:
+      start: 300
+      end: 300
+      curve: 0.5
+      useCurve: 0
+    vDrag:
+      start: 0.841
+      end: 0.841
+      curve: 0.5
+      useCurve: 0
+    radius:
+      start: 0.03
+      end: 0.03
+      curve: 0.5
+      useCurve: 0
+    depth: 1
+    iterationNum: 1
+    rotShiftRate: 0
+    withAnimation: 0
 --- !u!4 &441776339 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -7610557644028257055, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
@@ -1432,6 +1985,11 @@ MonoBehaviour:
 Transform:
   m_CorrespondingSourceObject: {fileID: -5055978752528079418, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
   m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &582329623 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -9072279541641379188, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_PrefabInstance: {fileID: 1904150903}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &608838418
 PrefabInstance:
@@ -2229,6 +2787,16 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5550688505284971182, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
   m_PrefabInstance: {fileID: 608838418}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &914959889 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -3015365639648138259, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_PrefabInstance: {fileID: 1904150903}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &962745731 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3217720883797747519, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_PrefabInstance: {fileID: 1904150903}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &969631797 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -4076888674689425359, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
@@ -2300,6 +2868,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
+--- !u!4 &1050330404 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -4374610125395564943, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_PrefabInstance: {fileID: 1904150903}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1099786728
 GameObject:
   m_ObjectHideFlags: 0
@@ -2575,6 +3148,11 @@ PlayableDirector:
   m_ExposedReferences:
     m_References:
     - 2ec7df8435293d14685251e4ce2a0554: {fileID: 1898167390}
+--- !u!4 &1335360063 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6848349162824643122, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1358161451 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -6474001344312143652, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
@@ -2658,6 +3236,11 @@ Transform:
 Transform:
   m_CorrespondingSourceObject: {fileID: -1562086591826793883, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
   m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1529786441 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4794191374445275940, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_PrefabInstance: {fileID: 1904150903}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1600635303 stripped
 GameObject:
@@ -2817,6 +3400,11 @@ MonoBehaviour:
       z: 0.05233605
       w: -0.9986295
   forcePeneCancel: 0
+--- !u!4 &1892798006 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -1944725437554670293, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_PrefabInstance: {fileID: 1904150903}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1898167390 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6932796488126606520, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
@@ -3550,6 +4138,11 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 1061709886, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
   m_PrefabInstance: {fileID: 1434173588}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &2112756296 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -2675385311586334187, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2119941422 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6932796488126606520, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
@@ -3564,6 +4157,11 @@ Transform:
 Animator:
   m_CorrespondingSourceObject: {fileID: 1061709886, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
   m_PrefabInstance: {fileID: 1024635303}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2141341085 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6794110826615112278, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_PrefabInstance: {fileID: 1904150903}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &2143932416 stripped
 Transform:

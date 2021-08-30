@@ -103,8 +103,11 @@ public sealed class RootAuthoring : MonoBehaviour {
 		foreach ( var i in _bones ) {
 			// Depthを有効範囲に丸める
 			int depthMax = 0;
+
+			if (i.targets != null)
 			foreach (var t in i.targets) {
 				int s = 0;
+				if (t.endOfBone == null) break;
 				for (var j=t.endOfBone; j.parent!=null; j=j.parent) ++s;
 				depthMax = max(s, depthMax);
 			}
