@@ -26,7 +26,7 @@ public unsafe abstract class Base : MonoBehaviour {
 	[Range(1,50)] public int iterationNum = 15;		// 1frame当たりの計算イテレーション回数
 
 	[Space]
-	public float3 g = float3(0,-1,0);					// 重力加速度
+	public Gravity g = new Gravity(1);					// 重力加速度
 	public float3 windSpeed = default;					// 風速
 	[HalfLifeDrag] public HalfLife airDrag = 0.1f;		// 空気抵抗による半減期
 	[Min(0)] public float maxSpeed = 100;				// 最大速度
@@ -85,7 +85,7 @@ public unsafe abstract class Base : MonoBehaviour {
 		}
 	#endif
 
-		_world.g = g;
+		_world.g = g.evaluate();
 		_world.windSpeed = windSpeed;
 		_world.airHL = airDrag;
 		_world.maxSpeed = maxSpeed;

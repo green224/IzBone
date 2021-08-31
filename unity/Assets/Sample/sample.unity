@@ -344,9 +344,12 @@ MonoBehaviour:
   useSimulation: 1
   iterationNum: 5
   g:
-    x: 0
-    y: -6.55
-    z: 0
+    scale: 1
+    useCustom: 0
+    customA:
+      x: 0
+      y: 0
+      z: 0
   windSpeed:
     x: 0
     y: 0
@@ -1101,9 +1104,12 @@ MonoBehaviour:
   useSimulation: 1
   iterationNum: 5
   g:
-    x: 0
-    y: -6.55
-    z: 0
+    scale: 1
+    useCustom: 0
+    customA:
+      x: 0
+      y: 0
+      z: 0
   windSpeed:
     x: 0
     y: 0
@@ -2983,9 +2989,12 @@ MonoBehaviour:
   useSimulation: 1
   iterationNum: 5
   g:
-    x: 0
-    y: -6.55
-    z: 0
+    scale: 1
+    useCustom: 0
+    customA:
+      x: 0
+      y: 0
+      z: 0
   windSpeed:
     x: 0
     y: 0
