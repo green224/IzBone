@@ -180,11 +180,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
---- !u!4 &39500867 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -1767647511222072032, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 1935514460}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &43823718 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -6199227846267642887, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
@@ -272,16 +267,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &200810727 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -1891455443800533703, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &257705165 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -4588049628672691157, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &261831793 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6299760191795266482, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
@@ -357,516 +342,23 @@ MonoBehaviour:
   airDrag:
     value: 2.523965
   maxSpeed: 10
-  updateDefaultPosEveryFrame: 1
-  _boneInfos:
-  - endOfBone: {fileID: 1668801272}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 987119312}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1358161451}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1499566715}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 498752577}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 441776339}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 969631797}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 200810727}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1916999272}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 257705165}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1493243629}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 2143932416}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1162029844}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 840389567}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  _cnvPrm:
-    depth: 6
-    fixCount: 2
-    excludeSideChain: 0
+  withAnimation: 1
+  _topOfBones:
+  - {fileID: 608838432}
+  - {fileID: 608838431}
+  - {fileID: 608838429}
+  - {fileID: 608838427}
+  - {fileID: 608838425}
+  - {fileID: 608838423}
+  - {fileID: 608838421}
+  - {fileID: 608838419}
+  - {fileID: 608838420}
+  - {fileID: 608838422}
+  - {fileID: 608838424}
+  - {fileID: 608838426}
+  - {fileID: 608838428}
+  - {fileID: 608838430}
+  _physParam:
     m:
       start: 1
       end: 1
@@ -913,21 +405,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9643c0614ac977249beb8731bc3de732, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _skirtEndOfBones:
-  - {fileID: 1668801272}
-  - {fileID: 987119312}
-  - {fileID: 1358161451}
-  - {fileID: 1499566715}
-  - {fileID: 498752577}
-  - {fileID: 441776339}
-  - {fileID: 969631797}
-  - {fileID: 200810727}
-  - {fileID: 1916999272}
-  - {fileID: 257705165}
-  - {fileID: 1493243629}
-  - {fileID: 2143932416}
-  - {fileID: 1162029844}
-  - {fileID: 840389567}
+  _skirtTopOfBones:
+  - {fileID: 608838432}
+  - {fileID: 608838431}
+  - {fileID: 608838429}
+  - {fileID: 608838427}
+  - {fileID: 608838425}
+  - {fileID: 608838423}
+  - {fileID: 608838421}
+  - {fileID: 608838419}
+  - {fileID: 608838420}
+  - {fileID: 608838422}
+  - {fileID: 608838424}
+  - {fileID: 608838426}
+  - {fileID: 608838428}
+  - {fileID: 608838430}
   _legBones:
   - {fileID: 1600635304}
   - {fileID: 261831794}
@@ -1115,374 +607,21 @@ MonoBehaviour:
     y: 0
     z: 0
   airDrag:
-    value: 0.40354052
+    value: 0.11287513
   maxSpeed: 10
-  updateDefaultPosEveryFrame: 1
-  _boneInfos:
-  - endOfBone: {fileID: 1904150913}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1904150912}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1904150911}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1904150910}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1904150909}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1904150908}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1904150907}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1904150906}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1904150905}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  - endOfBone: {fileID: 1904150904}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  _cnvPrm:
-    depth: 6
-    fixCount: 2
-    excludeSideChain: 0
+  withAnimation: 1
+  _topOfBones:
+  - {fileID: 1124499466}
+  - {fileID: 1904150909}
+  - {fileID: 1904150905}
+  - {fileID: 1904150907}
+  - {fileID: 1904150912}
+  - {fileID: 1904150913}
+  - {fileID: 1293586057}
+  - {fileID: 1033952628}
+  - {fileID: 1904150904}
+  - {fileID: 1904150908}
+  _physParam:
     m:
       start: 1
       end: 1
@@ -1529,17 +668,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9643c0614ac977249beb8731bc3de732, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _skirtEndOfBones:
-  - {fileID: 1904150913}
-  - {fileID: 1904150912}
-  - {fileID: 1904150911}
-  - {fileID: 1904150910}
+  _skirtTopOfBones:
+  - {fileID: 1124499466}
   - {fileID: 1904150909}
-  - {fileID: 1904150908}
-  - {fileID: 1904150907}
-  - {fileID: 1904150906}
   - {fileID: 1904150905}
+  - {fileID: 1904150907}
+  - {fileID: 1904150912}
+  - {fileID: 1904150913}
+  - {fileID: 1293586057}
+  - {fileID: 1033952628}
   - {fileID: 1904150904}
+  - {fileID: 1904150908}
   _legBones:
   - {fileID: 664222044}
   - {fileID: 43823720}
@@ -1949,11 +1088,6 @@ MonoBehaviour:
     iterationNum: 1
     rotShiftRate: 0
     withAnimation: 0
---- !u!4 &441776339 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -7610557644028257055, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &477546465 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 827075974287967996, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
@@ -1987,11 +1121,6 @@ MonoBehaviour:
       z: 0.70710677
       w: 0.70710677
   forcePeneCancel: 0
---- !u!4 &498752577 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -5055978752528079418, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &582329623 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -9072279541641379188, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
@@ -2354,6 +1483,76 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+--- !u!4 &608838419 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -997736341041956700, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &608838420 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -3071845343640190353, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &608838421 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5822781461763557838, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &608838422 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -9110938762712486761, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &608838423 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -5890364186768932175, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &608838424 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7780653689234898653, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &608838425 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1698398416893849694, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &608838426 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 906755171603703360, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &608838427 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6189590186940179148, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &608838428 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -7335443614185807622, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &608838429 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2413558805240851556, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &608838430 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -1972184564239737749, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &608838431 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7228204036902660802, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &608838432 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -6176084461142818808, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &639235039
 GameObject:
   m_ObjectHideFlags: 0
@@ -2788,11 +1987,6 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 1061709886, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
   m_PrefabInstance: {fileID: 732940255}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &840389567 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5550688505284971182, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &914959889 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -3015365639648138259, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
@@ -2802,16 +1996,6 @@ Transform:
 Transform:
   m_CorrespondingSourceObject: {fileID: 3217720883797747519, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
   m_PrefabInstance: {fileID: 1904150903}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &969631797 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -4076888674689425359, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &987119312 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -1767647511222072032, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1024635303
 PrefabInstance:
@@ -2874,6 +2058,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
+--- !u!4 &1033952628 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3623869520646831813, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_PrefabInstance: {fileID: 1904150903}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1050330404 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -4374610125395564943, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
@@ -2965,6 +2154,11 @@ PlayableDirector:
   m_ExposedReferences:
     m_References:
     - 2ec7df8435293d14685251e4ce2a0554: {fileID: 2003763192}
+--- !u!4 &1124499466 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -5257118561508880579, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_PrefabInstance: {fileID: 1904150903}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1141305176 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
@@ -3002,58 +2196,19 @@ MonoBehaviour:
   airDrag:
     value: 0.1
   maxSpeed: 10
-  updateDefaultPosEveryFrame: 0
-  _boneInfos:
-  - endOfBone: {fileID: 39500867}
-    useLocalCnvPrm: 0
-    cnvPrm:
-      depth: 1
-      fixCount: 1
-      excludeSideChain: 0
-      m:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      r:
-        start: 1
-        end: 1
-        curve: 0.5
-        useCurve: 0
-      maxAngle:
-        start: 60
-        end: 60
-        curve: 0.5
-        useCurve: 0
-      aglRestorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      restorePow:
-        start: 0
-        end: 0
-        curve: 0.5
-        useCurve: 0
-      maxMovableRange:
-        start: -1
-        end: -1
-        curve: 0.5
-        useCurve: 0
-  _cnvPrm:
-    depth: 5
-    fixCount: 2
-    excludeSideChain: 0
+  withAnimation: 0
+  _topOfBones: []
+  _physParam:
     m:
       start: 1
       end: 1
       curve: 0.5
       useCurve: 0
     r:
-      start: 0.015
-      end: 0.02
-      curve: 0.037220865
-      useCurve: 1
+      start: 1
+      end: 1
+      curve: 0.5
+      useCurve: 0
     maxAngle:
       start: 60
       end: 60
@@ -3078,11 +2233,6 @@ MonoBehaviour:
   _cmpl_direct: 0.00000001
   _cmpl_side: 0.00017782794
   _cmpl_diag: 0.007943284
---- !u!4 &1162029844 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -3965162603962145374, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1229407308
 GameObject:
   m_ObjectHideFlags: 0
@@ -3157,14 +2307,14 @@ PlayableDirector:
   m_ExposedReferences:
     m_References:
     - 2ec7df8435293d14685251e4ce2a0554: {fileID: 1898167390}
+--- !u!4 &1293586057 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1450893508153061859, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_PrefabInstance: {fileID: 1904150903}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1335360063 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6848349162824643122, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1358161451 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -6474001344312143652, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
   m_PrefabInstance: {fileID: 608838418}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1434173588
@@ -3174,17 +2324,9 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1099786729}
     m_Modifications:
-    - target: {fileID: 1061709894, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
-      propertyPath: restorePow.value
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1061709894, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
-      propertyPath: _cnvPrm.aglRestorePow.end
-      value: 0.06
-      objectReference: {fileID: 0}
-    - target: {fileID: 1061709894, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
-      propertyPath: _cnvPrm.aglRestorePow.start
-      value: 0.06
+    - target: {fileID: 1061709886, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6227744310331858603, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
       propertyPath: m_RootOrder
@@ -3236,16 +2378,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
---- !u!4 &1493243629 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -3470351915951791767, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1499566715 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -1562086591826793883, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1529786441 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4794191374445275940, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
@@ -3289,11 +2421,6 @@ MonoBehaviour:
       z: 0.05233596
       w: 0.9986295
   forcePeneCancel: 0
---- !u!4 &1668801272 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1325022002604430665, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1787622601
 GameObject:
   m_ObjectHideFlags: 0
@@ -3912,58 +3039,38 @@ PrefabInstance:
   m_SourcePrefab: {fileID: 100100000, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
 --- !u!4 &1904150904 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: -2921024143672860791, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_CorrespondingSourceObject: {fileID: 233765871429058778, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
   m_PrefabInstance: {fileID: 1904150903}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1904150905 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 6340338974008378454, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
-  m_PrefabInstance: {fileID: 1904150903}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1904150906 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -7716179832915874570, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_CorrespondingSourceObject: {fileID: 1347502418385137692, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
   m_PrefabInstance: {fileID: 1904150903}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1904150907 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 7177197603653100009, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_CorrespondingSourceObject: {fileID: 1308217037837332229, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
   m_PrefabInstance: {fileID: 1904150903}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1904150908 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: -7800794909239956415, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_CorrespondingSourceObject: {fileID: -8852548313188799844, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
   m_PrefabInstance: {fileID: 1904150903}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1904150909 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 3953537573304833246, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
-  m_PrefabInstance: {fileID: 1904150903}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1904150910 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -2972592365163620912, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
-  m_PrefabInstance: {fileID: 1904150903}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1904150911 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8610328862220353962, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_CorrespondingSourceObject: {fileID: 212369931676818364, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
   m_PrefabInstance: {fileID: 1904150903}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1904150912 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 4060257833531681127, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_CorrespondingSourceObject: {fileID: -8442909858540143768, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
   m_PrefabInstance: {fileID: 1904150903}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1904150913 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 6802948128429289600, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
+  m_CorrespondingSourceObject: {fileID: 234825614953198359, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
   m_PrefabInstance: {fileID: 1904150903}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1916999272 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3612326960341008762, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
   m_PrefabAsset: {fileID: 0}
 --- !u!850595691 &1923561411
 LightingSettings:
@@ -4171,9 +3278,4 @@ Animator:
 Transform:
   m_CorrespondingSourceObject: {fileID: 6794110826615112278, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
   m_PrefabInstance: {fileID: 1904150903}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &2143932416 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1543969821503310947, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
-  m_PrefabInstance: {fileID: 608838418}
   m_PrefabAsset: {fileID: 0}

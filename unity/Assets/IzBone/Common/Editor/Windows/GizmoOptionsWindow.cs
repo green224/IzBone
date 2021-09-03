@@ -19,7 +19,6 @@ public sealed class GizmoOptionsWindow : EditorWindow
 
 	static public bool isShowPtclR => Instance._isShowPtclR;			// パーティクル半径を表示する
 	static public bool isShowPtclV => Instance._isShowPtclV;			// パーティクル速度を表示する
-	static public bool isShowPtclNml => Instance._isShowPtclNml;		// パーティクル法線を表示する
 	static public bool isShowConnections => Instance._isShowConnections;	// 接続関係を表示する
 	static public bool isShowLimitAgl => Instance._isShowLimitAgl;		// 角度制限を表示する
 	static public bool isShowLimitPos => Instance._isShowLimitPos;		// 位置制限を表示する
@@ -66,7 +65,6 @@ public sealed class GizmoOptionsWindow : EditorWindow
 	static GizmoOptionsWindow s_instance;
 	[LeftToggle][SerializeField] bool _isShowPtclR = true;
 	[LeftToggle][SerializeField] bool _isShowPtclV = false;
-	[LeftToggle][SerializeField] bool _isShowPtclNml = false;
 	[LeftToggle][SerializeField] bool _isShowConnections = true;
 	[LeftToggle][SerializeField] bool _isShowLimitAgl = true;
 	[LeftToggle][SerializeField] bool _isShowLimitPos = true;
@@ -87,7 +85,6 @@ public sealed class GizmoOptionsWindow : EditorWindow
 				() => {
 					showProp( "_isShowPtclR",		LZ.IsShowParticleR );
 					showProp( "_isShowPtclV",		LZ.IsShowParticleV );
-					showProp( "_isShowPtclNml",		LZ.IsShowParticleNml );
 					showProp( "_isShowConnections",	LZ.IsShowConnections );
 					showProp( "_isShowLimitAgl",	LZ.IsShowLimitAgl );
 					showProp( "_isShowLimitPos",	LZ.IsShowLimitPos );

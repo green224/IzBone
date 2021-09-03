@@ -28,9 +28,6 @@ public static partial class Localization {
 		public const string IsShowParticleV =
 			target == Target.JP ? "パーティクル速度" :
 			"Particle velocity";
-		public const string IsShowParticleNml =
-			target == Target.JP ? "パーティクル法線" :
-			"Particle normal";
 		public const string IsShowConnections =
 			target == Target.JP ? "接続関係" :
 			"Connections";

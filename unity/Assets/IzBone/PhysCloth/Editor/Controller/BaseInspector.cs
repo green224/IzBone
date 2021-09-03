@@ -40,28 +40,60 @@ abstract class BaseInspector : Editor
 		if ( Common.Windows.GizmoOptionsWindow.isShowConnections ) {
 			Gizmos8.color = Gizmos8.Colors.BoneMovable;
 			if (tgt._constraints != null) foreach (var i in tgt._constraints) {
-				var p0 = tgt._world.DEBUG_getPos( i.srcPtclIdx );
-				var p1 = tgt._world.DEBUG_getPos( i.dstPtclIdx );
+				var p0 = tgt._world.DEBUG_getPtcl( i.srcPtclIdx ).col.pos;
+				var p1 = tgt._world.DEBUG_getPtcl( i.dstPtclIdx ).col.pos;
 				Gizmos8.drawLine( p0, p1 );
 			}
 		}
 
 		// 質点を描画
 		if (tgt._particles != null) foreach (var i in tgt._particles) {
-			if (i.m < 0.000001f) continue;
-			var p = tgt._world.DEBUG_getPos( i.idx );
+			var ptcl = tgt._world.DEBUG_getPtcl( i.idx );
+			var pos = ptcl.col.pos;
+			var isFixed = i.m < 0.000001f;
 
-			// TODO : ここ、矢印にする
-			if ( Common.Windows.GizmoOptionsWindow.isShowPtclV ) {
-				var v = tgt._world.DEBUG_getV( i.idx );
-				Gizmos8.color = new Color(0,0,1);
-				Gizmos8.drawLine( p, p+v*0.03f );
+			// パーティクル半径を描画
+			if ( Common.Windows.GizmoOptionsWindow.isShowPtclR ) {
+				Gizmos8.color = isFixed
+					? Gizmos8.Colors.JointFixed
+					: Gizmos8.Colors.JointMovable;
+
+				var viewR = ptcl.col.r;
+				if (isFixed) viewR = HandleUtility.GetHandleSize(pos)*0.1f;
+
+				Gizmos8.drawSphere(pos, viewR);
 			}
 
-			if ( Common.Windows.GizmoOptionsWindow.isShowPtclNml ) {
-				var nml = tgt._world.DEBUG_getNml( i.idx );
-				Gizmos8.color = new Color(1,0,0);
-				Gizmos8.drawLine( p, p+nml*0.03f );
+			// 移動可能距離を描画
+			if ( Common.Windows.GizmoOptionsWindow.isShowLimitPos ) {
+				if (!isFixed && 0 <= ptcl.maxMovableRange) {
+					Gizmos8.color = Gizmos8.Colors.ShiftLimit;
+					Gizmos8.drawWireCube(pos, Quaternion.identity, ptcl.maxMovableRange*2);
+				}
+			}
+
+			// TODO : ここ、矢印にする
+			if ( !isFixed && Common.Windows.GizmoOptionsWindow.isShowPtclV ) {
+				var v = ptcl.v;
+				Gizmos8.color = new Color(0,0,1);
+				Gizmos8.drawLine( pos, pos+v*0.03f );
+			}
+
+//			if ( Common.Windows.GizmoOptionsWindow.isShowPtclNml ) {
+//				var nml = ptcl.wNml;
+//				Gizmos8.color = new Color(1,0,0);
+//				Gizmos8.drawLine( pos, pos+nml*0.03f );
+//			}
+
+			// Fixedな親との接続を表示
+			if (isFixed && ptcl.parentIdx != -1) {
+				var a = tgt._particles[ptcl.parentIdx];
+				if (a != null && a.m < 0.000001f) {
+					var b = tgt._world.DEBUG_getPtcl(a.idx);
+
+					Gizmos8.color = Gizmos8.Colors.BoneFixed;
+					Gizmos8.drawLine( b.col.pos, ptcl.col.pos );
+				}
 			}
 		}
 	}

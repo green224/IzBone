@@ -29,7 +29,7 @@ public sealed class Skirt : MonoBehaviour {
 	// --------------------------- インスペクタに公開しているフィールド -----------------------------
 
 	// 対象とするスカートのボーン
-	[SerializeField] Transform[] _skirtEndOfBones = null;
+	[SerializeField] Transform[] _skirtTopOfBones = null;
 
 	// ふともものボーン
 	[SerializeField] Transform[] _legBones = null;
@@ -55,35 +55,33 @@ public sealed class Skirt : MonoBehaviour {
 	 */
 	public void setup()
 	{
-		// スカートのボーン部分のデータを構築
-		var tgtEOBs = _skirtEndOfBones?.Where(i => i!=null)?.ToArray();
-		if (tgtEOBs!=null && tgtEOBs.Length!=0) {
+		// ボーンの親がちゃんとみな一致しているかどうかのチェック
+		var tgtTOBs = _skirtTopOfBones?.Where(i => i!=null)?.ToArray();
+		if (tgtTOBs!=null && tgtTOBs.Length!=0) {
+			var a = tgtTOBs[0].parent;
+			foreach ( var i in tgtTOBs ) {
+				if (i.parent == a) continue;
+				Debug.LogError("TopOfBones requires that the parent transforms be the same.");
+				return;
+			}
+		}
 
-			// まず対象のTransformツリーをSceneRootまで取得
+		// スカートのボーン部分のデータを構築
+		if (tgtTOBs!=null && tgtTOBs.Length!=0) {
+
+			// まず対象のTransformツリーを末端まで取得
 			static Transform[] getTransTree(Transform self) {
 				var ret = new List<Transform>();
-				for (var i=self; i!=null; i=i.parent) ret.Add(i);
-				return ((IEnumerable<Transform>)ret).Reverse().ToArray();
-			}
-			var fullTransTrees = _skirtEndOfBones.Select( i => getTransTree(i) ).ToArray();
-
-			// 一致する一番奥の根本まで絞る
-			int matchCnt = 0;
-			while (true) {
-				var t = fullTransTrees[0][matchCnt];
-				var isOk = true;
-				foreach (var j in fullTransTrees) {
-					if (j.Length == matchCnt || j[matchCnt] != t) {
-						isOk = false;
-						break;
-					}
+				for (var i=self;; i=i.GetChild(0)) {
+					ret.Add(i);
+					if (i.childCount == 0) break;
 				}
-				if (!isOk) break;
-				++matchCnt;
+				return ret.ToArray();
 			}
-			_boneDatas = fullTransTrees
-				.Select( i => new BoneData(i.Skip(matchCnt).ToArray()) )
-				.ToArray();
+			var fullTransTrees = _skirtTopOfBones.Select( i => getTransTree(i) ).ToArray();
+
+			// ボーンデータを生成
+			_boneDatas = fullTransTrees.Select( i=>new BoneData(i) ).ToArray();
 		}
 
 		// ふともものボーン部分のデータを構築
@@ -92,29 +90,6 @@ public sealed class Skirt : MonoBehaviour {
 				.Select(i => new LegData(i))
 				.ToArray();
 		}
-
-/*		// スカートのふとももウェイト値を初期化
-		if (_boneDatas!=null && _legDatas!=null && _legDatas.Length!=0) {
-			foreach (var i in _boneDatas) {
-				i.weight = new float[_legDatas.Length];
-
-				// 距離によってウェイト付けを行う
-				float ttlWeight = 0;
-				for (int j=0; j<_legDatas.Length; ++j) {
-					var dist = length(
-						_legDatas[j].trans.position - i.transTree[0].trans.position
-					);
-					var w = 1f / dist;
-					i.weight[j] = w;
-					ttlWeight += w;
-				}
-
-				// ウェイトを正規化しておく
-				for (int j=0; j<_legDatas.Length; ++j)
-					i.weight[j] /= ttlWeight;
-			}
-		}
-*/
 
 		// ルートのボーンデータを初期化
 		if (_boneDatas != null && _boneDatas.Length != 0) {
@@ -364,12 +339,12 @@ public sealed class Skirt : MonoBehaviour {
 		if (!Application.isPlaying) __need2Setup = true;
 	}
 
-	// 同一GameObjectについているPlaneから、EndOfBonesを自動設定する
+	// 同一GameObjectについているPlaneから、TopOfBonesを自動設定する
 	[ContextMenu("Auto-Setup from PhysCloth")]
 	void autoSetupFromPhysCloth() {
 		var cloth = GetComponent<PhysCloth.Controller.Plane>();
 		if (cloth != null) {
-			_skirtEndOfBones = cloth.EndOfBones;
+			_skirtTopOfBones = cloth.TopOfBones;
 			__need2Setup = true;
 		}
 	}

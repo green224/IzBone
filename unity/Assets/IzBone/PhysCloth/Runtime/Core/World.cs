@@ -6,8 +6,6 @@ using static Unity.Mathematics.math;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-using System.Collections.Generic;
-using System.Linq;
 
 namespace IzBone.PhysCloth.Core {
 	using Common;
@@ -28,54 +26,15 @@ namespace IzBone.PhysCloth.Core {
 			Controller.ParticleMng[] mngParticles,
 			Controller.ConstraintMng[] mngConstraints
 		) {
-			// particlesを生成
+			// particlesを生成。
+			// particlesは、Particleをボーンツリーの上から下に向けて並ぶようにした配列にしておくこと。
+			// これにより、particlesの順番にL2Wを更新していくと、更新により親のL2Wを再計算する必要なく
+			// ストレートに一巡で計算を終えることができる。
 			_particles = new NativeArray<Particle>(mngParticles.Length, Allocator.Persistent);
 			for (int i=0; i<mngParticles.Length; ++i) {
 				var mp = mngParticles[i];
-
-				var p0 = mp.trans.position;
-				var pp = mp.parent?.trans?.position;
-				var pc = mp.child?.trans?.position;
-				var pl = mp.left?.trans?.position;
-				var pr = mp.right?.trans?.position;
-				float3 nml = 0;
-				if ( pp.HasValue && pl.HasValue )
-					nml += normalize(cross( pp.Value - p0, pl.Value - p0 ));
-				if ( pl.HasValue && pc.HasValue )
-					nml += normalize(cross( pl.Value - p0, pc.Value - p0 ));
-				if ( pc.HasValue && pr.HasValue )
-					nml += normalize(cross( pc.Value - p0, pr.Value - p0 ));
-				if ( pr.HasValue && pp.HasValue )
-					nml += normalize(cross( pr.Value - p0, pp.Value - p0 ));
-
-				// 法線が得られなかった場合は、とりあえず親の法線をコピーする
-				if (nml.Equals(0)) {
-					if (mp.parent != null) nml = _particles[i-1].initWNml;
-				} else {
-					nml = normalize(nml);
-				}
-
-				// 法線の変換は逆転置行列
-				// 参考:https://raytracing.hatenablog.com/entry/20130325/1364229762
-				var lNml = mul(
-					transpose( (float3x3)(float4x4)mp.trans.localToWorldMatrix ),
-					nml
-				);
-
-				_particles[i] = new Particle(i, p0, nml, lNml);
+				_particles[i] = new Particle(i, mp.parent?.idx??-1, mp.trans.position);
 			}
-
-			// particleChainsを生成
-			var ptclPtr0 = (Particle*)_particles.GetUnsafePtr();
-			var chains = mngParticles
-				.Where(i => i.parent==null)
-				.Select(i => {
-					int length = 0;
-					for (var j=i; j!=null; j=j.child) ++length;
-
-					return new ParticleChain( ptclPtr0+i.idx, length );
-				}).ToArray();
-			_particleChains = new NativeArray<ParticleChain>(chains, Allocator.Persistent);
 
 			// パラメータを同期
 			syncWithManage(mngParticles, mngConstraints);
@@ -108,7 +67,6 @@ namespace IzBone.PhysCloth.Core {
 		/** 破棄する。必ず最後に呼ぶこと */
 		public void Dispose() {
 			_particles.Dispose();
-			_particleChains.Dispose();
 			_constraints.Dispose();
 		}
 
@@ -122,8 +80,6 @@ namespace IzBone.PhysCloth.Core {
 			// 各種バッファのポインタを取得しておく
 			var ptclPtr0 = (Particle*)_particles.GetUnsafePtr();
 			var ptclPtrEnd = ptclPtr0 + _particles.Length;
-			var chainPtr0 = (ParticleChain*)_particleChains.GetUnsafePtr();
-			var chainPtrEnd = chainPtr0 + _particleChains.Length;
 
 			// イテレーションが0回の場合は位置キャッシュだけ更新する
 			if (iterationNum == 0) {
@@ -137,22 +93,15 @@ namespace IzBone.PhysCloth.Core {
 			}
 			
 			{// デフォルト姿勢でのL2Wと法線を計算しておく
-// TODO : ここChainを使用するようにする
 				int i = 0;
 				for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
-					if (mngParticles[i].parent != null) continue;
-
-					var parentTrans = mngParticles[i].trans;
-					var l2w = parentTrans == null
-						? Unity.Mathematics.float4x4.identity
-						: (float4x4)mngParticles[i].trans.parent.localToWorldMatrix;
-
-					for (var m=mngParticles[i]; m!=null; m=m.child) {
-						l2w = mul( l2w, m.defaultL2P );
-
-						ptclPtr0[m.idx].defaultL2W = l2w;
-						ptclPtr0[m.idx].defaultWNml =
-							mul( (float3x3)l2w, ptclPtr0[m.idx].initLNml );
+					if ( mngParticles[i].parent == null ) {
+						p->defaultL2W = mngParticles[i].trans.localToWorldMatrix;
+					} else {
+						p->defaultL2W = mul(
+							ptclPtr0[p->parentIdx].defaultL2W,
+							mngParticles[i].defaultL2P
+						);
 					}
 				}
 			}
@@ -162,58 +111,43 @@ namespace IzBone.PhysCloth.Core {
 			var airResRateIntegral = HalfLifeDragAttribute.evaluateIntegral( airHL, dt );
 
 			// 質点の位置を更新
-			for (var c=chainPtr0; c!=chainPtrEnd; ++c) {
-				for (int i=0; i!=c->length; ++i) {
-					var p = c->begin + i;
-
-					if (p->invM < MinimumM) {
-						var mngP = mngParticles[p->index];
-//						if (i==0) {
-							p->col.pos = mngP.trans.position;
-//						} else {
-//							var l2w =
-//								mngP.trans.parent.localToWorldMatrix *
-//								Matrix4x4.TRS(
-//									mngP.trans.localPosition,
-//									mngP.trans.localRotation,
-//									mngP.trans.localScale
-//								);
-//							p->col.pos = ( (float4x4)l2w ).c3.xyz;
-//						}
-					} else {
-						var v = p->v;
+			for (var p=ptclPtr0; p!=ptclPtrEnd; ++p) {
+				if (p->invM < MinimumM) {
+					var mngP = mngParticles[p->index];
+					p->col.pos = mngP.trans.position;
+				} else {
+					var v = p->v;
 						
-						// 速度制限を適応
-						v = clamp(v, -maxSpeed, maxSpeed);
+					// 速度制限を適応
+					v = clamp(v, -maxSpeed, maxSpeed);
 
-						// 更新前の位置をvに入れておく。これは後で参照するための一時的なキャッシュ用
-						p->v = p->col.pos;
+					// 更新前の位置をvに入れておく。これは後で参照するための一時的なキャッシュ用
+					p->v = p->col.pos;
 
-						// 位置を物理で更新する。
-						// 空気抵抗の影響を与えるため、以下のようにしている。
-						// 一行目:
-						//    dtは変動するので、空気抵抗の影響が解析的に正しく影響するように、
-						//    vには積分結果のairResRateIntegralを掛ける。
-						//    空気抵抗がない場合は、gの影響は g*dt^2になるが、
-						//    ここもいい感じになるようにg*dt*airResRateIntegralとしている。
-						//    これは正しくはないが、いい感じに見える。
-						// 二行目:
-						//    １行目だけの場合は空気抵抗によって速度が0になるように遷移する。
-						//    風速の影響を与えたいため、空気抵抗による遷移先がwindSpeedになるようにしたい。
-						//    airResRateIntegralは空気抵抗の初期値1の減速曲線がグラフ上に描く面積であるので,
-						//    減速が一切ない場合に描く面積1*dtとの差は、dt-airResRateIntegralとなる。
-						//    したがってこれにwindSpeedを掛けて、風速に向かって空気抵抗がかかるようにする。
-						p->col.pos +=
-							(v + g*dt) * airResRateIntegral +
-							windSpeed * (dt - airResRateIntegral);
+					// 位置を物理で更新する。
+					// 空気抵抗の影響を与えるため、以下のようにしている。
+					// 一行目:
+					//    dtは変動するので、空気抵抗の影響が解析的に正しく影響するように、
+					//    vには積分結果のairResRateIntegralを掛ける。
+					//    空気抵抗がない場合は、gの影響は g*dt^2になるが、
+					//    ここもいい感じになるようにg*dt*airResRateIntegralとしている。
+					//    これは正しくはないが、いい感じに見える。
+					// 二行目:
+					//    １行目だけの場合は空気抵抗によって速度が0になるように遷移する。
+					//    風速の影響を与えたいため、空気抵抗による遷移先がwindSpeedになるようにしたい。
+					//    airResRateIntegralは空気抵抗の初期値1の減速曲線がグラフ上に描く面積であるので,
+					//    減速が一切ない場合に描く面積1*dtとの差は、dt-airResRateIntegralとなる。
+					//    したがってこれにwindSpeedを掛けて、風速に向かって空気抵抗がかかるようにする。
+					p->col.pos +=
+						(v + g*dt) * airResRateIntegral +
+						windSpeed * (dt - airResRateIntegral);
 
-						// 初期位置に戻すようなフェードを掛ける
-						p->col.pos = lerp(
-							p->defaultL2W.c3.xyz,
-							p->col.pos,
-							HalfLifeDragAttribute.evaluate( p->restoreHL, dt )
-						);
-					}
+					// 初期位置に戻すようなフェードを掛ける
+					p->col.pos = lerp(
+						p->defaultL2W.c3.xyz,
+						p->col.pos,
+						HalfLifeDragAttribute.evaluate( p->restoreHL, dt )
+					);
 				}
 			}
 
@@ -234,80 +168,70 @@ namespace IzBone.PhysCloth.Core {
 				for (int i=0; i<iterationNum; ++i) {
 
 					// 角度制限の拘束条件を解決
-					for (var c=chainPtr0; c!=chainPtrEnd; ++c) {
-						if (c->length == 1) {
-							c->begin->dWRot = Unity.Mathematics.quaternion.identity;
-						} else {
-							var q0 = Unity.Mathematics.quaternion.identity;
-							var q1 = Unity.Mathematics.quaternion.identity;
-							var q2 = Unity.Mathematics.quaternion.identity;
-							Particle* p0 = null;
-							Particle* p1 = null;
-							Particle* p2 = c->begin;
-							Particle* p3 = p2 + 1;
-							var pEnd = c->begin + c->length;
-							var lmd2 = aglLmtLmdPtr0 + p2->index;
-							for (; p3!=pEnd;) {
+					var defRot = Unity.Mathematics.quaternion.identity;
+					var lmd2 = aglLmtLmdPtr0;
+					for (var p3=ptclPtr0; p3!=ptclPtrEnd; ++p3,++lmd2) {
 
-								// 回転する元方向と先方向を計算する処理
-								static (float3 fromDir, float3 toDir) getFromToDir(
-									Particle* src, Particle* dst, Quaternion q
-								) {
-									var from = dst->defaultL2W.c3.xyz - src->defaultL2W.c3.xyz;
-									var to = dst->col.pos - src->col.pos;
-									return ( mul(q, from), to );
-								}
+						static Particle* getPtcl(Particle* ptr0, int idx)
+							=> idx==-1 ? null : ptr0 + idx;
+						static Particle* getParentPtcl(Particle* ptr0, Particle* tgt)
+							=> tgt==null ? null : getPtcl(ptr0, tgt->parentIdx);
+						static quaternion getPtclDWRot(Particle* tgt)
+							=> tgt==null ? quaternion(0,0,0,1) : tgt->dWRot;
 
-								// 拘束条件を適応
-								float3 from, to;
-								if (p1 != null) {
-									(from, to) = getFromToDir(p2,p3,q2);
-									var constraint = new Constraint_Angle{
-										parent = p1,
-										self = p2,
-										child = p3,
-										compliance = p2->angleCompliance,
-										defChildPos = from + p2->col.pos
-									};
-									*lmd2 += constraint.solve(sqDt, *lmd2);
-								}
+						var p2 = getParentPtcl(ptclPtr0, p3);
+						if (p2 == null) continue;
+						var p1 = getParentPtcl(ptclPtr0, p2);
+						var p0 = getParentPtcl(ptclPtr0, p1);
 
-								// 位置が変わったので、再度姿勢を計算
-								if (p0 != null) {
-									(from, to) = getFromToDir(p0,p1,q0);
-									q0 = q1 = q2 =
-										mul( Math8.fromToRotation(from, to), q0 );
-								}
-								if (p1 != null) {
-									(from, to) = getFromToDir(p1,p2,q1);
-									q1 = q2 =
-										mul( Math8.fromToRotation(from, to), q1 );
-								}
-								(from, to) = getFromToDir(p2,p3,q2);
-								p2->dWRot = q2 =
-//									mul( Math8.fromToRotation(from, to), q2 );
-									mul( Math8.fromToRotation(from, to, p2->maxDRotAngle), q2 );
-
-//								// 角度制限を位置に反映する
-//								p1->col.pos = p0->col.pos +
-//									mul( q, from ) * ( length(to) / length(from) );
-
-								// 法線を更新する
-								var nml2 = mul( q2, p2->defaultWNml );
-								var nml3 = mul( q2, p3->defaultWNml );
-								p2->wNml = p2==c->begin ? nml2 : normalize(p2->wNml + nml2);
-								p3->wNml = nml3;
-
-								p0=p1; p1=p2; p2=p3; ++p3; ++lmd2;
-							}
+						// 回転する元方向と先方向を計算する処理
+						static (float3 fromDir, float3 toDir) getFromToDir(
+							Particle* src, Particle* dst, Quaternion q
+						) {
+							var from = dst->defaultL2W.c3.xyz - src->defaultL2W.c3.xyz;
+							var to = dst->col.pos - src->col.pos;
+							return ( mul(q, from), to );
 						}
+
+						// 拘束条件を適応
+						float3 from, to;
+						if (p1 != null) {
+							(from, to) = getFromToDir(p2, p3, p1->dWRot);
+							var constraint = new Constraint_Angle{
+								parent = p1,
+								self = p2,
+								child = p3,
+								compliance = p2->angleCompliance,
+								defChildPos = from + p2->col.pos
+							};
+							*lmd2 += constraint.solve(sqDt, *lmd2);
+						}
+
+						// 位置が変わったので、再度姿勢を計算
+						if (p0 != null) {
+							var p00 = getParentPtcl(ptclPtr0, p0);
+							var q0 = getPtclDWRot(p00);
+							(from, to) = getFromToDir(p0, p1, q0);
+							p0->dWRot =
+								mul( Math8.fromToRotation(from, to), q0 );
+						}
+						if (p1 != null) {
+							var q1 = getPtclDWRot(p0);
+							(from, to) = getFromToDir(p1, p2, q1);
+							p1->dWRot =
+								mul( Math8.fromToRotation(from, to), q1 );
+						}
+						var q2 = getPtclDWRot(p1);
+						(from, to) = getFromToDir(p2, p3, q2);
+						p2->dWRot =
+							mul( Math8.fromToRotation(from, to, p2->maxDRotAngle), q2 );
 					}
 
 					{// デフォルト位置からの移動可能距離での拘束条件を解決
 						var lambda = mvblRngLmdPtr0;
 						var compliance = 1e-10f;
 						for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++lambda) {
-							if (p->invM < 0.00000001f || p->maxMovableRange < 0) continue;
+							if (p->invM < MinimumM || p->maxMovableRange < 0) continue;
 							var cstr = new Constraint_MaxDistance{
 								compliance = compliance,
 								src = p->defaultL2W.c3.xyz,
@@ -397,49 +321,38 @@ namespace IzBone.PhysCloth.Core {
 		}
 
 		// シミュレーション結果をボーンにフィードバックする
-// TODO : particlesChainを使用するようにする
 		public void applyToBone( Controller.ParticleMng[] mngParticles ) {
 			var ptclPtr0 = (Particle*)_particles.GetUnsafePtr();
-			for (int i=0; i<_particles.Length; ++i) {
+			var ptclPtrEnd = ptclPtr0 + _particles.Length;
+			int i = 0;
+			for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
 
-				var j=mngParticles[i];
-				if ( j.parent != null ) continue;
+				if (p->parentIdx == -1) continue;
 
-				for (j=j.child; j!=null; j=j.child) {
-					var ptcl = ptclPtr0 + j.idx;
+				var j = mngParticles[i];
+				j.trans.parent.localRotation = Unity.Mathematics.quaternion.identity;
 
-					j.trans.parent.localRotation = Unity.Mathematics.quaternion.identity;
+				// 回転する元方向と先方向
+				var from = mul( j.defaultParentRot, j.trans.localPosition );
+				var to = mul(
+					j.trans.parent.worldToLocalMatrix,
+					float4( p->col.pos, 1 )
+				).xyz;
+				var q = Math8.fromToRotation( from, to );
 
-					// 回転する元方向と先方向
-					var from = mul( j.defaultParentRot, j.trans.localPosition );
-					var to = mul(
-						j.trans.parent.worldToLocalMatrix,
-						float4( ptcl->col.pos, 1 )
-					).xyz;
-					var q = Math8.fromToRotation( from, to );
+				// 初期姿勢を反映
+				q = mul(q, j.defaultParentRot);
 
-					// 初期姿勢を反映
-					q = mul(q, j.defaultParentRot);
-
-					j.trans.parent.localRotation = q;
-//					j.trans.position = ptcl->col.pos;
-//					ptcl->col.pos = j.trans.position;
-				}
+				j.trans.parent.localRotation = q;
+//				j.trans.position = p->col.pos;
+//				ptcl->col.pos = j.trans.position;
 			}
 		}
 
 	#if UNITY_EDITOR
-		internal float3 DEBUG_getPos(int idx) {
+		internal Particle DEBUG_getPtcl(int idx) {
 			if (!_particles.IsCreated || _particles.Length<=idx) return default;
-			return _particles[idx].col.pos;
-		}
-		internal float3 DEBUG_getV(int idx) {
-			if (!_particles.IsCreated || _particles.Length<=idx) return default;
-			return _particles[idx].v;
-		}
-		internal float3 DEBUG_getNml(int idx) {
-			if (!_particles.IsCreated || _particles.Length<=idx) return default;
-			return _particles[idx].wNml;
+			return _particles[idx];
 		}
 	#endif
 
@@ -448,7 +361,6 @@ namespace IzBone.PhysCloth.Core {
 
 		const float MinimumM = 0.00000001f;
 		NativeArray<Particle> _particles;
-		NativeArray<ParticleChain> _particleChains;
 		Constraints _constraints;
 
 		~World() {

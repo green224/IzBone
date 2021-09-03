@@ -11,10 +11,36 @@ namespace IzBone.PhysCloth.Controller {
 using Common;
 using Common.Field;
 
+using RangeSC = Common.Field.SimpleCurveRangeAttribute;
+using SC = Common.Field.SimpleCurve;
 
 /** IzBoneを使用するオブジェクトにつけるコンポーネントの基底クラス */
 public unsafe abstract class Base : MonoBehaviour {
 	// ------------------------------- inspectorに公開しているフィールド ------------------------
+
+	[Serializable] internal sealed class PhysParam {
+		[RangeSC(0)] public SC m = 1;
+		[RangeSC(0)] public SC r = 1;
+		[RangeSC(0,180)] public SC maxAngle = 60;
+		[RangeSC(0,1)] public SC aglRestorePow = 0;
+		[RangeSC(0,1)] public SC restorePow = 0;
+		public SC maxMovableRange = -1;
+
+		public float getM(float bRate) => bRate<0 ? 0 : m.evaluate( bRate );
+		public float getR(float bRate) => r.evaluate( max(0,bRate) );
+		public float getMaxAgl(float bRate) => maxAngle.evaluate( max(0,bRate) );
+		public float getAglCompliance(float bRate) =>
+			ComplianceAttribute.showValue2Compliance(
+				aglRestorePow.evaluate( max(0,bRate) ) * 0.2f );
+		public float getRestoreHL(float bRate) =>
+			HalfLifeDragAttribute.showValue2HalfLife(
+				restorePow.evaluate( max(0,bRate) ) );
+		public float getMaxMovableRange(float bRate) =>
+			maxMovableRange.evaluate( max(0,bRate) );
+
+		static public float idx2rate(int idx, int depth, int fixCount) =>
+			idx<fixCount ? -1 : ( (idx-fixCount) / (depth-fixCount-1f) );
+	}
 
 	[SerializeField] internal Common.Collider.IzCollider[] _izColliders = null;
 
@@ -32,8 +58,9 @@ public unsafe abstract class Base : MonoBehaviour {
 	[Min(0)] public float maxSpeed = 100;				// 最大速度
 
 	[Space]
-	// 毎フレーム位置をアップデートするか否か
-	public bool updateDefaultPosEveryFrame = false;
+	// アニメーション付きのボーンに対して使用するフラグ。毎フレームデフォルト位置を再キャッシュする。
+	// リグを付けたスカートなどの場合もこれをONにして使用する。
+	public bool withAnimation = false;
 
 
 	// ----------------------------------- private/protected メンバ -------------------------------
@@ -51,7 +78,7 @@ public unsafe abstract class Base : MonoBehaviour {
 	}
 
 	virtual protected void LateUpdate() {
-		if (updateDefaultPosEveryFrame)
+		if (withAnimation)
 			foreach (var i in _particles) i.resetDefaultPose();
 
 		coreUpdate(Time.smoothDeltaTime);

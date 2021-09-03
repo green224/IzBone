@@ -19,6 +19,7 @@ static internal partial class Gizmos8 {
 		readonly public static Color JointMovable = new Color(0, 1, 0, 0.3f);
 		readonly public static Color JointFixed = new Color(1, 1, 1, 0.5f);
 		readonly public static Color BoneMovable = new Color(1, 0.1f, 1);
+		readonly public static Color BoneFixed = new Color(1, 1, 1, 0.75f);
 
 		readonly public static Color AngleLimit = new Color(1, 0, 0);
 		readonly public static Color AngleMargin = new Color(0.97f, 0.7f, 0);
