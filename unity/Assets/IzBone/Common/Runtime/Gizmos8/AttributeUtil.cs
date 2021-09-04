@@ -43,7 +43,7 @@ static public class AttributeUtil {
 
 		object[] attrs = field.GetCustomAttributes(typeof(PropertyAttribute), true);
 		if (attrs != null && attrs.Length > 0)
-			return new List<PropertyAttribute>(attrs.Select(e => e as PropertyAttribute).OrderBy(e => - e.order));
+			return new List<PropertyAttribute>(attrs.Select(e => e as PropertyAttribute));
 
 		return null;
 	}
@@ -56,7 +56,19 @@ static public class AttributeUtil {
 	{
 		FieldInfo GetField(Type type, string path)
 		{
-			return type.GetField(path, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+			// 基底クラスのPrivateフィールドがSerializeField指定されている場合、
+			// FlattenHierarchyでも取得することができないので、Forで回して取得する
+			for (; type!=null; type=type.BaseType) {
+				var ret = type.GetField(
+					path,
+					BindingFlags.NonPublic |
+					BindingFlags.Public |
+					BindingFlags.Instance |
+					BindingFlags.Static
+				);
+				if (ret != null) return ret;
+			}
+			return null;
 		}
 
 		var parentType = property.serializedObject.targetObject.GetType();
