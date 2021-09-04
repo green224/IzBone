@@ -326,6 +326,39 @@ MonoBehaviour:
   - {fileID: 477546467}
   - {fileID: 1600635305}
   - {fileID: 261831795}
+  _r:
+    start: 0.015
+    end: 0.02
+    curve: 0.037220865
+    useCurve: 1
+  _m:
+    start: 1
+    end: 1
+    curve: 0.5
+    useCurve: 0
+  _maxAngle:
+    start: 60
+    end: 60
+    curve: 0.5
+    useCurve: 0
+  _aglRestorePow:
+    start: 0.22
+    end: 0.22
+    curve: 0.5
+    useCurve: 0
+  _restorePow:
+    start: 0
+    end: 0
+    curve: 0.5
+    useCurve: 0
+  _maxMovableRange:
+    start: 0.05
+    end: 0.1
+    curve: 0.5
+    useCurve: 1
+  _airDrag:
+    value: 0.1
+  _maxSpeed: 10
   useSimulation: 1
   iterationNum: 5
   g:
@@ -593,6 +626,39 @@ MonoBehaviour:
   _izColliders:
   - {fileID: 664222043}
   - {fileID: 43823719}
+  _r:
+    start: 0.015
+    end: 0.03
+    curve: 0.59972084
+    useCurve: 1
+  _m:
+    start: 1
+    end: 1
+    curve: 0.5
+    useCurve: 0
+  _maxAngle:
+    start: 60
+    end: 60
+    curve: 0.5
+    useCurve: 0
+  _aglRestorePow:
+    start: 0.22
+    end: 0.22
+    curve: 0.5
+    useCurve: 0
+  _restorePow:
+    start: 0
+    end: 0
+    curve: 0.5
+    useCurve: 0
+  _maxMovableRange:
+    start: 0.05
+    end: 0.12
+    curve: 0.5
+    useCurve: 1
+  _airDrag:
+    value: 0.61
+  _maxSpeed: 10
   useSimulation: 1
   iterationNum: 5
   g:
@@ -2180,6 +2246,39 @@ MonoBehaviour:
   - {fileID: 1983187607}
   - {fileID: 681996822}
   - {fileID: 1877236794}
+  _r:
+    start: 1
+    end: 1
+    curve: 0.5
+    useCurve: 0
+  _m:
+    start: 1
+    end: 1
+    curve: 0.5
+    useCurve: 0
+  _maxAngle:
+    start: 60
+    end: 60
+    curve: 0.5
+    useCurve: 0
+  _aglRestorePow:
+    start: 0
+    end: 0
+    curve: 0.5
+    useCurve: 0
+  _restorePow:
+    start: 0
+    end: 0
+    curve: 0.5
+    useCurve: 0
+  _maxMovableRange:
+    start: -1
+    end: -1
+    curve: 0.5
+    useCurve: 0
+  _airDrag:
+    value: 0.1
+  _maxSpeed: 100
   useSimulation: 1
   iterationNum: 5
   g:
@@ -2324,10 +2423,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1099786729}
     m_Modifications:
-    - target: {fileID: 1061709886, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6227744310331858603, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
       propertyPath: m_RootOrder
       value: 0

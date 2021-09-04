@@ -18,31 +18,18 @@ using SC = Common.Field.SimpleCurve;
 public unsafe abstract class Base : MonoBehaviour {
 	// ------------------------------- inspectorに公開しているフィールド ------------------------
 
-	[Serializable] internal sealed class PhysParam {
-		[RangeSC(0)] public SC m = 1;
-		[RangeSC(0)] public SC r = 1;
-		[RangeSC(0,180)] public SC maxAngle = 60;
-		[RangeSC(0,1)] public SC aglRestorePow = 0;
-		[RangeSC(0,1)] public SC restorePow = 0;
-		public SC maxMovableRange = -1;
-
-		public float getM(float bRate) => bRate<0 ? 0 : m.evaluate( bRate );
-		public float getR(float bRate) => r.evaluate( max(0,bRate) );
-		public float getMaxAgl(float bRate) => maxAngle.evaluate( max(0,bRate) );
-		public float getAglCompliance(float bRate) =>
-			ComplianceAttribute.showValue2Compliance(
-				aglRestorePow.evaluate( max(0,bRate) ) * 0.2f );
-		public float getRestoreHL(float bRate) =>
-			HalfLifeDragAttribute.showValue2HalfLife(
-				restorePow.evaluate( max(0,bRate) ) );
-		public float getMaxMovableRange(float bRate) =>
-			maxMovableRange.evaluate( max(0,bRate) );
-
-		static public float idx2rate(int idx, int depth, int fixCount) =>
-			idx<fixCount ? -1 : ( (idx-fixCount) / (depth-fixCount-1f) );
-	}
-
+	// 衝突検出を行う対象のコライダー一覧
 	[SerializeField] internal Common.Collider.IzCollider[] _izColliders = null;
+
+	[Space]
+	[SerializeField][RangeSC(0)] SC _r = 1;						// パーティクルの半径
+	[SerializeField][RangeSC(0)] SC _m = 1;						// パーティクルの重さ
+	[SerializeField][RangeSC(0,180)] SC _maxAngle = 60;			// 最大曲げ角度
+	[SerializeField][RangeSC(0,1)] SC _aglRestorePow = 0;		// 曲げ角度の復元力
+	[SerializeField][RangeSC(0,1)] SC _restorePow = 0;			// 初期位置への強制戻し力
+	[SerializeField]SC _maxMovableRange = -1;					// 移動可能距離
+	[SerializeField][HalfLifeDrag] HalfLife _airDrag = 0.1f;	// 空気抵抗による半減期
+	[SerializeField][Min(0)] float _maxSpeed = 100;				// 最大速度
 
 
 	// --------------------------------------- publicメンバ -------------------------------------
@@ -52,10 +39,8 @@ public unsafe abstract class Base : MonoBehaviour {
 	[Range(1,50)] public int iterationNum = 15;		// 1frame当たりの計算イテレーション回数
 
 	[Space]
-	public Gravity g = new Gravity(1);					// 重力加速度
-	public float3 windSpeed = default;					// 風速
-	[HalfLifeDrag] public HalfLife airDrag = 0.1f;		// 空気抵抗による半減期
-	[Min(0)] public float maxSpeed = 100;				// 最大速度
+	public Gravity g = new Gravity(1);				// 重力加速度
+	public float3 windSpeed = default;				// 風速
 
 	[Space]
 	// アニメーション付きのボーンに対して使用するフラグ。毎フレームデフォルト位置を再キャッシュする。
@@ -69,6 +54,13 @@ public unsafe abstract class Base : MonoBehaviour {
 	internal ConstraintMng[] _constraints;
 	internal ParticleMng[] _particles;
 	internal Core.World _world;
+
+	// ジョイントの最大深度と固定深度。
+	// getM系の物理パラメータ取得時に使用される。
+	// パラメータ取得のみに使用されるので。厳密である必要はない。
+	abstract internal int JointDepth {get;}
+	virtual internal int JointDepthFixCnt => 1;
+
 
 	virtual protected void Start() {
 		_coreColliders = new Common.Collider.Colliders(_izColliders);
@@ -114,8 +106,8 @@ public unsafe abstract class Base : MonoBehaviour {
 
 		_world.g = g.evaluate();
 		_world.windSpeed = windSpeed;
-		_world.airHL = airDrag;
-		_world.maxSpeed = maxSpeed;
+		_world.airHL = _airDrag;		// これは計算負荷削減のためにカーブではなくスカラーで持つ
+		_world.maxSpeed = _maxSpeed;
 		_world.update(
 			dt,
 			useSimulation ? iterationNum : 0,
@@ -128,6 +120,20 @@ public unsafe abstract class Base : MonoBehaviour {
 	abstract protected void buildBuffers();
 	/** ParticlesとConstraintsのパラメータを再構築する処理。派生先で実装すること */
 	abstract protected void rebuildParameters();
+
+
+	// ジョイント位置の各種物理パラメータを得る処理
+	internal float getR(int idx) => _r.evaluate( idx2rate(idx) );
+	internal float getM(int idx) => idx<JointDepthFixCnt ? 0 : _m.evaluate( idx2rate(idx) );
+	internal float getMaxAgl(int idx) => _maxAngle.evaluate( idx2rate(idx) );
+	internal float getAglCompliance(int idx) =>
+		ComplianceAttribute.showValue2Compliance( _aglRestorePow.evaluate( idx2rate(idx) ) * 0.2f );
+	internal float getRestoreHL(int idx) =>
+		HalfLifeDragAttribute.showValue2HalfLife( _restorePow.evaluate( idx2rate(idx) ) );
+	internal float getMaxMovableRange(int idx) => _maxMovableRange.evaluate( idx2rate(idx) );
+
+	float idx2rate(int idx) =>
+		max(0, (idx - JointDepthFixCnt) / (JointDepth - JointDepthFixCnt - 1f) );
 
 
 	// --------------------------------------------------------------------------------------------

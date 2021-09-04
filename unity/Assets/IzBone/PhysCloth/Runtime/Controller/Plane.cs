@@ -9,11 +9,6 @@ using System.Linq;
 
 
 namespace IzBone.PhysCloth.Controller {
-using Common;
-using Common.Field;
-
-using RangeSC = Common.Field.SimpleCurveRangeAttribute;
-using SC = Common.Field.SimpleCurve;
 
 /**
  * IzBoneを使用するオブジェクトにつけるコンポーネント。
@@ -25,10 +20,6 @@ public unsafe sealed class Plane : Base {
 
 	[Space]
 	[SerializeField] internal Transform[] _topOfBones = null;
-
-	[Space]
-	// グローバルConversionParam
-	[SerializeField] internal PhysParam _physParam = new PhysParam();
 	[SerializeField] internal bool _isLoopConnect = false;		// スカートなどの筒状のつながりにする
 
 	[Space]
@@ -49,7 +40,7 @@ public unsafe sealed class Plane : Base {
 	ParticleMng _rootPtcl;
 
 	/** ボーンの最大深度を得る */
-	internal int Depth {get{
+	override internal int JointDepth {get{
 		int ret = 0;
 		foreach (var i in _topOfBones) {
 			if (i==null) continue;
@@ -132,9 +123,6 @@ public unsafe sealed class Plane : Base {
 	/** ParticlesとConstraintsのパラメータを再構築する処理 */
 	override protected void rebuildParameters() {
 
-		// 最大深度
-		int depth = Depth;
-
 		{// 質点パラメータを構築
 			_rootPtcl.setParams(0,0,0,0,0,0);
 
@@ -142,14 +130,13 @@ public unsafe sealed class Plane : Base {
 			for (var i=0; i<_topOfBones.Length; ++i, pTop=pTop.right) {
 				int d = 0;
 				for (var p=pTop; p!=null; p=p.child, ++d) {
-					var bRate = PhysParam.idx2rate(d, depth, 1);
 					p.setParams(
-						_physParam.getM(bRate),
-						_physParam.getR(bRate),
-						_physParam.getMaxAgl(bRate),
-						_physParam.getAglCompliance(bRate),
-						_physParam.getRestoreHL(bRate),
-						_physParam.getMaxMovableRange(bRate)
+						getM(d),
+						getR(d),
+						getMaxAgl(d),
+						getAglCompliance(d),
+						getRestoreHL(d),
+						getMaxMovableRange(d)
 					);
 				}
 			}

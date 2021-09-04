@@ -236,6 +236,39 @@ MonoBehaviour:
   - {fileID: 1400229654}
   - {fileID: 1508046645}
   - {fileID: 1508046644}
+  _r:
+    start: 0.012
+    end: 0.033
+    curve: 0.037220843
+    useCurve: 1
+  _m:
+    start: 1
+    end: 1
+    curve: 0.5
+    useCurve: 0
+  _maxAngle:
+    start: 60
+    end: 60
+    curve: 0.5
+    useCurve: 0
+  _aglRestorePow:
+    start: 0.06
+    end: 0
+    curve: 0.5
+    useCurve: 0
+  _restorePow:
+    start: 0
+    end: 0
+    curve: 0.5
+    useCurve: 0
+  _maxMovableRange:
+    start: -1
+    end: -1
+    curve: 0.5
+    useCurve: 0
+  _airDrag:
+    value: 0.099999994
+  _maxSpeed: 10
   useSimulation: 1
   iterationNum: 5
   g:

@@ -29,8 +29,6 @@ sealed class PlaneInspector : BaseInspector
 
 		Gizmos8.drawMode = Gizmos8.DrawMode.Handle;
 		var tgt = (Plane)target;
-		var pp = tgt._physParam;
-		if (pp == null) return;
 
 		var tob = tgt._topOfBones?.Where(i=>i!=null)?.ToArray();
 
@@ -90,17 +88,15 @@ sealed class PlaneInspector : BaseInspector
 		}
 
 		// ギズモを描画
-		int depth = tgt.Depth;
 		drawPtcl( tob[0].parent, true, 0, 0 );
 		var tLst0 = tob.Select(i=>i.parent).ToArray();
 		var tLst1 = tob.ToArray();
 		for (int dIdx = 0;; ++dIdx) {
 
-			var bRate = Base.PhysParam.idx2rate(dIdx, depth, 1);
 			for (int i=0; i<tLst0.Length; ++i) {
 				if (tLst1[i] == null) continue;
 
-				drawPtcl( tLst1[i], dIdx==0, pp.getR(bRate), pp.getMaxMovableRange(bRate) );
+				drawPtcl( tLst1[i], dIdx==0, tgt.getR(dIdx), tgt.getMaxMovableRange(dIdx) );
 				drawConnection(tLst0[i], tLst1[i], dIdx==0);
 
 				Transform transL, transR;

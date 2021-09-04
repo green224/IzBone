@@ -18,8 +18,7 @@ namespace IzBone.PhysCloth.Core {
 
 		public float3 g = float3(0,-1,0);		// 重力加速度
 		public float3 windSpeed = default;		// 風速
-// TODO : これをカーブで設定できるようにする
-		public HalfLife airHL = 0.1f;			// 空気抵抗による半減期
+		public HalfLife airHL = 0.1f;			// 空気抵抗による半減期。これは計算負荷削減のために、一定
 		public float maxSpeed = 100;			// 最大速度
 
 		public World(
