@@ -4,15 +4,10 @@ using UnityEngine;
 using Unity.Mathematics;
 using static Unity.Mathematics.math;
 
-using System.Collections.Generic;
-
 
 namespace IzBone.PhysCloth.Controller {
 using Common;
 using Common.Field;
-
-using RangeSC = Common.Field.SimpleCurveRangeAttribute;
-using SC = Common.Field.SimpleCurve;
 
 /** IzBoneを使用するオブジェクトにつけるコンポーネントの基底クラス */
 public unsafe abstract class Base : MonoBehaviour {
@@ -22,12 +17,6 @@ public unsafe abstract class Base : MonoBehaviour {
 	[SerializeField] internal Common.Collider.IzCollider[] _izColliders = null;
 
 	[Space]
-	[SerializeField][RangeSC(0)] SC _r = 1;						// パーティクルの半径
-	[SerializeField][RangeSC(0)] SC _m = 1;						// パーティクルの重さ
-	[SerializeField][RangeSC(0,180)] SC _maxAngle = 60;			// 最大曲げ角度
-	[SerializeField][RangeSC(0,1)] SC _aglRestorePow = 0;		// 曲げ角度の復元力
-	[SerializeField][RangeSC(0,1)] SC _restorePow = 0;			// 初期位置への強制戻し力
-	[SerializeField]SC _maxMovableRange = -1;					// 移動可能距離
 	[SerializeField][HalfLifeDrag] HalfLife _airDrag = 0.1f;	// 空気抵抗による半減期
 	[SerializeField][Min(0)] float _maxSpeed = 100;				// 最大速度
 
@@ -54,12 +43,6 @@ public unsafe abstract class Base : MonoBehaviour {
 	internal ConstraintMng[] _constraints;
 	internal ParticleMng[] _particles;
 	internal Core.World _world;
-
-	// ジョイントの最大深度と固定深度。
-	// getM系の物理パラメータ取得時に使用される。
-	// パラメータ取得のみに使用されるので。厳密である必要はない。
-	abstract internal int JointDepth {get;}
-	virtual internal int JointDepthFixCnt => 1;
 
 
 	virtual protected void Start() {
@@ -118,22 +101,9 @@ public unsafe abstract class Base : MonoBehaviour {
 
 	/** ParticlesとConstraintsのバッファをビルドする処理。派生先で実装すること */
 	abstract protected void buildBuffers();
+
 	/** ParticlesとConstraintsのパラメータを再構築する処理。派生先で実装すること */
 	abstract protected void rebuildParameters();
-
-
-	// ジョイント位置の各種物理パラメータを得る処理
-	internal float getR(int idx) => _r.evaluate( idx2rate(idx) );
-	internal float getM(int idx) => idx<JointDepthFixCnt ? 0 : _m.evaluate( idx2rate(idx) );
-	internal float getMaxAgl(int idx) => _maxAngle.evaluate( idx2rate(idx) );
-	internal float getAglCompliance(int idx) =>
-		ComplianceAttribute.showValue2Compliance( _aglRestorePow.evaluate( idx2rate(idx) ) * 0.2f );
-	internal float getRestoreHL(int idx) =>
-		HalfLifeDragAttribute.showValue2HalfLife( _restorePow.evaluate( idx2rate(idx) ) );
-	internal float getMaxMovableRange(int idx) => _maxMovableRange.evaluate( idx2rate(idx) );
-
-	float idx2rate(int idx) =>
-		max(0, (idx - JointDepthFixCnt) / (JointDepth - JointDepthFixCnt - 1f) );
 
 
 	// --------------------------------------------------------------------------------------------

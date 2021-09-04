@@ -15,7 +15,7 @@ namespace IzBone.PhysCloth.Controller {
  * 平面的な布のようなものを再現する際に使用する
  */
 [AddComponentMenu("IzBone/PhysCloth_Plane")]
-public unsafe sealed class Plane : Base {
+public unsafe sealed class Plane : Simple {
 	// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 	[Space]
@@ -39,22 +39,26 @@ public unsafe sealed class Plane : Base {
 	// 一番上のパーティクル
 	ParticleMng _rootPtcl;
 
-	/** ボーンの最大深度を得る */
+	// ボーンの最大深度
+	int _jointDepth = -1;
 	override internal int JointDepth {get{
-		int ret = 0;
+		// 実行時にはキャッシュする
+		if (Application.isPlaying && _jointDepth!=-1) return _jointDepth;
+
+		_jointDepth = 0;
 		foreach (var i in _topOfBones) {
 			if (i==null) continue;
 			int depth = 0;
-			for (var t = i;; t=t.GetChild(0), ++depth) {
+			for (var t=i;; t=t.GetChild(0), ++depth) {
 				if (t.childCount == 0) break;
 			}
-			ret = max(ret, depth);
+			_jointDepth = max(_jointDepth, depth);
 		}
-		return ret;
+		return _jointDepth;
 	}}
 
-	/** ParticlesとConstraintsのバッファをビルドする処理 */
-	override protected void buildBuffers() {
+	/** Particlesのバッファをビルドする処理 */
+	override protected void buildParticles() {
 
 		{// 質点リストを構築
 			static ParticleMng genPtcl(
@@ -103,59 +107,10 @@ public unsafe sealed class Plane : Base {
 				pL = pL.child; pR = pR.child;
 			}
 		}
-
-		// 制約リストを構築
-		var constraints = new List<ConstraintMng>();
-		processInAllConstraint(
-			(compliance, p0, p1) => {
-				if (1 <= compliance) return;
-				constraints.Add( new ConstraintMng() {
-					mode = ConstraintMng.Mode.Distance,
-					srcPtclIdx = p0.idx,
-					dstPtclIdx = p1.idx,
-					param = length(p0.trans.position - p1.trans.position),
-				} );
-			}
-		);
-		_constraints = constraints.ToArray();
-	}
-
-	/** ParticlesとConstraintsのパラメータを再構築する処理 */
-	override protected void rebuildParameters() {
-
-		{// 質点パラメータを構築
-			_rootPtcl.setParams(0,0,0,0,0,0);
-
-			var pTop = _rootPtcl.child;
-			for (var i=0; i<_topOfBones.Length; ++i, pTop=pTop.right) {
-				int d = 0;
-				for (var p=pTop; p!=null; p=p.child, ++d) {
-					p.setParams(
-						getM(d),
-						getR(d),
-						getMaxAgl(d),
-						getAglCompliance(d),
-						getRestoreHL(d),
-						getMaxMovableRange(d)
-					);
-				}
-			}
-		}
-
-		{// 制約パラメータを構築
-			int i = -1;
-			processInAllConstraint(
-				(compliance, p0, p1) => {
-					if (1 <= compliance) return;
-					var c = _constraints[++i];
-					c.compliance = compliance;
-				}
-			);
-		}
 	}
 
 	/** 全ボーンに対して、ConstraintMng羅列する処理 */
-	void processInAllConstraint(Action<float, ParticleMng, ParticleMng> proc) {
+	override protected void processInAllConstraint(Action<float, ParticleMng, ParticleMng> proc) {
 		for (int i=1; i<_particles.Length; ++i) {	//i=0はルートなので除外
 			var p = _particles[i];
 
@@ -179,31 +134,6 @@ public unsafe sealed class Plane : Base {
 
 
 	// --------------------------------------------------------------------------------------------
-/*#if UNITY_EDITOR
-	override protected void OnValidate() {
-		base.OnValidate();
-
-		if (_topOfBones == null) return;
-		foreach ( var i in _topOfBones ) {
-			// 親と子供が存在しない場合は正常じゃないので
-			var cnvPrm = getCnvPrm(i);
-			if ( i.endOfBone == null ) {
-				cnvPrm.depth = 0;
-			} else {
-				int depthMax = 0;
-				for (var j=i.endOfBone; j.parent!=null; j=j.parent) ++depthMax;
-
-				cnvPrm.depth = clamp(cnvPrm.depth, 1, depthMax);
-			}
-
-			// fixCountを有効範囲に丸める
-			cnvPrm.fixCount = clamp(cnvPrm.fixCount, 0, cnvPrm.depth);
-
-			// excludeSideChainを有効範囲に丸める
-			cnvPrm.excludeSideChain = clamp(cnvPrm.excludeSideChain, 0, cnvPrm.depth);
-		}
-	}
-#endif*/
 }
 
 }

@@ -97,6 +97,41 @@ abstract class BaseInspector : Editor
 			}
 		}
 	}
+
+	// パーティクル部分を描画する処理
+	static protected void drawPtcl(Transform trans, bool isFixed, float r, float movRange) {
+		// パーティクル半径を描画
+		if ( Common.Windows.GizmoOptionsWindow.isShowPtclR ) {
+			Gizmos8.color = isFixed
+				? Gizmos8.Colors.JointFixed
+				: Gizmos8.Colors.JointMovable;
+
+			var viewR = r;
+			if (isFixed) viewR = HandleUtility.GetHandleSize(trans.position)*0.1f;
+
+			Gizmos8.drawSphere(trans.position, viewR);
+		}
+
+		// 移動可能距離を描画
+		if ( Common.Windows.GizmoOptionsWindow.isShowLimitPos ) {
+			if (!isFixed && 0 <= movRange) {
+				Gizmos8.color = Gizmos8.Colors.ShiftLimit;
+				Gizmos8.drawWireCube(trans.position, trans.rotation, movRange*2);
+			}
+		}
+	}
+
+	// パーティクルの接続を描画する処理
+	static protected void drawConnection(Transform trans0, Transform trans1, bool isFixed) {
+		if (
+			trans0 != null && trans1 != null &&
+			Common.Windows.GizmoOptionsWindow.isShowConnections
+		) {
+			Gizmos8.color = isFixed ? Gizmos8.Colors.BoneFixed : Gizmos8.Colors.BoneMovable;
+			Gizmos8.drawLine( trans0.position, trans1.position );
+		}
+	}
+
 }
 
 }
