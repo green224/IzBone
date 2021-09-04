@@ -38,11 +38,10 @@ abstract class BaseInspector : Editor
 
 		// コンストレイントを描画
 		if ( Common.Windows.GizmoOptionsWindow.isShowConnections ) {
-			Gizmos8.color = Gizmos8.Colors.BoneMovable;
 			if (tgt._constraints != null) foreach (var i in tgt._constraints) {
 				var p0 = tgt._world.DEBUG_getPtcl( i.srcPtclIdx ).col.pos;
 				var p1 = tgt._world.DEBUG_getPtcl( i.dstPtclIdx ).col.pos;
-				Gizmos8.drawLine( p0, p1 );
+				drawConnection(p0, p1, false);
 			}
 		}
 
@@ -52,25 +51,8 @@ abstract class BaseInspector : Editor
 			var pos = ptcl.col.pos;
 			var isFixed = i.m < 0.000001f;
 
-			// パーティクル半径を描画
-			if ( Common.Windows.GizmoOptionsWindow.isShowPtclR ) {
-				Gizmos8.color = isFixed
-					? Gizmos8.Colors.JointFixed
-					: Gizmos8.Colors.JointMovable;
-
-				var viewR = ptcl.col.r;
-				if (isFixed) viewR = HandleUtility.GetHandleSize(pos)*0.1f;
-
-				Gizmos8.drawSphere(pos, viewR);
-			}
-
-			// 移動可能距離を描画
-			if ( Common.Windows.GizmoOptionsWindow.isShowLimitPos ) {
-				if (!isFixed && 0 <= ptcl.maxMovableRange) {
-					Gizmos8.color = Gizmos8.Colors.ShiftLimit;
-					Gizmos8.drawWireCube(pos, Quaternion.identity, ptcl.maxMovableRange*2);
-				}
-			}
+			// パーティクル半径・移動可能距離を描画
+			drawPtcl(pos, quaternion(0,0,0,1), isFixed, ptcl.col.r, ptcl.maxMovableRange);
 
 			// TODO : ここ、矢印にする
 			if ( !isFixed && Common.Windows.GizmoOptionsWindow.isShowPtclV ) {
@@ -90,16 +72,16 @@ abstract class BaseInspector : Editor
 				var a = tgt._particles[ptcl.parentIdx];
 				if (a != null && a.m < 0.000001f) {
 					var b = tgt._world.DEBUG_getPtcl(a.idx);
-
-					Gizmos8.color = Gizmos8.Colors.BoneFixed;
-					Gizmos8.drawLine( b.col.pos, ptcl.col.pos );
+					drawConnection(b.col.pos, ptcl.col.pos, true);
 				}
 			}
 		}
 	}
 
 	// パーティクル部分を描画する処理
-	static protected void drawPtcl(Transform trans, bool isFixed, float r, float movRange) {
+	static protected void drawPtcl(Transform trans, bool isFixed, float r, float movRange)
+		=> drawPtcl( trans.position, trans.rotation, isFixed, r, movRange );
+	static protected void drawPtcl(float3 pos, quaternion rot, bool isFixed, float r, float movRange) {
 		// パーティクル半径を描画
 		if ( Common.Windows.GizmoOptionsWindow.isShowPtclR ) {
 			Gizmos8.color = isFixed
@@ -107,28 +89,34 @@ abstract class BaseInspector : Editor
 				: Gizmos8.Colors.JointMovable;
 
 			var viewR = r;
-			if (isFixed) viewR = HandleUtility.GetHandleSize(trans.position)*0.1f;
+			if (isFixed) viewR = HandleUtility.GetHandleSize(pos)*0.1f;
 
-			Gizmos8.drawSphere(trans.position, viewR);
+			Gizmos8.drawSphere(pos, viewR);
 		}
 
 		// 移動可能距離を描画
 		if ( Common.Windows.GizmoOptionsWindow.isShowLimitPos ) {
 			if (!isFixed && 0 <= movRange) {
 				Gizmos8.color = Gizmos8.Colors.ShiftLimit;
-				Gizmos8.drawWireCube(trans.position, trans.rotation, movRange*2);
+				Gizmos8.drawWireCube(pos, rot, movRange*2);
 			}
 		}
 	}
 
 	// パーティクルの接続を描画する処理
-	static protected void drawConnection(Transform trans0, Transform trans1, bool isFixed) {
+	static protected void drawConnection(Transform trans0, Transform trans1, bool isFixed)
+		=> drawConnection(
+			trans0 == null ? (float3?)null : trans0.position,
+			trans1 == null ? (float3?)null : trans1.position,
+			isFixed
+		);
+	static protected void drawConnection(float3? pos0, float3? pos1, bool isFixed) {
 		if (
-			trans0 != null && trans1 != null &&
+			pos0 != null && pos1 != null &&
 			Common.Windows.GizmoOptionsWindow.isShowConnections
 		) {
 			Gizmos8.color = isFixed ? Gizmos8.Colors.BoneFixed : Gizmos8.Colors.BoneMovable;
-			Gizmos8.drawLine( trans0.position, trans1.position );
+			Gizmos8.drawLine( pos0.Value, pos1.Value );
 		}
 	}
 

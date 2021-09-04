@@ -10,7 +10,7 @@ namespace IzBone.PhysCloth.Controller {
 	using Common.Field;
 	
 	public sealed class ParticleMng {
-		public readonly int idx;
+		public int idx;
 		public readonly Transform trans;
 		public quaternion defaultParentRot;		// 親の初期姿勢
 		public float4x4 defaultL2P;				// 初期L2P行列

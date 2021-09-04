@@ -23,9 +23,11 @@ public unsafe sealed class Plane : Simple {
 	[SerializeField] internal bool _isLoopConnect = false;		// スカートなどの筒状のつながりにする
 
 	[Space]
-	[Compliance][SerializeField] float _cmpl_direct = 0.000000001f;		//!< Compliance値 直接接続
-	[Compliance][SerializeField] float _cmpl_side = 0.000000001f;		//!< Compliance値 横方向の接続
-	[Compliance][SerializeField] float _cmpl_diag = 0.0000001f;			//!< Compliance値 捻じれ用の対角線接続
+	[UnityEngine.Serialization.FormerlySerializedAs("_cmpl_direct")]
+	[Compliance][SerializeField] float _cmpl_vert = 0.000000001f;		//!< Compliance値 上下方向接続
+	[UnityEngine.Serialization.FormerlySerializedAs("_cmpl_side")]
+	[Compliance][SerializeField] float _cmpl_hori = 0.000000001f;		//!< Compliance値 左右方向接続
+	[Compliance][SerializeField] float _cmpl_diag = 0.0000001f;			//!< Compliance値 対角方向接続
 
 
 	// --------------------------------------- publicメンバ -------------------------------------
@@ -85,12 +87,12 @@ public unsafe sealed class Plane : Simple {
 				var p = _rootPtcl;
 				var trans = i;
 				p = topPL = genPtcl( particles.Count, trans, p, pL );
-				while (true) {
-					particles.Add( p );
-					if ( trans.childCount == 0 ) break;
+				particles.Add( p );
+				while (trans.childCount != 0) {
 					trans = trans.GetChild( 0 );
 					pL = pL?.child;
 					p = genPtcl( particles.Count, trans, p, pL );
+					particles.Add( p );
 				}
 			}
 
@@ -115,8 +117,8 @@ public unsafe sealed class Plane : Simple {
 			var p = _particles[i];
 
 			// 下と右
-			if (p.child != null) proc(_cmpl_direct, p, p.child);
-			if (p.right != null) proc(_cmpl_side, p, p.right);
+			if (p.child != null) proc(_cmpl_vert, p, p.child);
+			if (p.right != null) proc(_cmpl_hori, p, p.right);
 
 			// 右斜め下
 			if (p.right?.child != null)

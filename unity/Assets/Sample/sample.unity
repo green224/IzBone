@@ -326,6 +326,23 @@ MonoBehaviour:
   - {fileID: 477546467}
   - {fileID: 1600635305}
   - {fileID: 261831795}
+  _airDrag:
+    value: 0.1
+  _maxSpeed: 10
+  useSimulation: 1
+  iterationNum: 5
+  g:
+    scale: 1
+    useCustom: 0
+    customA:
+      x: 0
+      y: 0
+      z: 0
+  windSpeed:
+    x: 0
+    y: 0
+    z: 0
+  withAnimation: 1
   _r:
     start: 0.015
     end: 0.02
@@ -356,26 +373,6 @@ MonoBehaviour:
     end: 0.1
     curve: 0.5
     useCurve: 1
-  _airDrag:
-    value: 0.1
-  _maxSpeed: 10
-  useSimulation: 1
-  iterationNum: 5
-  g:
-    scale: 1
-    useCustom: 0
-    customA:
-      x: 0
-      y: 0
-      z: 0
-  windSpeed:
-    x: 0
-    y: 0
-    z: 0
-  airDrag:
-    value: 2.523965
-  maxSpeed: 10
-  withAnimation: 1
   _topOfBones:
   - {fileID: 608838432}
   - {fileID: 608838431}
@@ -391,40 +388,9 @@ MonoBehaviour:
   - {fileID: 608838426}
   - {fileID: 608838428}
   - {fileID: 608838430}
-  _physParam:
-    m:
-      start: 1
-      end: 1
-      curve: 0.5
-      useCurve: 0
-    r:
-      start: 0.015
-      end: 0.02
-      curve: 0.037220865
-      useCurve: 1
-    maxAngle:
-      start: 60
-      end: 60
-      curve: 0.5
-      useCurve: 0
-    aglRestorePow:
-      start: 0.22
-      end: 0.22
-      curve: 0.5
-      useCurve: 0
-    restorePow:
-      start: 0
-      end: 0
-      curve: 0.5
-      useCurve: 0
-    maxMovableRange:
-      start: 0.05
-      end: 0.1
-      curve: 0.5
-      useCurve: 1
   _isLoopConnect: 1
-  _cmpl_direct: 0.00000001
-  _cmpl_side: 0.0006309573
+  _cmpl_vert: 0.000000001
+  _cmpl_hori: 0.0006309573
   _cmpl_diag: 0.007943284
 --- !u!114 &270552195
 MonoBehaviour:
@@ -606,6 +572,80 @@ MonoBehaviour:
     iterationNum: 3
     rotShiftRate: 0
     withAnimation: 0
+--- !u!114 &270552197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 270552193}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 060a3742b10cc1c41b710270e451d92e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _izColliders:
+  - {fileID: 477546467}
+  - {fileID: 1600635305}
+  - {fileID: 261831795}
+  _airDrag:
+    value: 0.1
+  _maxSpeed: 100
+  useSimulation: 1
+  iterationNum: 15
+  g:
+    scale: 0
+    useCustom: 0
+    customA:
+      x: 0
+      y: 0
+      z: 0
+  windSpeed:
+    x: 0
+    y: 0
+    z: 0
+  withAnimation: 0
+  _r:
+    start: 0.02
+    end: 0.02
+    curve: 0.5
+    useCurve: 0
+  _m:
+    start: 1
+    end: 1
+    curve: 0.5
+    useCurve: 0
+  _maxAngle:
+    start: 48.5
+    end: 48.5
+    curve: 0.5
+    useCurve: 0
+  _aglRestorePow:
+    start: 0.223
+    end: 0.223
+    curve: 0.5
+    useCurve: 0
+  _restorePow:
+    start: 0.057
+    end: 0.057
+    curve: 0.5
+    useCurve: 0
+  _maxMovableRange:
+    start: -1
+    end: -1
+    curve: 0.5
+    useCurve: 0
+  _topOfBones:
+  - {fileID: 330209496}
+  - {fileID: 1004346952}
+  - {fileID: 2050570798}
+  _cmpl_vert: 0.000000001
+  _cmpl_hori: 0.0000004864071
+--- !u!4 &330209496 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1616755212223417254, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &380784466 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
@@ -626,6 +666,23 @@ MonoBehaviour:
   _izColliders:
   - {fileID: 664222043}
   - {fileID: 43823719}
+  _airDrag:
+    value: 0.61
+  _maxSpeed: 10
+  useSimulation: 1
+  iterationNum: 5
+  g:
+    scale: 1
+    useCustom: 0
+    customA:
+      x: 0
+      y: 0
+      z: 0
+  windSpeed:
+    x: 0
+    y: 0
+    z: 0
+  withAnimation: 1
   _r:
     start: 0.015
     end: 0.03
@@ -656,26 +713,6 @@ MonoBehaviour:
     end: 0.12
     curve: 0.5
     useCurve: 1
-  _airDrag:
-    value: 0.61
-  _maxSpeed: 10
-  useSimulation: 1
-  iterationNum: 5
-  g:
-    scale: 1
-    useCustom: 0
-    customA:
-      x: 0
-      y: 0
-      z: 0
-  windSpeed:
-    x: 0
-    y: 0
-    z: 0
-  airDrag:
-    value: 0.11287513
-  maxSpeed: 10
-  withAnimation: 1
   _topOfBones:
   - {fileID: 1124499466}
   - {fileID: 1904150909}
@@ -687,40 +724,9 @@ MonoBehaviour:
   - {fileID: 1033952628}
   - {fileID: 1904150904}
   - {fileID: 1904150908}
-  _physParam:
-    m:
-      start: 1
-      end: 1
-      curve: 0.5
-      useCurve: 0
-    r:
-      start: 0.015
-      end: 0.03
-      curve: 0.59972084
-      useCurve: 1
-    maxAngle:
-      start: 60
-      end: 60
-      curve: 0.5
-      useCurve: 0
-    aglRestorePow:
-      start: 0.22
-      end: 0.22
-      curve: 0.5
-      useCurve: 0
-    restorePow:
-      start: 0
-      end: 0
-      curve: 0.5
-      useCurve: 0
-    maxMovableRange:
-      start: 0.05
-      end: 0.12
-      curve: 0.5
-      useCurve: 1
   _isLoopConnect: 1
-  _cmpl_direct: 0.00000001
-  _cmpl_side: 0.0006309573
+  _cmpl_vert: 0.000000001
+  _cmpl_hori: 0.0006309573
   _cmpl_diag: 0.007943284
 --- !u!114 &380784468
 MonoBehaviour:
@@ -1513,7 +1519,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
       propertyPath: m_Controller
@@ -2063,6 +2069,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3217720883797747519, guid: 4ae8bf961be829d41a95d1058f2a5d16, type: 3}
   m_PrefabInstance: {fileID: 1904150903}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &1004346952 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1934551240366393797, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1024635303
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2246,6 +2257,23 @@ MonoBehaviour:
   - {fileID: 1983187607}
   - {fileID: 681996822}
   - {fileID: 1877236794}
+  _airDrag:
+    value: 0.1
+  _maxSpeed: 100
+  useSimulation: 1
+  iterationNum: 5
+  g:
+    scale: 1
+    useCustom: 0
+    customA:
+      x: 0
+      y: 0
+      z: 0
+  windSpeed:
+    x: 0
+    y: 0
+    z: 0
+  withAnimation: 0
   _r:
     start: 1
     end: 1
@@ -2276,61 +2304,10 @@ MonoBehaviour:
     end: -1
     curve: 0.5
     useCurve: 0
-  _airDrag:
-    value: 0.1
-  _maxSpeed: 100
-  useSimulation: 1
-  iterationNum: 5
-  g:
-    scale: 1
-    useCustom: 0
-    customA:
-      x: 0
-      y: 0
-      z: 0
-  windSpeed:
-    x: 0
-    y: 0
-    z: 0
-  airDrag:
-    value: 0.1
-  maxSpeed: 10
-  withAnimation: 0
   _topOfBones: []
-  _physParam:
-    m:
-      start: 1
-      end: 1
-      curve: 0.5
-      useCurve: 0
-    r:
-      start: 1
-      end: 1
-      curve: 0.5
-      useCurve: 0
-    maxAngle:
-      start: 60
-      end: 60
-      curve: 0.5
-      useCurve: 0
-    aglRestorePow:
-      start: 0
-      end: 0
-      curve: 0.5
-      useCurve: 0
-    restorePow:
-      start: 0
-      end: 0
-      curve: 0.5
-      useCurve: 0
-    maxMovableRange:
-      start: -1
-      end: -1
-      curve: 0.5
-      useCurve: 0
   _isLoopConnect: 1
-  _cmpl_direct: 0.00000001
-  _cmpl_side: 0.00017782794
+  _cmpl_vert: 0.000000001
+  _cmpl_hori: 0.00017782794
   _cmpl_diag: 0.007943284
 --- !u!1 &1229407308
 GameObject:
@@ -3348,6 +3325,11 @@ Transform:
 Animator:
   m_CorrespondingSourceObject: {fileID: 1061709886, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
   m_PrefabInstance: {fileID: 1434173588}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2050570798 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9136243431289727348, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
+  m_PrefabInstance: {fileID: 608838418}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &2112756296 stripped
 Transform:
