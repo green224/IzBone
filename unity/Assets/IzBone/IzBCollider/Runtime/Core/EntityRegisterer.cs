@@ -40,8 +40,7 @@ namespace IzBone.IzBCollider.Core {
 					em.AddComponentData(entity, new Body_Center{value=i.center});
 					em.AddComponentData(entity, new Body_R{value=i.r});
 					em.AddComponentData(entity, new Body_Rot{value=i.rot});
-					em.AddComponentData(entity, new Body_L2W());
-					em.AddComponentData(entity, new Body_L2wClmNorm());
+					em.AddComponentData(entity, new Body_RawCollider());
 					em.AddComponentData(entity, new Body_M2D{bodyAuth=i});
 
 					// Entity・Transformを登録
@@ -75,7 +74,7 @@ namespace IzBone.IzBCollider.Core {
 				em.SetComponentData(i.e, new Body_Rot{value=auth.rot});
 			}
 		}
-
+		
 
 		// --------------------------------------------------------------------------------------------
 	}

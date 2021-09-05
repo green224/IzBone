@@ -1,4 +1,5 @@
-﻿using UnityEngine.Jobs;
+﻿using System;
+using UnityEngine.Jobs;
 using Unity.Jobs;
 
 using Unity.Burst;
@@ -33,11 +34,10 @@ public sealed class IzBColliderSystem : SystemBase {
 		[ReadOnly] public ComponentDataFromEntity<Body_ShapeType> shapeTypes;
 		[ReadOnly] public ComponentDataFromEntity<Body_Center> centers;
 		[ReadOnly] public ComponentDataFromEntity<Body_Rot> rots;
+		[ReadOnly] public ComponentDataFromEntity<Body_R> rs;
 
 		[NativeDisableParallelForRestriction]
-		[WriteOnly] public ComponentDataFromEntity<Body_L2W> l2ws;
-		[NativeDisableParallelForRestriction]
-		[WriteOnly] public ComponentDataFromEntity<Body_L2wClmNorm> l2wClmNorms;
+		[WriteOnly] public ComponentDataFromEntity<Body_RawCollider> rawColis;
 
 		public void Execute(int index, TransformAccess transform)
 		{
@@ -46,6 +46,7 @@ public sealed class IzBColliderSystem : SystemBase {
 			var shapeType = shapeTypes[entity].value;
 			var center = centers[entity].value;
 			var rot = rots[entity].value;
+			var r = rs[entity].value;
 
 			// L2Wを計算
 			float4x4 l2w;
@@ -58,15 +59,48 @@ public sealed class IzBColliderSystem : SystemBase {
 				l2w = mul(transform.localToWorldMatrix, tr);
 			}
 
+			// RawColliderを生成
+			var rawColi = new Body_RawCollider();
+			switch (shapeType) {
+			case ShapeType.Sphere :
+				rawColi.sphere = new Collider_Sphere() {
+					pos = l2w.c3.xyz,
+					r = length( l2w.c0.xyz ) * r.x,
+				};
+				break;
+			case ShapeType.Capsule : {
+				var sclX = length( l2w.c0.xyz );
+				var sclY = length( l2w.c1.xyz );
+				rawColi.capsule = new Collider_Capsule() {
+					pos = l2w.c3.xyz,
+					r_s = sclX * r.x,
+					r_h = sclY * r.y,
+					dir = l2w.c1.xyz / sclY,
+				};
+				} break;
+			case ShapeType.Box : {
+				var sclX = length( l2w.c0.xyz );
+				var sclY = length( l2w.c1.xyz );
+				var sclZ = length( l2w.c2.xyz );
+				rawColi.box = new Collider_Box() {
+					pos = l2w.c3.xyz,
+					xAxis = l2w.c0.xyz / sclX,
+					yAxis = l2w.c1.xyz / sclY,
+					zAxis = l2w.c2.xyz / sclZ,
+					r = r * float3(sclX, sclY, sclZ),
+				};
+				} break;
+			case ShapeType.Plane :
+				rawColi.plane = new Collider_Plane() {
+					pos = l2w.c3.xyz,
+					dir = l2w.c2.xyz / length( l2w.c2.xyz ),
+				};
+				break;
+			default : throw new InvalidProgramException();
+			}
+
 			// コンポーネントへデータを格納
-			l2ws[entity] = new Body_L2W{value=l2w};
-			l2wClmNorms[entity] = new Body_L2wClmNorm{
-				value=float3(
-					length( l2w.c0.xyz ),
-					length( l2w.c1.xyz ),
-					length( l2w.c2.xyz )
-				)
-			};
+			rawColis[entity] = rawColi;
 		}
 	}
 
@@ -92,11 +126,10 @@ public sealed class IzBColliderSystem : SystemBase {
 				shapeTypes = GetComponentDataFromEntity<Body_ShapeType>(true),
 				centers = GetComponentDataFromEntity<Body_Center>(true),
 				rots = GetComponentDataFromEntity<Body_Rot>(true),
-				l2ws = GetComponentDataFromEntity<Body_L2W>(false),
-				l2wClmNorms = GetComponentDataFromEntity<Body_L2wClmNorm>(false),
+				rs = GetComponentDataFromEntity<Body_R>(true),
+				rawColis = GetComponentDataFromEntity<Body_RawCollider>(false),
 			}.Schedule( etp.Transforms, Dependency );
 		}
-
 	}
 
 }

@@ -61,6 +61,7 @@ namespace IzBone.PhysSpring.Core {
 							parent.localRotation,
 							parent.localScale * (float3)child.localPosition
 						),
+						r = bone.radius.evaluate(dRate),
 					});
 					em.AddComponentData(entity, new SpringResult{});
 					em.AddComponentData(entity, new WPosCache{
@@ -102,6 +103,10 @@ namespace IzBone.PhysSpring.Core {
 			foreach (var i in _entities) {
 				var m2d = em.GetComponentData<OneSpring_M2D>(i.e);
 				em.SetComponentData(i.e, genOneSpring(m2d.boneAuth, m2d.depthRate));
+
+				var ds = em.GetComponentData<DefaultState>(i.e);
+				ds.r = m2d.boneAuth.radius.evaluate(m2d.depthRate);
+				em.SetComponentData(i.e, ds);
 
 				if (em.HasComponent<MostParent>(i.e)) {
 					var mp = em.GetComponentData<MostParent>(i.e);

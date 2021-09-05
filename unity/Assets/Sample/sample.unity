@@ -680,7 +680,7 @@ MonoBehaviour:
     iterationNum: 3
     rotShiftRate: 0
     withAnimation: 0
-  _collider: {fileID: 0}
+  _collider: {fileID: 1580390091}
 --- !u!114 &270552197
 MonoBehaviour:
   m_ObjectHideFlags: 0

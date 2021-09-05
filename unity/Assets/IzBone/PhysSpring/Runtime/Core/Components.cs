@@ -47,6 +47,8 @@ namespace IzBone.PhysSpring.Core {
 		public float3 childDefPosMPR;	//!< 子の初期ローカル座標に親の回転とスケールを掛けたもの。これはキャッシュすべきか悩みどころ…
 
 		public float3 curScale;		//!< 現在のローカルスケール。これは毎フレームTransformからコピーする
+
+		public float r;				//!< 衝突判定用の半径
 	}
 
 	/** OneSpringごとのシミュレーション結果の情報 */

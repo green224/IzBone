@@ -153,6 +153,20 @@ public sealed class SimplePhysBoneSystem : SystemBase {
 					var defState = buf_defState[i];
 					var wPosCache = buf_wPosCache[i];
 
+					// 前フレームにキャッシュされた位置にパーティクルが移動したとして、
+					// その位置でコライダとの衝突解決をしておく
+					if (mostParent.colliderPack != default) {
+						for (
+							var e = GetComponent<IzBCollider.Core.BodiesPack>(mostParent.colliderPack).first;
+							e != default;
+							e = GetComponent<IzBCollider.Core.Body_Next>(e).value
+						) {
+							var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
+							var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
+							rc.solveCollision( st, ref wPosCache.lastWPos, defState.r );
+						}
+					}
+
 					// 前フレームにキャッシュされた位置を先端目標位置として、
 					// 先端目標位置へ移動した結果の移動・姿勢ベクトルを得る
 					float3 sftVec, rotVec;

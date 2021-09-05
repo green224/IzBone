@@ -5,7 +5,7 @@ using Unity.Mathematics;
 using static Unity.Mathematics.math;
 using Unity.Collections;
 
-
+// TODO : これをRawCollider名前空間へ移動する
 namespace IzBone.IzBCollider {
 
 	/** コライダのinterface */
@@ -13,7 +13,7 @@ namespace IzBone.IzBCollider {
 		/** 指定の球がぶつかっていた場合、引き離しベクトルを得る */
 		public bool solve(Collider_Sphere* s, float3* oColN, float* oColDepth);
 	}
-	
+
 	/** 球形コライダ */
 	public unsafe struct Collider_Sphere : ICollider {
 		public float3 pos;
