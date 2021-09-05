@@ -31,8 +31,14 @@ namespace IzBone.Common.Entities8 {
 		public void unregister(AuthComp auth, RegLink regLink)
 			=> _addList.Add( (auth, regLink, false) );
 
+		// 登録されている全Authに対して、パラメータの再適応を予約する
+		public void resetAllParameters() => _need2resetParams = true;
+
 		/** 追加・削除されたAuthの情報をECSへ反映させる */
 		public void apply(EntityManager em) {
+			if (_need2resetParams) reconvertAll(em);
+			_need2resetParams = false;
+
 			foreach (var authAdd in _addList) {
 				if (authAdd.isAdd)
 					convertOne(authAdd.auth, authAdd.regLink, em);
@@ -61,7 +67,8 @@ namespace IzBone.Common.Entities8 {
 		 * 常にリストのインデックスとRegLink上とのリンク関係が正しく対応している必要がある。
 		 * そのため、ここにリンク情報を格納して、格納位置が変化した際に互いのリンクを更新できるようにしてある。
 		 */
-		List<(Entity e, RegLink regLink, int idxInRL)> _entities = new List<(Entity, RegLink, int)>();
+		protected List<(Entity e, RegLink regLink, int idxInRL)> _entities
+			= new List<(Entity, RegLink, int)>();
 
 		/**
 		 * EntityTransformPacksのインデックスと登録されたRegLinkとのリンク情報。
@@ -73,12 +80,18 @@ namespace IzBone.Common.Entities8 {
 		List<(AuthComp auth, RegLink regLink, bool isAdd)> _addList
 			= new List<(AuthComp, RegLink, bool)>();
 
+		/** 次のApplyタイミングでパラメータのリセットをするか否か */
+		bool _need2resetParams = false;
+
 		/** Auth1つ分の変換処理 */
 		abstract protected void convertOne(
 			AuthComp auth,
 			RegLink regLink,
 			EntityManager em
 		);
+
+		/** 登録済みの全Authの再変換処理 */
+		abstract protected void reconvertAll(EntityManager em);
 
 		/** Auth1つ分の削除処理 */
 		void removeOne(RegLink regLink, EntityManager em) {

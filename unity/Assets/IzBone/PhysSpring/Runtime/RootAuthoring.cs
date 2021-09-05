@@ -114,6 +114,12 @@ public sealed class RootAuthoring : MonoBehaviour {
 
 			i.depth = clamp(i.depth, 1, depthMax);
 		}
+
+		// 実行時はインスペクタ変更時にパラメータを同期
+		if (Application.isPlaying) {
+			var sys = GetSys();
+			if (sys != null) sys.resetAllParameters();
+		}
 	}
 #endif
 }

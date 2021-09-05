@@ -44,10 +44,10 @@ namespace IzBone.IzBCollider {
 			int cnt_p = 0;
 			foreach (var i in srcList) {
 				switch (i.mode) {
-				case BodyAuthoring.Mode.Sphere		: ++cnt_s; break;
-				case BodyAuthoring.Mode.Capsule	: ++cnt_c; break;
-				case BodyAuthoring.Mode.Box		: ++cnt_b; break;
-				case BodyAuthoring.Mode.Plane		: ++cnt_p; break;
+				case ShapeType.Sphere	: ++cnt_s; break;
+				case ShapeType.Capsule	: ++cnt_c; break;
+				case ShapeType.Box		: ++cnt_b; break;
+				case ShapeType.Plane	: ++cnt_p; break;
 				default : throw new InvalidProgramException();
 				}
 			}
@@ -71,13 +71,13 @@ namespace IzBone.IzBCollider {
 			foreach (var i in srcList) {
 				var l2wMtx = i.l2wMtx;
 				switch (i.mode) {
-				case BodyAuthoring.Mode.Sphere :
+				case ShapeType.Sphere :
 					spheres[++idx_s] = new Collider_Sphere() {
 						pos = l2wMtx.c3.xyz,
 						r = i.l2wMtxClmNorm.x * i.r.x,
 					};
 					break;
-				case BodyAuthoring.Mode.Capsule :
+				case ShapeType.Capsule :
 					capsules[++idx_c] = new Collider_Capsule() {
 						pos = l2wMtx.c3.xyz,
 						r_s = i.l2wMtxClmNorm.x * i.r.x,
@@ -85,7 +85,7 @@ namespace IzBone.IzBCollider {
 						dir = l2wMtx.c1.xyz / i.l2wMtxClmNorm.y,
 					};
 					break;
-				case BodyAuthoring.Mode.Box :
+				case ShapeType.Box :
 					boxes[++idx_b] = new Collider_Box() {
 						pos = l2wMtx.c3.xyz,
 						xAxis = l2wMtx.c0.xyz / i.l2wMtxClmNorm.x,
@@ -98,7 +98,7 @@ namespace IzBone.IzBCollider {
 						),
 					};
 					break;
-				case BodyAuthoring.Mode.Plane :
+				case ShapeType.Plane :
 					planes[++idx_p] = new Collider_Plane() {
 						pos = l2wMtx.c3.xyz,
 						dir = l2wMtx.c2.xyz / i.l2wMtxClmNorm.z,

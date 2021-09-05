@@ -40,7 +40,8 @@ namespace IzBone.PhysSpring.Core {
 						continue;
 					}
 
-					var iRate = (float)(bone.depth-1-i) / max(bone.depth-1, 1);
+//					var dRate = (float)(bone.depth-1-i) / max(bone.depth-1, 1);
+					var dRate = remap(0, bone.depth-1, 1, 0, i);
 
 					// デフォルト姿勢を適応
 					if (i == bone.depth-1) {
@@ -48,33 +49,9 @@ namespace IzBone.PhysSpring.Core {
 							parent.localRotation *= j.defaultRot;
 					}
 
-
-					// 範囲情報を初期化
-					var a = new OneSpring{};
-					var rotMax = radians( bone.angleMax.evaluate(iRate) );
-					var rotMargin = rotMax * bone.angleMargin.evaluate(iRate);
-					a.range_rot.reset(-rotMax, rotMax, rotMargin);
-					var shiftMax = bone.shiftMax.evaluate(iRate);
-					var shiftMargin = shiftMax * bone.shiftMargin.evaluate(iRate);
-					a.range_sft.reset(-shiftMax, shiftMax, shiftMargin);
-
-					// バネを初期化
-					a.spring_rot.kpm = bone.rotKpm.evaluate(iRate);
-					a.spring_rot.maxV = bone.omgMax.evaluate(iRate);
-					a.spring_rot.maxX = a.range_rot.localMax;
-					a.spring_rot.vHL = HalfLifeDragAttribute.showValue2HalfLife(
-						bone.omgDrag.evaluate(iRate)
-					);
-					a.spring_sft.kpm = bone.shiftKpm.evaluate(iRate);
-					a.spring_sft.maxV = bone.vMax.evaluate(iRate);
-					a.spring_sft.maxX = a.range_sft.localMax.x;
-					a.spring_sft.vHL = HalfLifeDragAttribute.showValue2HalfLife(
-						bone.vDrag.evaluate(iRate)
-					);
-						
 					// コンポーネントを割り当て
 					var entity = em.CreateEntity();
-					em.AddComponentData(entity,a);
+					em.AddComponentData(entity, genOneSpring(bone, dRate));
 					em.AddComponentData(entity, new DefaultState{
 						resetDefPosAlways = bone.withAnimation,
 						defRot = parent.localRotation,
@@ -91,6 +68,7 @@ namespace IzBone.PhysSpring.Core {
 					});
 					em.AddComponentData(entity, new OneSpring_M2D{
 						boneAuth = bone,
+						depthRate = dRate,
 						parentTrans = parent,
 						childTrans = child,
 					});
@@ -112,6 +90,48 @@ namespace IzBone.PhysSpring.Core {
 					childEntity = entity;
 				}
 			}
+		}
+
+		/** 登録済みの全Authの再変換処理 */
+		override protected void reconvertAll(EntityManager em) {
+			// 出来るものだけ同期を行う
+			foreach (var i in _entities) {
+				var m2d = em.GetComponentData<OneSpring_M2D>(i.e);
+				em.SetComponentData(i.e, genOneSpring(m2d.boneAuth, m2d.depthRate));
+
+				if (em.HasComponent<MostParent>(i.e)) {
+					var mp = em.GetComponentData<MostParent>(i.e);
+					mp.iterationNum = m2d.boneAuth.iterationNum;
+					mp.rsRate = m2d.boneAuth.rotShiftRate;
+					em.SetComponentData(i.e, mp);
+				}
+			}
+		}
+
+		static OneSpring genOneSpring(RootAuthoring.Bone bone, float dRate) {
+			var ret = new OneSpring{};
+			var rotMax = radians( bone.angleMax.evaluate(dRate) );
+			var rotMargin = rotMax * bone.angleMargin.evaluate(dRate);
+			ret.range_rot.reset(-rotMax, rotMax, rotMargin);
+			var shiftMax = bone.shiftMax.evaluate(dRate);
+			var shiftMargin = shiftMax * bone.shiftMargin.evaluate(dRate);
+			ret.range_sft.reset(-shiftMax, shiftMax, shiftMargin);
+
+			// バネを初期化
+			ret.spring_rot.kpm = bone.rotKpm.evaluate(dRate);
+			ret.spring_rot.maxV = bone.omgMax.evaluate(dRate);
+			ret.spring_rot.maxX = ret.range_rot.localMax;
+			ret.spring_rot.vHL = HalfLifeDragAttribute.showValue2HalfLife(
+				bone.omgDrag.evaluate(dRate)
+			);
+			ret.spring_sft.kpm = bone.shiftKpm.evaluate(dRate);
+			ret.spring_sft.maxV = bone.vMax.evaluate(dRate);
+			ret.spring_sft.maxX = ret.range_sft.localMax.x;
+			ret.spring_sft.vHL = HalfLifeDragAttribute.showValue2HalfLife(
+				bone.vDrag.evaluate(dRate)
+			);
+
+			return ret;
 		}
 
 

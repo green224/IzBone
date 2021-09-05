@@ -26,7 +26,7 @@ sealed class BodyAutoringInspector : Editor
 		// 形状タイプ
 		var sfMode = serializedObject.FindProperty( "mode" );
 		EditorGUILayout.PropertyField( sfMode );
-		var mode = (BodyAuthoring.Mode)sfMode.enumValueIndex;
+		var mode = (ShapeType)sfMode.enumValueIndex;
 
 		// 中心位置オフセット
 		var sfCenter = serializedObject.FindProperty( "center" );
@@ -37,13 +37,13 @@ sealed class BodyAutoringInspector : Editor
 		var sfRX = sfR.FindPropertyRelative("x");
 		var sfRY = sfR.FindPropertyRelative("y");
 		var sfRZ = sfR.FindPropertyRelative("z");
-		if (mode == BodyAuthoring.Mode.Sphere) {
+		if (mode == ShapeType.Sphere) {
 			using (new EditorGUIUtility8.MixedValueScope(sfR))
 			using (var check = new EditorGUI.ChangeCheckScope()) {
 				var r = EditorGUILayout.FloatField( "Radius", sfRX.floatValue );
 				if (check.changed) sfRX.floatValue = r;
 			}
-		} else if (mode == BodyAuthoring.Mode.Capsule) {
+		} else if (mode == ShapeType.Capsule) {
 			using (var check = new EditorGUI.ChangeCheckScope()) {
 				var r = EditorGUILayout.FloatField( "Radius", sfRX.floatValue );
 				var h = EditorGUILayout.FloatField( "Height", sfRY.floatValue*2 );
@@ -52,7 +52,7 @@ sealed class BodyAutoringInspector : Editor
 					sfRY.floatValue = h/2;
 				}
 			}
-		} else if (mode == BodyAuthoring.Mode.Box) {
+		} else if (mode == ShapeType.Box) {
 			using (var check = new EditorGUI.ChangeCheckScope()) {
 				var r = new Vector3(sfRX.floatValue, sfRY.floatValue, sfRZ.floatValue);
 				r = EditorGUILayout.Vector3Field( "Size", r*2 );
@@ -62,11 +62,11 @@ sealed class BodyAutoringInspector : Editor
 					sfRZ.floatValue = r.z/2;
 				}
 			}
-		} else if (mode == BodyAuthoring.Mode.Plane) {
+		} else if (mode == ShapeType.Plane) {
 		} else { throw new InvalidProgramException(); }
 
 		// 回転
-		if (mode != BodyAuthoring.Mode.Sphere) {
+		if (mode != ShapeType.Sphere) {
 			var sfRot = serializedObject.FindProperty( "rot" );
 			using (var check = new EditorGUI.ChangeCheckScope()) {
 				var rot = getPropQuaternion(sfRot);
@@ -78,7 +78,7 @@ sealed class BodyAutoringInspector : Editor
 		}
 
 		// 強制突き抜け防止処理
-		if (mode == BodyAuthoring.Mode.Sphere || mode == BodyAuthoring.Mode.Capsule) {
+		if (mode == ShapeType.Sphere || mode == ShapeType.Capsule) {
 			EditorGUILayout.Space();
 			EditorGUILayout.PropertyField(
 				serializedObject.FindProperty("forcePeneCancel"),

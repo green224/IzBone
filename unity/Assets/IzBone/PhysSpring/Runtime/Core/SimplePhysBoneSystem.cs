@@ -13,19 +13,22 @@ using System.Runtime.CompilerServices;
 namespace IzBone.PhysSpring.Core {
 using Common;
 
-[UpdateInGroup(typeof(PresentationSystemGroup))]
+[UpdateInGroup(typeof(IzBoneSystemGroup))]
+[UpdateAfter(typeof(IzBCollider.Core.IzBColliderSystem))]
 [AlwaysUpdateSystem]
 public sealed class SimplePhysBoneSystem : SystemBase {
 
-	// RootAuthを登録・登録解除する
+	// BodyAuthoringを登録・登録解除する処理
 	internal void register(RootAuthoring auth, EntityRegisterer.RegLink regLink)
-		=> _entityRegisterer.register(auth, regLink);
+		=> _entityReg.register(auth, regLink);
 	internal void unregister(RootAuthoring auth, EntityRegisterer.RegLink regLink)
-		=> _entityRegisterer.unregister(auth, regLink);
+		=> _entityReg.unregister(auth, regLink);
+	internal void resetAllParameters() => _entityReg.resetAllParameters();
+	EntityRegisterer _entityReg;
 
 	/** 指定のRootAuthの物理状態をリセットする */
 	internal void reset(EntityRegisterer.RegLink regLink) {
-		var etp = _entityRegisterer.etPacks;
+		var etp = _entityReg.etPacks;
 		for (int i=0; i<regLink.etpIdxs.Count; ++i) {
 			var etpIdx = regLink.etpIdxs[i];
 			var e = etp.Entities[ etpIdx ];
@@ -44,9 +47,6 @@ public sealed class SimplePhysBoneSystem : SystemBase {
 			SetComponent(e, wPosCache);
 		}
 	}
-
-	/** RootAuthを追加削除するためのモジュール */
-	EntityRegisterer _entityRegisterer;
 
 	/** ECSで得た結果の回転を、マネージドTransformに反映させる処理 */
 	[BurstCompile]
@@ -68,11 +68,11 @@ public sealed class SimplePhysBoneSystem : SystemBase {
 
 
 	protected override void OnCreate() {
-		_entityRegisterer = new EntityRegisterer();
+		_entityReg = new EntityRegisterer();
 	}
 
 	protected override void OnDestroy() {
-		_entityRegisterer.Dispose();
+		_entityReg.Dispose();
 	}
 
 	override protected void OnUpdate() {
@@ -80,7 +80,7 @@ public sealed class SimplePhysBoneSystem : SystemBase {
 		var deltaTime = Time.DeltaTime;
 
 		// 追加・削除されたAuthの情報をECSへ反映させる
-		_entityRegisterer.apply(EntityManager);
+		_entityReg.apply(EntityManager);
 
 		// マネージド空間の情報をECSへ同期する
 		Entities.ForEach((
@@ -263,7 +263,7 @@ public sealed class SimplePhysBoneSystem : SystemBase {
 		// 本当はこれは並列にするまでもないが、
 		// IJobParallelForTransformを使用しないとそもそもスレッド化できず、
 		// そうなるとECSに乗せる事自体が瓦解するので、仕方なくこうしている
-		var etp = _entityRegisterer.etPacks;
+		var etp = _entityReg.etPacks;
 		if (etp.Length != 0) {
 			Dependency = new SpringTransUpdateJob{
 				entities = etp.Entities,

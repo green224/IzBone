@@ -66,7 +66,8 @@ namespace IzBone.PhysSpring.Core {
 
 	/** OneSpringとRootAuthoringとの橋渡し役を行うためのマネージドコンポーネント */
 	public sealed class OneSpring_M2D : IComponentData {
-		public RootAuthoring.Bone boneAuth;				//!< 生成元
+		public RootAuthoring.Bone boneAuth;			//!< 生成元
 		public Transform parentTrans, childTrans;	//!< Springでつながる親と子のTransform
+		public float depthRate;						//!< 0~Depthを0～1にリマップしたもの
 	}
 }

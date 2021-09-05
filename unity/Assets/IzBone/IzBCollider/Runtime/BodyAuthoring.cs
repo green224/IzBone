@@ -1,8 +1,9 @@
 ﻿using System;
 using UnityEngine;
-
+using Unity.Entities;
 using Unity.Mathematics;
 using static Unity.Mathematics.math;
+using System.Collections.Generic;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -16,89 +17,104 @@ namespace IzBone.IzBCollider {
 	[AddComponentMenu("IzBone/IzBone_Collider")]
 	public sealed class BodyAuthoring : MonoBehaviour {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
+
+		[UnityEngine.Serialization.FormerlySerializedAs("mode")]
+		[SerializeField] ShapeType _mode = ShapeType.Sphere;
+		[UnityEngine.Serialization.FormerlySerializedAs("center")]
+		[SerializeField] float3 _center = float3(0,0,0);
+		[UnityEngine.Serialization.FormerlySerializedAs("r")]
+		[SerializeField] float3 _r = float3(1,1,1);
+		[UnityEngine.Serialization.FormerlySerializedAs("rot")]
+		[SerializeField] quaternion _rot = Unity.Mathematics.quaternion.identity;
+
+
 		// --------------------------------------- publicメンバ -------------------------------------
 
-		public enum Mode { Sphere, Capsule, Box, Plane, }
-
-		[UnityEngine.Serialization.FormerlySerializedAs("_mode")]
-		public Mode mode = Mode.Sphere;
-		[UnityEngine.Serialization.FormerlySerializedAs("_center")]
-		public float3 center = float3(0,0,0);
-		[UnityEngine.Serialization.FormerlySerializedAs("_r")]
-		public float3 r = float3(1,1,1);
-		[UnityEngine.Serialization.FormerlySerializedAs("_rot")]
-		public quaternion rot = Unity.Mathematics.quaternion.identity;
-		public bool forcePeneCancel = false;		// 中央に仮想板を配置して、パーティクルが絶対に初期位置から見て逆側に浸透しないようにする
-
-
-		new public Transform transform {get{
-			if (_transform == null) _transform = ((MonoBehaviour)this).transform;
-			return _transform;
-		}}
-
-		// 高速化のために、実機ではフィールドアクセスに変化させる
-	#if UNITY_EDITOR
-		public float4x4 l2wMtx {get; private set;}
-		public float3 l2wMtxClmNorm {get; private set;}
-	#else
-		[NonSerialized] public float4x4 l2wMtx;
-		[NonSerialized] public float3 l2wMtxClmNorm;
-	#endif
-
-		/** 更新処理。l2gMtx等を呼ぶ前に必ずこれを読んで更新すること */
-		public void update_phase0() { checkRebuildL2GMat(); }
-		public void update_phase1() { _transform.hasChanged = false; }
+		public ShapeType mode => _mode;
+		public float3 center => _center;
+		public float3 r => _r;
+		public quaternion rot => _rot;
 
 
 		// ----------------------------------- private/protected メンバ -------------------------------
 
-		Transform _transform;
-		float3 _ctrCache = default;
-		quaternion rotCache = Unity.Mathematics.quaternion.identity;
-
-		void checkRebuildL2GMat() {
-			var trans = transform;
-			if (mode == Mode.Sphere) {
-				if (!trans.hasChanged && _ctrCache.Equals(center)) return;
-				var tr = Unity.Mathematics.float4x4.identity;
-				tr.c3.xyz = center;
-				l2wMtx = mul(trans.localToWorldMatrix, tr);
-			} else {
-				if (!trans.hasChanged && _ctrCache.Equals(center) && rotCache.Equals(rot)) return;
-				var tr = float4x4(rot, center);
-				l2wMtx = mul(trans.localToWorldMatrix, tr);
-				rotCache = rot;
-			}
-			_ctrCache = center;
-
-			l2wMtxClmNorm = float3(
-				length( l2wMtx.c0.xyz ),
-				length( l2wMtx.c1.xyz ),
-				length( l2wMtx.c2.xyz )
-			);
+		/** メインのシステムを取得する */
+		Core.IzBColliderSystem GetSys() {
+			var w = World.DefaultGameObjectInjectionWorld;
+			if (w == null) return null;
+			return w.GetOrCreateSystem<Core.IzBColliderSystem>();
 		}
+
+
+
+	[NonSerialized] internal float4x4 l2wMtx;
+	[NonSerialized] internal float3 l2wMtxClmNorm;
+
+	/** 更新処理。l2gMtx等を呼ぶ前に必ずこれを読んで更新すること */
+	internal void update_phase0() { checkRebuildL2GMat(); }
+	internal void update_phase1() { _transform.hasChanged = false; }
+
+	new Transform transform {get{
+		if (_transform == null) _transform = ((MonoBehaviour)this).transform;
+		return _transform;
+	}}
+	Transform _transform;
+
+	float3 _ctrCache = default;
+	quaternion rotCache = Unity.Mathematics.quaternion.identity;
+	void checkRebuildL2GMat() {
+		var trans = transform;
+		if (_mode == ShapeType.Sphere) {
+			if (!trans.hasChanged && _ctrCache.Equals(_center)) return;
+			var tr = Unity.Mathematics.float4x4.identity;
+			tr.c3.xyz = _center;
+			l2wMtx = mul(trans.localToWorldMatrix, tr);
+		} else {
+			if (!trans.hasChanged && _ctrCache.Equals(_center) && rotCache.Equals(_rot)) return;
+			var tr = float4x4(_rot, _center);
+			l2wMtx = mul(trans.localToWorldMatrix, tr);
+			rotCache = _rot;
+		}
+		_ctrCache = _center;
+
+		l2wMtxClmNorm = float3(
+			length( l2wMtx.c0.xyz ),
+			length( l2wMtx.c1.xyz ),
+			length( l2wMtx.c2.xyz )
+		);
+	}
 
 
 		// --------------------------------------------------------------------------------------------
 #if UNITY_EDITOR
+		void OnValidate() {
+			if (Application.isPlaying) {
+				var sys = GetSys();
+				if (sys != null) sys.resetAllParameters();
+			}
+		}
+
+		// Editorでのギズモを表示する処理。
+		// OnDrawGizmosで呼べるようにここに定義しているが、
+		// .Editorアセンブリからのみ呼んでいる現状、ここではなくEditorアセンブリに移動するべきかもしれない。
 		internal void DEBUG_drawGizmos() {
 			if ( !Application.isPlaying ) checkRebuildL2GMat();
 			Gizmos8.drawMode = Gizmos8.DrawMode.Handle;
 
 			Gizmos8.color = Gizmos8.Colors.Collider;
 
-			if (mode == Mode.Sphere) {
+			if (_mode == ShapeType.Sphere) {
 				var pos = l2wMtx.c3.xyz;
-				var size = mul( (float3x3)l2wMtx, (float3)(r.x / sqrt(3)) );
+				var size = mul( (float3x3)l2wMtx, (float3)(_r.x / sqrt(3)) );
 				Gizmos8.drawWireSphere( pos, length(size) );
 
-			} else if (mode == Mode.Capsule) {
+			} else if (_mode == ShapeType.Capsule) {
 				var pos = l2wMtx.c3.xyz;
 				var l2gMat3x3 = (float3x3)l2wMtx;
-				var sizeX  = mul( l2gMat3x3, float3(r.x,0,0) );
-				var sizeY0 = mul( l2gMat3x3, float3(0,r.y-r.x,0) );
-				var sizeY1 = mul( l2gMat3x3, float3(0,r.x,0) );
-				var sizeZ  = mul( l2gMat3x3, float3(0,0,r.x) );
+				var sizeX  = mul( l2gMat3x3, float3(_r.x,0,0) );
+				var sizeY0 = mul( l2gMat3x3, float3(0,_r.y-_r.x,0) );
+				var sizeY1 = mul( l2gMat3x3, float3(0,_r.x,0) );
+				var sizeZ  = mul( l2gMat3x3, float3(0,0,_r.x) );
 				float3 p0 = default;
 				float3 p1 = default;
 				for (int i=0; i<=30; ++i) {
@@ -134,12 +150,12 @@ namespace IzBone.IzBCollider {
 				Gizmos8.drawLine( pos +sizeY0+sizeZ, pos -sizeY0+sizeZ );
 				Gizmos8.drawLine( pos +sizeY0-sizeZ, pos -sizeY0-sizeZ );
 
-			} else if (mode == Mode.Box) {
+			} else if (_mode == ShapeType.Box) {
 				var pos = l2wMtx.c3.xyz;
 				var l2gMat3x3 = (float3x3)l2wMtx;
-				var sizeX = mul( l2gMat3x3, float3(r.x,0,0) );
-				var sizeY = mul( l2gMat3x3, float3(0,r.y,0) );
-				var sizeZ = mul( l2gMat3x3, float3(0,0,r.z) );
+				var sizeX = mul( l2gMat3x3, float3(_r.x,0,0) );
+				var sizeY = mul( l2gMat3x3, float3(0,_r.y,0) );
+				var sizeZ = mul( l2gMat3x3, float3(0,0,_r.z) );
 				var ppp =  sizeX +sizeY +sizeZ + pos;
 				var ppm =  sizeX +sizeY -sizeZ + pos;
 				var pmp =  sizeX -sizeY +sizeZ + pos;
@@ -161,7 +177,7 @@ namespace IzBone.IzBCollider {
 				Gizmos8.drawLine( pmp, mmp );
 				Gizmos8.drawLine( pmm, mmm );
 
-			} else if (mode == Mode.Plane) {
+			} else if (_mode == ShapeType.Plane) {
 				var pos = l2wMtx.c3.xyz;
 				var l2gMat3x3 = (float3x3)l2wMtx;
 				var x = mul( l2gMat3x3, float3(0.05f,0,0) );
