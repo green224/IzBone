@@ -636,11 +636,11 @@ MonoBehaviour:
     curve: 0.5
     useCurve: 0
   _topOfBones:
-  - {fileID: 1640649736}
   - {fileID: 608838436}
-  - {fileID: 608838435}
   - {fileID: 608838434}
+  - {fileID: 1640649736}
   - {fileID: 608838433}
+  - {fileID: 608838435}
   _cmpl_vert: 0.000000001
   _cmpl_hori: 0.0000004864071
 --- !u!1 &380784466 stripped

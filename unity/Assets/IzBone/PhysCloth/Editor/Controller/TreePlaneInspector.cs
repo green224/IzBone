@@ -72,6 +72,8 @@ sealed class TreePlaneInspector : BaseInspector
 
 				drawPtcl( tLst1[i], true, 0, 0 );
 				drawConnection(tLst0[i], tLst1[i], true);
+
+				if (i != 0) drawConnection(tLst1[i-1], tLst1[i], true);
 			}
 
 			// それより下のParticleを表示。
