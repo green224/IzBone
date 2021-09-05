@@ -6,18 +6,19 @@ using static Unity.Mathematics.math;
 using Unity.Collections;
 
 
+//TODO : これはもう古いので、ECS移行したら消す
 namespace IzBone.IzBCollider {
+	using RawCollider;
 
 	/** 複数のコライダをまとめて保持するコンテナ */
 	public unsafe class Colliders : IDisposable
 	{
-	//TODO : これはJobからアクセスできる形にする
 		public BodyAuthoring[] srcList;
 
-		public NativeArray<Collider_Sphere>		spheres;
-		public NativeArray<Collider_Capsule>	capsules;
-		public NativeArray<Collider_Box>		boxes;
-		public NativeArray<Collider_Plane>		planes;
+		public NativeArray<Sphere>		spheres;
+		public NativeArray<Capsule>	capsules;
+		public NativeArray<Box>		boxes;
+		public NativeArray<Plane>		planes;
 
 		public Colliders(BodyAuthoring[] srcList) {
 			this.srcList = srcList ?? new BodyAuthoring[0];
@@ -72,13 +73,13 @@ namespace IzBone.IzBCollider {
 				var l2wMtx = i.l2wMtx;
 				switch (i.mode) {
 				case ShapeType.Sphere :
-					spheres[++idx_s] = new Collider_Sphere() {
+					spheres[++idx_s] = new Sphere() {
 						pos = l2wMtx.c3.xyz,
 						r = i.l2wMtxClmNorm.x * i.r.x,
 					};
 					break;
 				case ShapeType.Capsule :
-					capsules[++idx_c] = new Collider_Capsule() {
+					capsules[++idx_c] = new Capsule() {
 						pos = l2wMtx.c3.xyz,
 						r_s = i.l2wMtxClmNorm.x * i.r.x,
 						r_h = i.l2wMtxClmNorm.y * i.r.y,
@@ -86,7 +87,7 @@ namespace IzBone.IzBCollider {
 					};
 					break;
 				case ShapeType.Box :
-					boxes[++idx_b] = new Collider_Box() {
+					boxes[++idx_b] = new Box() {
 						pos = l2wMtx.c3.xyz,
 						xAxis = l2wMtx.c0.xyz / i.l2wMtxClmNorm.x,
 						yAxis = l2wMtx.c1.xyz / i.l2wMtxClmNorm.y,
@@ -99,7 +100,7 @@ namespace IzBone.IzBCollider {
 					};
 					break;
 				case ShapeType.Plane :
-					planes[++idx_p] = new Collider_Plane() {
+					planes[++idx_p] = new Plane() {
 						pos = l2wMtx.c3.xyz,
 						dir = l2wMtx.c2.xyz / i.l2wMtxClmNorm.z,
 					};

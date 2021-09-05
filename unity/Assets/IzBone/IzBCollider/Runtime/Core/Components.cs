@@ -23,10 +23,10 @@ namespace IzBone.IzBCollider.Core {
 	public struct Body_Rot:IComponentData {public quaternion value;}
 
 	[StructLayout(LayoutKind.Explicit)] public struct Body_RawCollider:IComponentData {
-		[FieldOffset(0)] public Collider_Sphere sphere;
-		[FieldOffset(0)] public Collider_Capsule capsule;
-		[FieldOffset(0)] public Collider_Box box;
-		[FieldOffset(0)] public Collider_Plane plane;
+		[FieldOffset(0)] public RawCollider.Sphere sphere;
+		[FieldOffset(0)] public RawCollider.Capsule capsule;
+		[FieldOffset(0)] public RawCollider.Box box;
+		[FieldOffset(0)] public RawCollider.Plane plane;
 
 		/** 指定の位置・半径・ShapeTypeで衝突を解決する */
 		public bool solveCollision(
@@ -34,7 +34,7 @@ namespace IzBone.IzBCollider.Core {
 			ref float3 pos,
 			float r
 		) {
-			var sc = new Collider_Sphere{pos=pos, r=r};
+			var sc = new RawCollider.Sphere{pos=pos, r=r};
 
 			float3 n=0; float d=0; var isCol=false;
 			unsafe {

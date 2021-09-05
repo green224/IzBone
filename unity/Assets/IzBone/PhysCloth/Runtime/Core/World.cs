@@ -243,9 +243,9 @@ namespace IzBone.PhysCloth.Core {
 
 					{// コライダとの衝突解決
 						static bool solveCollider<T>(
-							IzBCollider.Collider_Sphere* s,
+							IzBCollider.RawCollider.Sphere* s,
 							NativeArray<T> colliders
-						) where T : struct, IzBCollider.ICollider {
+						) where T : struct, IzBCollider.RawCollider.ICollider {
 							if (!colliders.IsCreated) return false;
 
 							// 衝突を検知して、衝突がない位置まで引き離した時の位置を計算する

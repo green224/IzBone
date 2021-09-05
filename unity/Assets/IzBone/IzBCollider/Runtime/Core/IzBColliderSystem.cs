@@ -63,7 +63,7 @@ public sealed class IzBColliderSystem : SystemBase {
 			var rawColi = new Body_RawCollider();
 			switch (shapeType) {
 			case ShapeType.Sphere :
-				rawColi.sphere = new Collider_Sphere() {
+				rawColi.sphere = new RawCollider.Sphere() {
 					pos = l2w.c3.xyz,
 					r = length( l2w.c0.xyz ) * r.x,
 				};
@@ -71,7 +71,7 @@ public sealed class IzBColliderSystem : SystemBase {
 			case ShapeType.Capsule : {
 				var sclX = length( l2w.c0.xyz );
 				var sclY = length( l2w.c1.xyz );
-				rawColi.capsule = new Collider_Capsule() {
+				rawColi.capsule = new RawCollider.Capsule() {
 					pos = l2w.c3.xyz,
 					r_s = sclX * r.x,
 					r_h = sclY * r.y,
@@ -82,7 +82,7 @@ public sealed class IzBColliderSystem : SystemBase {
 				var sclX = length( l2w.c0.xyz );
 				var sclY = length( l2w.c1.xyz );
 				var sclZ = length( l2w.c2.xyz );
-				rawColi.box = new Collider_Box() {
+				rawColi.box = new RawCollider.Box() {
 					pos = l2w.c3.xyz,
 					xAxis = l2w.c0.xyz / sclX,
 					yAxis = l2w.c1.xyz / sclY,
@@ -91,7 +91,7 @@ public sealed class IzBColliderSystem : SystemBase {
 				};
 				} break;
 			case ShapeType.Plane :
-				rawColi.plane = new Collider_Plane() {
+				rawColi.plane = new RawCollider.Plane() {
 					pos = l2w.c3.xyz,
 					dir = l2w.c2.xyz / length( l2w.c2.xyz ),
 				};

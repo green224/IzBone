@@ -22,7 +22,7 @@ namespace IzBone.PhysCloth.Core {
 		public float4x4 defaultL2W;
 
 		// 位置・半径・速度・質量の逆数
-		public IzBCollider.Collider_Sphere col;
+		public IzBCollider.RawCollider.Sphere col;
 		public float3 v;
 		public float invM;
 
