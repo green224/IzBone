@@ -14,7 +14,7 @@ public unsafe abstract class Base : MonoBehaviour {
 	// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 	// 衝突検出を行う対象のコライダー一覧
-	[SerializeField] internal Common.Collider.IzCollider[] _izColliders = null;
+	[SerializeField] internal IzBCollider.BodyAuthoring[] _izColliders = null;
 
 	[Space]
 	[SerializeField][HalfLifeDrag] HalfLife _airDrag = 0.1f;	// 空気抵抗による半減期
@@ -39,14 +39,14 @@ public unsafe abstract class Base : MonoBehaviour {
 
 	// ----------------------------------- private/protected メンバ -------------------------------
 
-	protected Common.Collider.Colliders _coreColliders;
+	protected IzBCollider.Colliders _coreColliders;
 	internal ConstraintMng[] _constraints;
 	internal ParticleMng[] _particles;
 	internal Core.World _world;
 
 
 	virtual protected void Start() {
-		_coreColliders = new Common.Collider.Colliders(_izColliders);
+		_coreColliders = new IzBCollider.Colliders(_izColliders);
 		buildBuffers();
 		rebuildParameters();
 		_world = new Core.World( _particles, _constraints );
@@ -111,7 +111,7 @@ public unsafe abstract class Base : MonoBehaviour {
 	/** 配下のIzColliderを全登録する */
 	[ContextMenu("Collect child IzColliders")]
 	void __collectChildIzCol() {
-		_izColliders = GetComponentsInChildren< Common.Collider.IzCollider >();
+		_izColliders = GetComponentsInChildren< IzBCollider.BodyAuthoring >();
 	}
 
 	// 実行中にプロパティが変更された場合は、次回Update時に同期を行う

@@ -74,7 +74,7 @@ namespace IzBone.PhysCloth.Core {
 			float dt,
 			int iterationNum,
 			Controller.ParticleMng[] mngParticles,
-			Common.Collider.Colliders colliders
+			IzBCollider.Colliders colliders
 		) {
 			// 各種バッファのポインタを取得しておく
 			var ptclPtr0 = (Particle*)_particles.GetUnsafePtr();
@@ -243,9 +243,9 @@ namespace IzBone.PhysCloth.Core {
 
 					{// コライダとの衝突解決
 						static bool solveCollider<T>(
-							Common.Collider.Collider_Sphere* s,
+							IzBCollider.Collider_Sphere* s,
 							NativeArray<T> colliders
-						) where T : struct, Common.Collider.ICollider {
+						) where T : struct, IzBCollider.ICollider {
 							if (!colliders.IsCreated) return false;
 
 							// 衝突を検知して、衝突がない位置まで引き離した時の位置を計算する

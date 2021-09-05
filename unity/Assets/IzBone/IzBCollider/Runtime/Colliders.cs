@@ -6,20 +6,20 @@ using static Unity.Mathematics.math;
 using Unity.Collections;
 
 
-namespace IzBone.Common.Collider {
+namespace IzBone.IzBCollider {
 
 	/** 複数のコライダをまとめて保持するコンテナ */
 	public unsafe class Colliders : IDisposable
 	{
 	//TODO : これはJobからアクセスできる形にする
-		public IzCollider[] srcList;
+		public BodyAuthoring[] srcList;
 
 		public NativeArray<Collider_Sphere>		spheres;
 		public NativeArray<Collider_Capsule>	capsules;
 		public NativeArray<Collider_Box>		boxes;
 		public NativeArray<Collider_Plane>		planes;
 
-		public Colliders(IzCollider[] srcList) {
+		public Colliders(BodyAuthoring[] srcList) {
 			this.srcList = srcList;
 		}
 
@@ -44,10 +44,10 @@ namespace IzBone.Common.Collider {
 			int cnt_p = 0;
 			foreach (var i in srcList) {
 				switch (i.mode) {
-				case IzCollider.Mode.Sphere		: ++cnt_s; break;
-				case IzCollider.Mode.Capsule	: ++cnt_c; break;
-				case IzCollider.Mode.Box		: ++cnt_b; break;
-				case IzCollider.Mode.Plane		: ++cnt_p; break;
+				case BodyAuthoring.Mode.Sphere		: ++cnt_s; break;
+				case BodyAuthoring.Mode.Capsule	: ++cnt_c; break;
+				case BodyAuthoring.Mode.Box		: ++cnt_b; break;
+				case BodyAuthoring.Mode.Plane		: ++cnt_p; break;
 				default : throw new InvalidProgramException();
 				}
 			}
@@ -63,7 +63,7 @@ namespace IzBone.Common.Collider {
 			resetBufferSize(ref boxes, cnt_b);
 			resetBufferSize(ref planes, cnt_p);
 
-			// IzColliderコンポーネントから情報を構築する
+			// BodyAuthoringコンポーネントから情報を構築する
 			int idx_s = -1;
 			int idx_c = -1;
 			int idx_b = -1;
@@ -71,13 +71,13 @@ namespace IzBone.Common.Collider {
 			foreach (var i in srcList) {
 				var l2wMtx = i.l2wMtx;
 				switch (i.mode) {
-				case IzCollider.Mode.Sphere :
+				case BodyAuthoring.Mode.Sphere :
 					spheres[++idx_s] = new Collider_Sphere() {
 						pos = l2wMtx.c3.xyz,
 						r = i.l2wMtxClmNorm.x * i.r.x,
 					};
 					break;
-				case IzCollider.Mode.Capsule :
+				case BodyAuthoring.Mode.Capsule :
 					capsules[++idx_c] = new Collider_Capsule() {
 						pos = l2wMtx.c3.xyz,
 						r_s = i.l2wMtxClmNorm.x * i.r.x,
@@ -85,7 +85,7 @@ namespace IzBone.Common.Collider {
 						dir = l2wMtx.c1.xyz / i.l2wMtxClmNorm.y,
 					};
 					break;
-				case IzCollider.Mode.Box :
+				case BodyAuthoring.Mode.Box :
 					boxes[++idx_b] = new Collider_Box() {
 						pos = l2wMtx.c3.xyz,
 						xAxis = l2wMtx.c0.xyz / i.l2wMtxClmNorm.x,
@@ -98,7 +98,7 @@ namespace IzBone.Common.Collider {
 						),
 					};
 					break;
-				case IzCollider.Mode.Plane :
+				case BodyAuthoring.Mode.Plane :
 					planes[++idx_p] = new Collider_Plane() {
 						pos = l2wMtx.c3.xyz,
 						dir = l2wMtx.c2.xyz / i.l2wMtxClmNorm.z,

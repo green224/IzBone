@@ -8,6 +8,8 @@
         "Unity.Collections",
         "Unity.Entities",
         "IzBone.PhysCloth",
+        "IzBone.IzBCollider",
+        "IzBone.IzBCollider.Editor",
         "IzBone.Common",
         "IzBone.Common.Editor"
     ],

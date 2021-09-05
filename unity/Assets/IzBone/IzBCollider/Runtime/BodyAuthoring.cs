@@ -9,11 +9,12 @@ using UnityEditor;
 #endif
 
 
-namespace IzBone.Common.Collider {
+namespace IzBone.IzBCollider {
+	using Common;
 
 	/** IzBone専用のコライダー */
 	[AddComponentMenu("IzBone/IzBone_Collider")]
-	public sealed class IzCollider : MonoBehaviour {
+	public sealed class BodyAuthoring : MonoBehaviour {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 		// --------------------------------------- publicメンバ -------------------------------------
 

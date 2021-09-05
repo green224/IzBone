@@ -6,7 +6,7 @@ using static Unity.Mathematics.math;
 using Unity.Collections;
 
 
-namespace IzBone.Common.Collider {
+namespace IzBone.IzBCollider {
 
 	/** コライダのinterface */
 	public unsafe interface ICollider {

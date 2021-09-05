@@ -7,14 +7,16 @@ using static Unity.Mathematics.math;
 
 
 
-namespace IzBone.Common.Collider {
+namespace IzBone.IzBCollider {
+
+using Common;
 
 [CanEditMultipleObjects]
-[CustomEditor(typeof(IzCollider))]
-sealed class IzColliderInspector : Editor
+[CustomEditor(typeof(BodyAuthoring))]
+sealed class BodyAutoringInspector : Editor
 {
 	void OnSceneGUI() {
-		var tgt = (IzCollider)target;
+		var tgt = (BodyAuthoring)target;
 		tgt.DEBUG_drawGizmos();
 	}
 
@@ -24,7 +26,7 @@ sealed class IzColliderInspector : Editor
 		// 形状タイプ
 		var sfMode = serializedObject.FindProperty( "mode" );
 		EditorGUILayout.PropertyField( sfMode );
-		var mode = (IzCollider.Mode)sfMode.enumValueIndex;
+		var mode = (BodyAuthoring.Mode)sfMode.enumValueIndex;
 
 		// 中心位置オフセット
 		var sfCenter = serializedObject.FindProperty( "center" );
@@ -35,13 +37,13 @@ sealed class IzColliderInspector : Editor
 		var sfRX = sfR.FindPropertyRelative("x");
 		var sfRY = sfR.FindPropertyRelative("y");
 		var sfRZ = sfR.FindPropertyRelative("z");
-		if (mode == IzCollider.Mode.Sphere) {
+		if (mode == BodyAuthoring.Mode.Sphere) {
 			using (new EditorGUIUtility8.MixedValueScope(sfR))
 			using (var check = new EditorGUI.ChangeCheckScope()) {
 				var r = EditorGUILayout.FloatField( "Radius", sfRX.floatValue );
 				if (check.changed) sfRX.floatValue = r;
 			}
-		} else if (mode == IzCollider.Mode.Capsule) {
+		} else if (mode == BodyAuthoring.Mode.Capsule) {
 			using (var check = new EditorGUI.ChangeCheckScope()) {
 				var r = EditorGUILayout.FloatField( "Radius", sfRX.floatValue );
 				var h = EditorGUILayout.FloatField( "Height", sfRY.floatValue*2 );
@@ -50,7 +52,7 @@ sealed class IzColliderInspector : Editor
 					sfRY.floatValue = h/2;
 				}
 			}
-		} else if (mode == IzCollider.Mode.Box) {
+		} else if (mode == BodyAuthoring.Mode.Box) {
 			using (var check = new EditorGUI.ChangeCheckScope()) {
 				var r = new Vector3(sfRX.floatValue, sfRY.floatValue, sfRZ.floatValue);
 				r = EditorGUILayout.Vector3Field( "Size", r*2 );
@@ -60,11 +62,11 @@ sealed class IzColliderInspector : Editor
 					sfRZ.floatValue = r.z/2;
 				}
 			}
-		} else if (mode == IzCollider.Mode.Plane) {
+		} else if (mode == BodyAuthoring.Mode.Plane) {
 		} else { throw new InvalidProgramException(); }
 
 		// 回転
-		if (mode != IzCollider.Mode.Sphere) {
+		if (mode != BodyAuthoring.Mode.Sphere) {
 			var sfRot = serializedObject.FindProperty( "rot" );
 			using (var check = new EditorGUI.ChangeCheckScope()) {
 				var rot = getPropQuaternion(sfRot);
@@ -76,7 +78,7 @@ sealed class IzColliderInspector : Editor
 		}
 
 		// 強制突き抜け防止処理
-		if (mode == IzCollider.Mode.Sphere || mode == IzCollider.Mode.Capsule) {
+		if (mode == BodyAuthoring.Mode.Sphere || mode == BodyAuthoring.Mode.Capsule) {
 			EditorGUILayout.Space();
 			EditorGUILayout.PropertyField(
 				serializedObject.FindProperty("forcePeneCancel"),

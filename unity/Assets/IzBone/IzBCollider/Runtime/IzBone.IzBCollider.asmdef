@@ -1,5 +1,5 @@
 {
-    "name": "IzBone.PhysSpring.Editor",
+    "name": "IzBone.IzBCollider",
     "rootNamespace": "",
     "references": [
         "Unity.Mathematics",
@@ -7,15 +7,9 @@
         "Unity.Burst",
         "Unity.Collections",
         "Unity.Entities",
-        "IzBone.PhysSpring",
-        "IzBone.IzBCollider",
-        "IzBone.IzBCollider.Editor",
-        "IzBone.Common",
-        "IzBone.Common.Editor"
+        "IzBone.Common"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
     "overrideReferences": false,
