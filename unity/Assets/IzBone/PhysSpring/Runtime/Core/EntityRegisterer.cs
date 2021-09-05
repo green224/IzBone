@@ -75,10 +75,14 @@ namespace IzBone.PhysSpring.Core {
 					if (i!=0)
 						em.AddComponentData(entity, new Child{value = childEntity});
 					if (i==bone.depth-1) {
+						Entity colliderPackEntity = default;
+						if (auth._collider != null)
+							colliderPackEntity = auth._collider.RootEntity;
 						em.AddComponentData(entity, new MostParent{
 							depth = bone.depth,
 							iterationNum = bone.iterationNum,
 							rsRate = bone.rotShiftRate,
+							colliderPack = colliderPackEntity,
 						});
 					}
 

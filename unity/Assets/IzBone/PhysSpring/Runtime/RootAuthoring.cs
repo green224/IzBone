@@ -61,6 +61,9 @@ public sealed class RootAuthoring : MonoBehaviour {
 
 	[SerializeField] internal Bone[] _bones = new []{new Bone()};
 
+	// 衝突検出を行う対象のコライダー
+	[SerializeField] internal IzBCollider.BodiesPackAuthoring _collider = null;
+
 
 	// ------------------------------------- public メンバ ----------------------------------------
 

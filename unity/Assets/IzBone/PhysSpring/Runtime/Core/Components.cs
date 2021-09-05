@@ -10,6 +10,7 @@ namespace IzBone.PhysSpring.Core {
 	public struct MostParent : IComponentData {
 		public int depth;			//!< Springが何個連なっているか
 		public int iterationNum;	//!< 繰り返し計算回数
+		public Entity colliderPack;	//!< 衝突検出を行う対象のコライダー
 
 		/**
 		 * 回転と移動の影響割合。

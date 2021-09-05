@@ -20,7 +20,7 @@ namespace IzBone.IzBCollider {
 		public NativeArray<Collider_Plane>		planes;
 
 		public Colliders(BodyAuthoring[] srcList) {
-			this.srcList = srcList;
+			this.srcList = srcList ?? new BodyAuthoring[0];
 		}
 
 		/** 破棄する。最後に必ず呼ぶこと */

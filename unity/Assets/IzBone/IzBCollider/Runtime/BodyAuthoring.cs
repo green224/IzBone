@@ -18,19 +18,15 @@ namespace IzBone.IzBCollider {
 	public sealed class BodyAuthoring : MonoBehaviour {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
-		[UnityEngine.Serialization.FormerlySerializedAs("mode")]
-		[SerializeField] ShapeType _mode = ShapeType.Sphere;
-		[UnityEngine.Serialization.FormerlySerializedAs("center")]
+		[SerializeField] ShapeType _shapeType = ShapeType.Sphere;
 		[SerializeField] float3 _center = float3(0,0,0);
-		[UnityEngine.Serialization.FormerlySerializedAs("r")]
 		[SerializeField] float3 _r = float3(1,1,1);
-		[UnityEngine.Serialization.FormerlySerializedAs("rot")]
 		[SerializeField] quaternion _rot = Unity.Mathematics.quaternion.identity;
 
 
 		// --------------------------------------- publicメンバ -------------------------------------
 
-		public ShapeType mode => _mode;
+		public ShapeType mode => _shapeType;
 		public float3 center => _center;
 		public float3 r => _r;
 		public quaternion rot => _rot;
@@ -64,7 +60,7 @@ namespace IzBone.IzBCollider {
 	quaternion rotCache = Unity.Mathematics.quaternion.identity;
 	void checkRebuildL2GMat() {
 		var trans = transform;
-		if (_mode == ShapeType.Sphere) {
+		if (_shapeType == ShapeType.Sphere) {
 			if (!trans.hasChanged && _ctrCache.Equals(_center)) return;
 			var tr = Unity.Mathematics.float4x4.identity;
 			tr.c3.xyz = _center;
@@ -103,12 +99,12 @@ namespace IzBone.IzBCollider {
 
 			Gizmos8.color = Gizmos8.Colors.Collider;
 
-			if (_mode == ShapeType.Sphere) {
+			if (_shapeType == ShapeType.Sphere) {
 				var pos = l2wMtx.c3.xyz;
 				var size = mul( (float3x3)l2wMtx, (float3)(_r.x / sqrt(3)) );
 				Gizmos8.drawWireSphere( pos, length(size) );
 
-			} else if (_mode == ShapeType.Capsule) {
+			} else if (_shapeType == ShapeType.Capsule) {
 				var pos = l2wMtx.c3.xyz;
 				var l2gMat3x3 = (float3x3)l2wMtx;
 				var sizeX  = mul( l2gMat3x3, float3(_r.x,0,0) );
@@ -150,7 +146,7 @@ namespace IzBone.IzBCollider {
 				Gizmos8.drawLine( pos +sizeY0+sizeZ, pos -sizeY0+sizeZ );
 				Gizmos8.drawLine( pos +sizeY0-sizeZ, pos -sizeY0-sizeZ );
 
-			} else if (_mode == ShapeType.Box) {
+			} else if (_shapeType == ShapeType.Box) {
 				var pos = l2wMtx.c3.xyz;
 				var l2gMat3x3 = (float3x3)l2wMtx;
 				var sizeX = mul( l2gMat3x3, float3(_r.x,0,0) );
@@ -177,7 +173,7 @@ namespace IzBone.IzBCollider {
 				Gizmos8.drawLine( pmp, mmp );
 				Gizmos8.drawLine( pmm, mmm );
 
-			} else if (_mode == ShapeType.Plane) {
+			} else if (_shapeType == ShapeType.Plane) {
 				var pos = l2wMtx.c3.xyz;
 				var l2gMat3x3 = (float3x3)l2wMtx;
 				var x = mul( l2gMat3x3, float3(0.05f,0,0) );

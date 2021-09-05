@@ -33,7 +33,10 @@ public sealed class IzBColliderSystem : SystemBase {
 		[ReadOnly] public ComponentDataFromEntity<Body_ShapeType> shapeTypes;
 		[ReadOnly] public ComponentDataFromEntity<Body_Center> centers;
 		[ReadOnly] public ComponentDataFromEntity<Body_Rot> rots;
+
+		[NativeDisableParallelForRestriction]
 		[WriteOnly] public ComponentDataFromEntity<Body_L2W> l2ws;
+		[NativeDisableParallelForRestriction]
 		[WriteOnly] public ComponentDataFromEntity<Body_L2wClmNorm> l2wClmNorms;
 
 		public void Execute(int index, TransformAccess transform)

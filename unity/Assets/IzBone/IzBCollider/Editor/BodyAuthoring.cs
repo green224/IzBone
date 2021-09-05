@@ -24,16 +24,16 @@ sealed class BodyAutoringInspector : Editor
 		serializedObject.Update();
 
 		// 形状タイプ
-		var sfMode = serializedObject.FindProperty( "mode" );
+		var sfMode = serializedObject.FindProperty( "_shapeType" );
 		EditorGUILayout.PropertyField( sfMode );
 		var mode = (ShapeType)sfMode.enumValueIndex;
 
 		// 中心位置オフセット
-		var sfCenter = serializedObject.FindProperty( "center" );
+		var sfCenter = serializedObject.FindProperty( "_center" );
 		EditorGUILayout.PropertyField( sfCenter );
 
 		// 半径
-		var sfR = serializedObject.FindProperty( "r" );
+		var sfR = serializedObject.FindProperty( "_r" );
 		var sfRX = sfR.FindPropertyRelative("x");
 		var sfRY = sfR.FindPropertyRelative("y");
 		var sfRZ = sfR.FindPropertyRelative("z");
@@ -67,7 +67,7 @@ sealed class BodyAutoringInspector : Editor
 
 		// 回転
 		if (mode != ShapeType.Sphere) {
-			var sfRot = serializedObject.FindProperty( "rot" );
+			var sfRot = serializedObject.FindProperty( "_rot" );
 			using (var check = new EditorGUI.ChangeCheckScope()) {
 				var rot = getPropQuaternion(sfRot);
 				var euler = rot.eulerAngles;
@@ -75,18 +75,6 @@ sealed class BodyAutoringInspector : Editor
 				if (check.changed)
 					setPropQuaternion( sfRot, Quaternion.Euler(euler) );
 			}
-		}
-
-		// 強制突き抜け防止処理
-		if (mode == ShapeType.Sphere || mode == ShapeType.Capsule) {
-			EditorGUILayout.Space();
-			EditorGUILayout.PropertyField(
-				serializedObject.FindProperty("forcePeneCancel"),
-				new GUIContent(
-					"強制突き抜け防止処理",
-					"中央に仮想板を配置して、パーティクルが絶対に初期位置から見て逆側に浸透しないようにする。\n多いと副作用が起きるので、最重要な一つ二つにのみ指定すること"
-				)
-			);
 		}
 
 		serializedObject.ApplyModifiedProperties();

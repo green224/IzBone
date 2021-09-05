@@ -19,11 +19,17 @@ namespace IzBone.IzBCollider {
 
 		public BodyAuthoring[] Bodies => _bodies;
 
+		// このBodiesPackの対応するルートのEntity
+		public Entity RootEntity => _rootEntity;
+
 
 		// ----------------------------------- private/protected メンバ -------------------------------
 
 		/** ECSで得た結果をマネージドTransformに反映するためのバッファのリンク情報。System側から設定・参照される */
 		Core.EntityRegisterer.RegLink _erRegLink = new Core.EntityRegisterer.RegLink();
+
+		// このBodiesPackの対応するルートのEntity。EntityRegistererから設定される
+		internal Entity _rootEntity;
 
 		/** メインのシステムを取得する */
 		Core.IzBColliderSystem GetSys() {
@@ -42,6 +48,7 @@ namespace IzBone.IzBCollider {
 		{
 			var sys = GetSys();
 			if (sys != null) sys.unregister(this, _erRegLink);
+			_rootEntity = default;
 		}
 
 

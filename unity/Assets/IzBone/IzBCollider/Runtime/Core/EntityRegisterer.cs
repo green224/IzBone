@@ -33,8 +33,9 @@ namespace IzBone.IzBCollider.Core {
 					// コンポーネントを割り当て
 					var entity = em.CreateEntity();
 					if (firstBody == default) firstBody = entity;
+					if (lastBody != default)
+						em.AddComponentData(lastBody, new Body_Next{value=entity});
 					em.AddComponentData(entity, new Body());
-					em.AddComponentData(lastBody, new Body_Next{value=entity});
 					em.AddComponentData(entity, new Body_ShapeType{value=i.mode});
 					em.AddComponentData(entity, new Body_Center{value=i.center});
 					em.AddComponentData(entity, new Body_R{value=i.r});
@@ -58,6 +59,7 @@ namespace IzBone.IzBCollider.Core {
 				var entity = em.CreateEntity();
 				em.AddComponentData(entity, new BodiesPack{first=firstBody});
 				addEntityCore(entity, regLink);
+				auth._rootEntity = entity;
 			}
 		}
 

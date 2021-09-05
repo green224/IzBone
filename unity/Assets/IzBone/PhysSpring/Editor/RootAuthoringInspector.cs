@@ -17,6 +17,14 @@ sealed class RootAuthoringInspector : Editor
 		Gizmos8.drawMode = Gizmos8.DrawMode.Handle;
 		var tgt = (RootAuthoring)target;
 
+		// 登録されているコライダを表示
+		if ( Common.Windows.GizmoOptionsWindow.isShowCollider ) {
+			if (tgt._collider!=null) foreach (var i in tgt._collider.Bodies) {
+				if (i == null) continue;
+				i.DEBUG_drawGizmos();
+			}
+		}
+
 		foreach (var bone in tgt._bones)
 		if (bone.targets != null)
 		foreach (var boneTgt in bone.targets) {
