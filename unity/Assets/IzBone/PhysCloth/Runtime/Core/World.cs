@@ -155,7 +155,7 @@ namespace IzBone.PhysCloth.Core {
 				// λを初期化
 				var cldCstLmd = new NativeArray<float>(_particles.Length, Allocator.Temp);
 				var cldCstLmdPtr0 = (float*)cldCstLmd.GetUnsafePtr();
-				var aglLmtLmd = new NativeArray<float>(_particles.Length, Allocator.Temp);
+				var aglLmtLmd = new NativeArray<float>(_particles.Length*2, Allocator.Temp);
 				var aglLmtLmdPtr0 = (float*)aglLmtLmd.GetUnsafePtr();
 				var mvblRngLmd = new NativeArray<float>(_particles.Length, Allocator.Temp);
 				var mvblRngLmdPtr0 = (float*)mvblRngLmd.GetUnsafePtr();
@@ -196,15 +196,31 @@ namespace IzBone.PhysCloth.Core {
 						float3 from, to;
 						if (p1 != null) {
 							(from, to) = getFromToDir(p2, p3, p1->dWRot);
-							var constraint = new Constraint_Angle{
+							var constraint = new Constraint_AngleWithLimit{
+								aglCstr = new Constraint_Angle{
+									parent = p1,
+									self = p2,
+									child = p3,
+									defChildPos = from + p2->col.pos
+								},
+								compliance_nutral = p2->angleCompliance,
+								compliance_limit = 0.0001f,
+								limitAngle = p2->maxDRotAngle,
+							};
+							if (constraint.aglCstr.isValid()) {
+								var a = constraint.solve(sqDt, *lmd2, *(lmd2+1));
+								*lmd2 += a.lambda_nutral;
+								*(++lmd2) += a.lambda_limit;
+							}
+/*							var constraint = new Constraint_Angle{
 								parent = p1,
+								compliance = p2->angleCompliance,
 								self = p2,
 								child = p3,
-								compliance = p2->angleCompliance,
 								defChildPos = from + p2->col.pos
 							};
 							*lmd2 += constraint.solve(sqDt, *lmd2);
-						}
+*/						}
 
 						// 位置が変わったので、再度姿勢を計算
 						if (p0 != null) {
@@ -223,7 +239,7 @@ namespace IzBone.PhysCloth.Core {
 						var q2 = getPtclDWRot(p1);
 						(from, to) = getFromToDir(p2, p3, q2);
 						p2->dWRot =
-							mul( Math8.fromToRotation(from, to, p2->maxDRotAngle), q2 );
+							mul( Math8.fromToRotation(from, to), q2 );
 					}
 
 					{// デフォルト位置からの移動可能距離での拘束条件を解決
@@ -337,14 +353,20 @@ namespace IzBone.PhysCloth.Core {
 					j.trans.parent.worldToLocalMatrix,
 					float4( p->col.pos, 1 )
 				).xyz;
-				var q = Math8.fromToRotation( from, to );
+
+				// 最大角度制限は制約条件のみだとどうしても完璧にはならず、
+				// コンプライアンス値をきつくし過ぎると暴走するので、
+				// 制約条件で緩く制御した上で、ここで強制的にクリッピングする。
+				var q = Math8.fromToRotation( from, to, p->maxDRotAngle );
 
 				// 初期姿勢を反映
 				q = mul(q, j.defaultParentRot);
 
 				j.trans.parent.localRotation = q;
 //				j.trans.position = p->col.pos;
-//				ptcl->col.pos = j.trans.position;
+
+				// 最大角度制限を反映させたので、パーティクルへ変更をフィードバックする
+				p->col.pos = j.trans.position;
 			}
 		}
 

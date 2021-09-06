@@ -2770,6 +2770,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1099786729}
     m_Modifications:
+    - target: {fileID: 3762319300166216511, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
+      propertyPath: _bones.Array.data[0].angleMax.end
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3762319300166216511, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
+      propertyPath: _bones.Array.data[0].angleMax.start
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6227744310331858603, guid: 5d8f6aaa7987027468cb90fbbb9ce096, type: 3}
       propertyPath: m_RootOrder
       value: 0
