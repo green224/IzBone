@@ -55,24 +55,20 @@ namespace IzBone.IzBCollider.Core {
 
 
 			{// BodiesPackをECSへ変換
-				var entity = em.CreateEntity();
-				em.AddComponentData(entity, new BodiesPack{first=firstBody});
-				addEntityCore(entity, regLink);
-				auth._rootEntity = entity;
+				em.AddComponentData(firstBody, new BodiesPack());
+				auth._rootEntity = firstBody;
 			}
 		}
 
-		/** 登録済みの全Authの再変換処理 */
-		override protected void reconvertAll(EntityManager em) {
-			foreach (var i in _entities) {
-				if (!em.HasComponent<Body_M2D>(i.e)) continue;
+		/** 指定Entityの再変換処理 */
+		override protected void reconvertOne(Entity entity, EntityManager em) {
+			if (!em.HasComponent<Body_M2D>(entity)) return;
 
-				var auth = em.GetComponentData<Body_M2D>(i.e).bodyAuth;
-				em.SetComponentData(i.e, new Body_ShapeType{value=auth.mode});
-				em.SetComponentData(i.e, new Body_Center{value=auth.center});
-				em.SetComponentData(i.e, new Body_R{value=auth.r});
-				em.SetComponentData(i.e, new Body_Rot{value=auth.rot});
-			}
+			var auth = em.GetComponentData<Body_M2D>(entity).bodyAuth;
+			em.SetComponentData(entity, new Body_ShapeType{value=auth.mode});
+			em.SetComponentData(entity, new Body_Center{value=auth.center});
+			em.SetComponentData(entity, new Body_R{value=auth.r});
+			em.SetComponentData(entity, new Body_Rot{value=auth.rot});
 		}
 		
 

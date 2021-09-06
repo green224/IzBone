@@ -42,6 +42,10 @@ namespace IzBone.IzBCollider {
 		{
 			var sys = GetSys();
 			if (sys != null) sys.register(this, _erRegLink);
+
+#if UNITY_EDITOR
+			foreach (var i in _bodies) i.__parents.Add(this);
+#endif
 		}
 
 		void OnDisable()
@@ -49,10 +53,23 @@ namespace IzBone.IzBCollider {
 			var sys = GetSys();
 			if (sys != null) sys.unregister(this, _erRegLink);
 			_rootEntity = default;
+
+#if UNITY_EDITOR
+			foreach (var i in _bodies) i.__parents.Remove(this);
+#endif
 		}
 
 
 		// --------------------------------------------------------------------------------------------
+#if UNITY_EDITOR
+		// BodyのOnValidate時に、Bodyから呼ばれるコールバック
+		internal void __onValidateBody() {
+			if (Application.isPlaying) {
+				var sys = GetSys();
+				if (sys != null) sys.resetParameters(_erRegLink);
+			}
+		}
+#endif
 	}
 
 }

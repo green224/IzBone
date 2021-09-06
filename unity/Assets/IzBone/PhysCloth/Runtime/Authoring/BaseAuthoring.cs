@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
+using Unity.Entities;
 using Unity.Mathematics;
 using static Unity.Mathematics.math;
 
@@ -43,6 +44,7 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 	internal ConstraintMng[] _constraints;
 	internal ParticleMng[] _particles;
 	internal Core.World _world;
+	internal Entity _rootEntity;
 
 
 	virtual protected void Start() {

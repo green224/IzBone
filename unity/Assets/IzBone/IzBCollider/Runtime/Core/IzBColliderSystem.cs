@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine.Jobs;
+﻿using UnityEngine.Jobs;
 using Unity.Jobs;
 
 using Unity.Burst;
@@ -23,7 +22,8 @@ public sealed class IzBColliderSystem : SystemBase {
 		=> _entityReg.register(auth, regLink);
 	internal void unregister(BodiesPackAuthoring auth, EntityRegisterer.RegLink regLink)
 		=> _entityReg.unregister(auth, regLink);
-	internal void resetAllParameters() => _entityReg.resetAllParameters();
+	internal void resetParameters(EntityRegisterer.RegLink regLink)
+		=> _entityReg.resetParameters(regLink);
 	EntityRegisterer _entityReg;
 
 	/** マネージドTransformからECSへデータを反映させる処理 */
@@ -96,7 +96,7 @@ public sealed class IzBColliderSystem : SystemBase {
 					dir = l2w.c2.xyz / length( l2w.c2.xyz ),
 				};
 				break;
-			default : throw new InvalidProgramException();
+			default : throw new System.InvalidProgramException();
 			}
 
 			// コンポーネントへデータを格納

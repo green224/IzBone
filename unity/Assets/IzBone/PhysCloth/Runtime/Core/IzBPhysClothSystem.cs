@@ -24,7 +24,8 @@ public sealed class IzBPhysClothSystem : SystemBase {
 		=> _entityReg.register(auth, regLink);
 	internal void unregister(Authoring.BaseAuthoring auth, EntityRegisterer.RegLink regLink)
 		=> _entityReg.unregister(auth, regLink);
-	internal void resetAllParameters() => _entityReg.resetAllParameters();
+	internal void resetParameters(EntityRegisterer.RegLink regLink)
+		=> _entityReg.resetParameters(regLink);
 	EntityRegisterer _entityReg;
 
 //	/** マネージドTransformからECSへデータを反映させる処理 */

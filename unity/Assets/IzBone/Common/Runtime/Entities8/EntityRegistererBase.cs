@@ -31,14 +31,19 @@ namespace IzBone.Common.Entities8 {
 		public void unregister(AuthComp auth, RegLink regLink)
 			=> _addList.Add( (auth, regLink, false) );
 
-		// 登録されている全Authに対して、パラメータの再適応を予約する
-		public void resetAllParameters() => _need2resetParams = true;
+		// 指定のAuthに対して、パラメータの再適応を予約する
+		public void resetParameters(RegLink regLink) => _need2resetList.Add(regLink);
 
 		/** 追加・削除されたAuthの情報をECSへ反映させる */
 		public void apply(EntityManager em) {
-			if (_need2resetParams) reconvertAll(em);
-			_need2resetParams = false;
 
+			// 再コンバートが予約されているものを処理
+			foreach (var i in _need2resetList)
+				foreach (var j in i.entIdxs)
+					reconvertOne( _entities[j].e, em );
+			_need2resetList.Clear();
+
+			// 新規コンバートが予約されているものを処理
 			foreach (var authAdd in _addList) {
 				if (authAdd.isAdd)
 					convertOne(authAdd.auth, authAdd.regLink, em);
@@ -79,19 +84,18 @@ namespace IzBone.Common.Entities8 {
 		/** 次のApplyタイミングで追加する情報をため込んだバッファ */
 		List<(AuthComp auth, RegLink regLink, bool isAdd)> _addList
 			= new List<(AuthComp, RegLink, bool)>();
+		/** 次のApplyタイミングでパラメータのリセットをするRegLinkのリスト */
+		HashSet<RegLink> _need2resetList = new HashSet<RegLink>();
 
-		/** 次のApplyタイミングでパラメータのリセットをするか否か */
-		bool _need2resetParams = false;
-
-		/** Auth1つ分の変換処理 */
+		/** Auth1つ分の変換処理。派生先で実装すること */
 		abstract protected void convertOne(
 			AuthComp auth,
 			RegLink regLink,
 			EntityManager em
 		);
 
-		/** 登録済みの全Authの再変換処理 */
-		abstract protected void reconvertAll(EntityManager em);
+		/** 指定Entityの再変換処理。派生先で実装すること */
+		abstract protected void reconvertOne(Entity entity, EntityManager em);
 
 		/** Auth1つ分の削除処理 */
 		void removeOne(RegLink regLink, EntityManager em) {

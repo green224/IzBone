@@ -97,23 +97,21 @@ namespace IzBone.PhysSpring.Core {
 			}
 		}
 
-		/** 登録済みの全Authの再変換処理 */
-		override protected void reconvertAll(EntityManager em) {
+		/** 指定Entityの再変換処理 */
+		override protected void reconvertOne(Entity entity, EntityManager em) {
 			// 出来るものだけ同期を行う
-			foreach (var i in _entities) {
-				var m2d = em.GetComponentData<OneSpring_M2D>(i.e);
-				em.SetComponentData(i.e, genOneSpring(m2d.boneAuth, m2d.depthRate));
+			var m2d = em.GetComponentData<OneSpring_M2D>(entity);
+			em.SetComponentData(entity, genOneSpring(m2d.boneAuth, m2d.depthRate));
 
-				var ds = em.GetComponentData<DefaultState>(i.e);
-				ds.r = m2d.boneAuth.radius.evaluate(m2d.depthRate);
-				em.SetComponentData(i.e, ds);
+			var ds = em.GetComponentData<DefaultState>(entity);
+			ds.r = m2d.boneAuth.radius.evaluate(m2d.depthRate);
+			em.SetComponentData(entity, ds);
 
-				if (em.HasComponent<MostParent>(i.e)) {
-					var mp = em.GetComponentData<MostParent>(i.e);
-					mp.iterationNum = m2d.boneAuth.iterationNum;
-					mp.rsRate = m2d.boneAuth.rotShiftRate;
-					em.SetComponentData(i.e, mp);
-				}
+			if (em.HasComponent<MostParent>(entity)) {
+				var mp = em.GetComponentData<MostParent>(entity);
+				mp.iterationNum = m2d.boneAuth.iterationNum;
+				mp.rsRate = m2d.boneAuth.rotShiftRate;
+				em.SetComponentData(entity, mp);
 			}
 		}
 

@@ -23,7 +23,8 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 		=> _entityReg.register(auth, regLink);
 	internal void unregister(RootAuthoring auth, EntityRegisterer.RegLink regLink)
 		=> _entityReg.unregister(auth, regLink);
-	internal void resetAllParameters() => _entityReg.resetAllParameters();
+	internal void resetParameters(EntityRegisterer.RegLink regLink)
+		=> _entityReg.resetParameters(regLink);
 	EntityRegisterer _entityReg;
 
 	/** 指定のRootAuthの物理状態をリセットする */
@@ -157,7 +158,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 					// その位置でコライダとの衝突解決をしておく
 					if (mostParent.colliderPack != default) {
 						for (
-							var e = GetComponent<IzBCollider.Core.BodiesPack>(mostParent.colliderPack).first;
+							var e = mostParent.colliderPack;
 							e != default;
 							e = GetComponent<IzBCollider.Core.Body_Next>(e).value
 						) {

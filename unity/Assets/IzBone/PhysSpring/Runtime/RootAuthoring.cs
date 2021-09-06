@@ -121,7 +121,7 @@ public sealed class RootAuthoring : MonoBehaviour {
 		// 実行時はインスペクタ変更時にパラメータを同期
 		if (Application.isPlaying) {
 			var sys = GetSys();
-			if (sys != null) sys.resetAllParameters();
+			if (sys != null) sys.resetParameters(_erRegLink);
 		}
 	}
 #endif

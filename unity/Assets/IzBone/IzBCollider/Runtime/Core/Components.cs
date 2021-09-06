@@ -9,7 +9,6 @@ namespace IzBone.IzBCollider.Core {
 
 	/** コライダー１セットの最親につけるコンポーネント */
 	public struct BodiesPack : IComponentData {
-		public Entity first;
 	}
 
 

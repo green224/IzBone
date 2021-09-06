@@ -34,15 +34,6 @@ namespace IzBone.IzBCollider {
 
 		// ----------------------------------- private/protected メンバ -------------------------------
 
-		/** メインのシステムを取得する */
-		Core.IzBColliderSystem GetSys() {
-			var w = World.DefaultGameObjectInjectionWorld;
-			if (w == null) return null;
-			return w.GetOrCreateSystem<Core.IzBColliderSystem>();
-		}
-
-
-
 	[NonSerialized] internal float4x4 l2wMtx;
 	[NonSerialized] internal float3 l2wMtxClmNorm;
 
@@ -83,11 +74,9 @@ namespace IzBone.IzBCollider {
 
 		// --------------------------------------------------------------------------------------------
 #if UNITY_EDITOR
+		internal List<BodiesPackAuthoring> __parents = new List<BodiesPackAuthoring>();
 		void OnValidate() {
-			if (Application.isPlaying) {
-				var sys = GetSys();
-				if (sys != null) sys.resetAllParameters();
-			}
+			foreach (var i in __parents) i.__onValidateBody();
 		}
 
 		// Editorでのギズモを表示する処理。
