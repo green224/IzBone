@@ -60,7 +60,7 @@ namespace IzBone.PhysCloth.Core {
 
 			// constraintsを再生成
 			_constraints.Dispose();
-			_constraints = new Constraints(mngConstraints, _particles);
+			_constraints = new Constraint.Constraints(mngConstraints, _particles);
 		}
 
 		/** 破棄する。必ず最後に呼ぶこと */
@@ -196,8 +196,8 @@ namespace IzBone.PhysCloth.Core {
 						float3 from, to;
 						if (p1 != null) {
 							(from, to) = getFromToDir(p2, p3, p1->dWRot);
-							var constraint = new Constraint_AngleWithLimit{
-								aglCstr = new Constraint_Angle{
+							var constraint = new Constraint.AngleWithLimit{
+								aglCstr = new Constraint.Angle{
 									parent = p1,
 									self = p2,
 									child = p3,
@@ -212,7 +212,7 @@ namespace IzBone.PhysCloth.Core {
 								*lmd2 += a.lambda_nutral;
 								*(++lmd2) += a.lambda_limit;
 							}
-/*							var constraint = new Constraint_Angle{
+/*							var constraint = new Constraint.Angle{
 								parent = p1,
 								compliance = p2->angleCompliance,
 								self = p2,
@@ -247,7 +247,7 @@ namespace IzBone.PhysCloth.Core {
 						var compliance = 1e-10f;
 						for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++lambda) {
 							if (p->invM < MinimumM || p->maxMovableRange < 0) continue;
-							var cstr = new Constraint_MaxDistance{
+							var cstr = new Constraint.MaxDistance{
 								compliance = compliance,
 								src = p->defaultL2W.c3.xyz,
 								tgt = p,
@@ -296,7 +296,7 @@ namespace IzBone.PhysCloth.Core {
 								var dPosLen = length(dPos);
 								var dPosN = dPos / (dPosLen + 0.0000001f);
 
-								var cstr = new Constraint_MinDistN{
+								var cstr = new Constraint.MinDistN{
 									compliance = compliance,
 									src = p->col.pos,
 									n = dPosN,
@@ -312,7 +312,7 @@ namespace IzBone.PhysCloth.Core {
 
 					{// その他の拘束条件を解決
 						static void solveConstraints<T>(float sqDt, ref float* lambda, NativeArray<T> constraints)
-						where T : struct, IConstraint {
+						where T : struct, Constraint.IConstraint {
 							if (!constraints.IsCreated) return;
 							for (int i=0; i<constraints.Length; ++i,++lambda)
 								*lambda += constraints[i].solve( sqDt, *lambda );
@@ -382,7 +382,7 @@ namespace IzBone.PhysCloth.Core {
 
 		const float MinimumM = 0.00000001f;
 		NativeArray<Particle> _particles;
-		Constraints _constraints;
+		Constraint.Constraints _constraints;
 
 		~World() {
 			if ( _particles.IsCreated ) {

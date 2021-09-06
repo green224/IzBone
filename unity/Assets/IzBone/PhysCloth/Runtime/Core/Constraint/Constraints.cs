@@ -9,14 +9,14 @@ using Unity.Collections.LowLevel.Unsafe;
 using System.Collections.Generic;
 
 
-namespace IzBone.PhysCloth.Core {
+namespace IzBone.PhysCloth.Core.Constraint {
 	
 	/** 複数の拘束条件をまとめて保持するコンテナ。Dotsから使用するのでStruct */
 	public unsafe struct Constraints : IDisposable
 	{
-		public NativeArray<Constraint_Distance>		distance;
-		public NativeArray<Constraint_MaxDistance>	maxDistance;
-		public NativeArray<Constraint_Axis>			axis;
+		public NativeArray<Distance>	distance;
+		public NativeArray<MaxDistance>	maxDistance;
+		public NativeArray<Axis>		axis;
 		
 		public int TotalLength =>
 			distance.Length + maxDistance.Length + axis.Length;
@@ -25,9 +25,9 @@ namespace IzBone.PhysCloth.Core {
 			Controller.ConstraintMng[] src,
 			NativeArray<Particle> points
 		) {
-			var d = new List<Constraint_Distance>();
-			var md = new List<Constraint_MaxDistance>();
-			var a = new List<Constraint_Axis>();
+			var d = new List<Distance>();
+			var md = new List<MaxDistance>();
+			var a = new List<Axis>();
 			var pntsPtr = (Particle*)points.GetUnsafePtr();
 
 			foreach (var i in src) {
@@ -37,7 +37,7 @@ namespace IzBone.PhysCloth.Core {
 				switch (i.mode) {
 				case Controller.ConstraintMng.Mode.Distance:
 					{// 距離拘束
-						var b = new Constraint_Distance{
+						var b = new Distance{
 							compliance = i.compliance,
 							src = pntsPtr + i.srcPtclIdx,
 							dst = pntsPtr + i.dstPtclIdx,
@@ -47,7 +47,7 @@ namespace IzBone.PhysCloth.Core {
 					} break;
 				case Controller.ConstraintMng.Mode.MaxDistance:
 					{// 最大距離拘束
-						var b = new Constraint_MaxDistance{
+						var b = new MaxDistance{
 							compliance = i.compliance,
 							src = i.param.xyz,
 							tgt = pntsPtr + i.srcPtclIdx,
@@ -57,7 +57,7 @@ namespace IzBone.PhysCloth.Core {
 					} break;
 				case Controller.ConstraintMng.Mode.Axis:
 					{// 稼働軸拘束
-						var b = new Constraint_Axis{
+						var b = new Axis{
 							compliance = i.compliance,
 							src = pntsPtr + i.srcPtclIdx,
 							dst = pntsPtr + i.dstPtclIdx,
@@ -69,9 +69,9 @@ namespace IzBone.PhysCloth.Core {
 				}
 			}
 
-			distance = new NativeArray<Constraint_Distance>( d.ToArray(), Allocator.Persistent );
-			maxDistance = new NativeArray<Constraint_MaxDistance>( md.ToArray(), Allocator.Persistent );
-			axis = new NativeArray<Constraint_Axis>( a.ToArray(), Allocator.Persistent );
+			distance = new NativeArray<Distance>( d.ToArray(), Allocator.Persistent );
+			maxDistance = new NativeArray<MaxDistance>( md.ToArray(), Allocator.Persistent );
+			axis = new NativeArray<Axis>( a.ToArray(), Allocator.Persistent );
 		}
 
 		/** 破棄する。最後に必ず呼ぶこと */
