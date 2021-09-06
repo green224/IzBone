@@ -5,12 +5,12 @@ using Unity.Mathematics;
 using static Unity.Mathematics.math;
 
 
-namespace IzBone.PhysCloth.Controller {
+namespace IzBone.PhysCloth.Authoring {
 using Common;
 using Common.Field;
 
 /** IzBoneを使用するオブジェクトにつけるコンポーネントの基底クラス */
-public unsafe abstract class Base : MonoBehaviour {
+public unsafe abstract class BaseAuthoring : MonoBehaviour {
 	// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 	// 衝突検出を行う対象のコライダー一覧

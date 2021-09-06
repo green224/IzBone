@@ -6,10 +6,10 @@ using Unity.Mathematics;
 using static Unity.Mathematics.math;
 
 
-namespace IzBone.PhysCloth.Controller {
+namespace IzBone.PhysCloth.Authoring {
 using Common;
 
-abstract class BaseInspector : Editor
+abstract class BaseAuthoringInspector : Editor
 {
 	override public void OnInspectorGUI() {
 
@@ -26,7 +26,7 @@ abstract class BaseInspector : Editor
 
 	virtual protected void OnSceneGUI() {
 		Gizmos8.drawMode = Gizmos8.DrawMode.Handle;
-		var tgt = (Base)target;
+		var tgt = (BaseAuthoring)target;
 
 		// 登録されているコライダを表示
 		if ( Common.Windows.GizmoOptionsWindow.isShowCollider ) {

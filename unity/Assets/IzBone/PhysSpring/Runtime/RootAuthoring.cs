@@ -80,10 +80,10 @@ public sealed class RootAuthoring : MonoBehaviour {
 	Core.EntityRegisterer.RegLink _erRegLink = new Core.EntityRegisterer.RegLink();
 
 	/** メインのシステムを取得する */
-	Core.SimplePhysBoneSystem GetSys() {
+	Core.IzBPhysSpringSystem GetSys() {
 		var w = World.DefaultGameObjectInjectionWorld;
 		if (w == null) return null;
-		return w.GetOrCreateSystem<Core.SimplePhysBoneSystem>();
+		return w.GetOrCreateSystem<Core.IzBPhysSpringSystem>();
 	}
 
 	void OnEnable()

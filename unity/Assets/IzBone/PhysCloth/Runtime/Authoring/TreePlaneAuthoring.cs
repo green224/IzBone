@@ -9,14 +9,14 @@ using System.Linq;
 using Unity.Collections;
 
 
-namespace IzBone.PhysCloth.Controller {
+namespace IzBone.PhysCloth.Authoring {
 
 /**
  * IzBoneを使用するオブジェクトにつけるコンポーネント。
  * ツリー構造のように、根本から接続が複数に広がっていく形状に対して使用する。
  */
 [AddComponentMenu("IzBone/PhysCloth_TreePlane")]
-public unsafe sealed class TreePlane : Simple {
+public unsafe sealed class TreePlaneAuthoring : SimpleAuthoring {
 	// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 	[Space]

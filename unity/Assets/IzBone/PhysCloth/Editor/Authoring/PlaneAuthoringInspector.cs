@@ -7,12 +7,12 @@ using static Unity.Mathematics.math;
 using System.Linq;
 
 
-namespace IzBone.PhysCloth.Controller {
+namespace IzBone.PhysCloth.Authoring {
 using Common;
 
-[CustomEditor(typeof(Plane))]
+[CustomEditor(typeof(PlaneAuthoring))]
 [CanEditMultipleObjects]
-sealed class PlaneInspector : BaseInspector
+sealed class PlaneAuthoringInspector : BaseAuthoringInspector
 {
 
 	override public void OnInspectorGUI() {
@@ -28,7 +28,7 @@ sealed class PlaneInspector : BaseInspector
 		if (Application.isPlaying) return;
 
 		Gizmos8.drawMode = Gizmos8.DrawMode.Handle;
-		var tgt = (Plane)target;
+		var tgt = (PlaneAuthoring)target;
 
 		var tob = tgt._topOfBones?.Where(i=>i!=null)?.ToArray();
 

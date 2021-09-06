@@ -22,8 +22,8 @@ namespace IzBone.PhysCloth.Core {
 		public float maxSpeed = 100;			// 最大速度
 
 		public World(
-			Controller.ParticleMng[] mngParticles,
-			Controller.ConstraintMng[] mngConstraints
+			Authoring.ParticleMng[] mngParticles,
+			Authoring.ConstraintMng[] mngConstraints
 		) {
 			// particlesを生成。
 			// particlesは、Particleをボーンツリーの上から下に向けて並ぶようにした配列にしておくこと。
@@ -41,8 +41,8 @@ namespace IzBone.PhysCloth.Core {
 
 		/** 各種パラメータをマネージ空間のものと同期する。これはEditorで実行中にパラメータが変更された際に呼ぶ */
 		public void syncWithManage(
-			Controller.ParticleMng[] mngParticles,
-			Controller.ConstraintMng[] mngConstraints
+			Authoring.ParticleMng[] mngParticles,
+			Authoring.ConstraintMng[] mngConstraints
 		) {
 			// particlesを更新
 			var ptclPtr0 = (Particle*)_particles.GetUnsafePtr();
@@ -73,7 +73,7 @@ namespace IzBone.PhysCloth.Core {
 		public void update(
 			float dt,
 			int iterationNum,
-			Controller.ParticleMng[] mngParticles,
+			Authoring.ParticleMng[] mngParticles,
 			IzBCollider.Colliders colliders
 		) {
 			// 各種バッファのポインタを取得しておく
@@ -91,7 +91,7 @@ namespace IzBone.PhysCloth.Core {
 				return;
 			}
 			
-			{// デフォルト姿勢でのL2Wと法線を計算しておく
+			{// デフォルト姿勢でのL2Wを計算しておく
 				int i = 0;
 				for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
 					if ( mngParticles[i].parent == null ) {
@@ -336,7 +336,7 @@ namespace IzBone.PhysCloth.Core {
 		}
 
 		// シミュレーション結果をボーンにフィードバックする
-		public void applyToBone( Controller.ParticleMng[] mngParticles ) {
+		public void applyToBone( Authoring.ParticleMng[] mngParticles ) {
 			var ptclPtr0 = (Particle*)_particles.GetUnsafePtr();
 			var ptclPtrEnd = ptclPtr0 + _particles.Length;
 			int i = 0;

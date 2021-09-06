@@ -16,7 +16,7 @@ using Common;
 [UpdateInGroup(typeof(IzBoneSystemGroup))]
 [UpdateAfter(typeof(IzBCollider.Core.IzBColliderSystem))]
 [AlwaysUpdateSystem]
-public sealed class SimplePhysBoneSystem : SystemBase {
+public sealed class IzBPhysSpringSystem : SystemBase {
 
 	// BodyAuthoringを登録・登録解除する処理
 	internal void register(RootAuthoring auth, EntityRegisterer.RegLink regLink)

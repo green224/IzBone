@@ -16,7 +16,7 @@ namespace IzBone.PhysCloth.Controller {
 	 * 平面的な布のようなものを再現する際に使用する
 	 */
 	[AddComponentMenu("IzBone/PhysCloth_Rope")]
-	public unsafe sealed class Rope : Base {
+	public unsafe sealed class RopeAuthoring : Base {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 		/** 骨の情報 */

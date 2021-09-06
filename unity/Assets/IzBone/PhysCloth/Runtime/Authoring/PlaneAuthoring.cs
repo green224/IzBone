@@ -8,14 +8,14 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-namespace IzBone.PhysCloth.Controller {
+namespace IzBone.PhysCloth.Authoring {
 
 /**
  * IzBoneを使用するオブジェクトにつけるコンポーネント。
  * 平面的な布のようなものを再現する際に使用する
  */
 [AddComponentMenu("IzBone/PhysCloth_Plane")]
-public unsafe sealed class Plane : Simple {
+public unsafe sealed class PlaneAuthoring : SimpleAuthoring {
 	// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 	[Space]

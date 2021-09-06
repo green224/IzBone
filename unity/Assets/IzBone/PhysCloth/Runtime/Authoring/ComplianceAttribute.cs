@@ -6,7 +6,7 @@ using static Unity.Mathematics.math;
 
 
 
-namespace IzBone.PhysCloth.Controller {
+namespace IzBone.PhysCloth.Authoring {
 
 using Common;
 using Common.Field;

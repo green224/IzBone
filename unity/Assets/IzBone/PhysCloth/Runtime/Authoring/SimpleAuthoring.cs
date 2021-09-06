@@ -7,7 +7,7 @@ using static Unity.Mathematics.math;
 using System.Collections.Generic;
 
 
-namespace IzBone.PhysCloth.Controller {
+namespace IzBone.PhysCloth.Authoring {
 using Common;
 using Common.Field;
 
@@ -15,7 +15,7 @@ using RangeSC = Common.Field.SimpleCurveRangeAttribute;
 using SC = Common.Field.SimpleCurve;
 
 /** IzBoneを使用するオブジェクトにつけるコンポーネントのシンプルな実装となる基底クラス */
-public unsafe abstract class Simple : Base {
+public unsafe abstract class SimpleAuthoring : BaseAuthoring {
 	// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 	[Space]

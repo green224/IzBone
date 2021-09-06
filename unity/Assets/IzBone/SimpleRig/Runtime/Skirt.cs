@@ -342,7 +342,7 @@ public sealed class Skirt : MonoBehaviour {
 	// 同一GameObjectについているPlaneから、TopOfBonesを自動設定する
 	[ContextMenu("Auto-Setup from PhysCloth")]
 	void autoSetupFromPhysCloth() {
-		var cloth = GetComponent<PhysCloth.Controller.Plane>();
+		var cloth = GetComponent<PhysCloth.Authoring.PlaneAuthoring>();
 		if (cloth != null) {
 			_skirtTopOfBones = cloth.TopOfBones;
 			__need2Setup = true;

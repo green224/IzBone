@@ -22,7 +22,7 @@ namespace IzBone.PhysCloth.Core.Constraint {
 			distance.Length + maxDistance.Length + axis.Length;
 
 		public Constraints(
-			Controller.ConstraintMng[] src,
+			Authoring.ConstraintMng[] src,
 			NativeArray<Particle> points
 		) {
 			var d = new List<Distance>();
@@ -32,10 +32,10 @@ namespace IzBone.PhysCloth.Core.Constraint {
 
 			foreach (var i in src) {
 				// 強度があまりにも弱い場合は拘束条件を追加しない
-				if (Controller.ComplianceAttribute.LEFT_VAL*0.98f < i.compliance) continue;
+				if (Authoring.ComplianceAttribute.LEFT_VAL*0.98f < i.compliance) continue;
 
 				switch (i.mode) {
-				case Controller.ConstraintMng.Mode.Distance:
+				case Authoring.ConstraintMng.Mode.Distance:
 					{// 距離拘束
 						var b = new Distance{
 							compliance = i.compliance,
@@ -45,7 +45,7 @@ namespace IzBone.PhysCloth.Core.Constraint {
 						};
 						if ( b.isValid() ) d.Add( b );
 					} break;
-				case Controller.ConstraintMng.Mode.MaxDistance:
+				case Authoring.ConstraintMng.Mode.MaxDistance:
 					{// 最大距離拘束
 						var b = new MaxDistance{
 							compliance = i.compliance,
@@ -55,7 +55,7 @@ namespace IzBone.PhysCloth.Core.Constraint {
 						};
 						if ( b.isValid() ) md.Add( b );
 					} break;
-				case Controller.ConstraintMng.Mode.Axis:
+				case Authoring.ConstraintMng.Mode.Axis:
 					{// 稼働軸拘束
 						var b = new Axis{
 							compliance = i.compliance,
