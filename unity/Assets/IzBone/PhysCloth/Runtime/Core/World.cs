@@ -167,7 +167,6 @@ namespace IzBone.PhysCloth.Core {
 				for (int i=0; i<iterationNum; ++i) {
 
 					// 角度制限の拘束条件を解決
-					var defRot = Unity.Mathematics.quaternion.identity;
 					var lmd2 = aglLmtLmdPtr0;
 					for (var p3=ptclPtr0; p3!=ptclPtrEnd; ++p3,++lmd2) {
 

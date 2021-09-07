@@ -30,6 +30,10 @@ namespace IzBone.Common.Field {
 			if ( useCustom ) return customA;
 			return Physics.gravity * scale;
 		}
+		public float3 evaluate(float3 defaultG) {
+			if ( useCustom ) return customA;
+			return defaultG * scale;
+		}
 	}
 
 

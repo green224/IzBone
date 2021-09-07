@@ -18,8 +18,6 @@ namespace IzBone.PhysCloth.Core {
 
 		// --------------------------------- private / protected メンバ -------------------------------
 
-		const float MinimumM = 0.00000001f;
-
 		/** Auth1つ分の変換処理 */
 		override protected void convertOne(
 			Authoring.BaseAuthoring auth,
@@ -45,15 +43,15 @@ namespace IzBone.PhysCloth.Core {
 				em.AddComponentData(entity, new Ptcl_Next{value = nextEnt});
 				var parentEnt = mp.parent==null ? default : ptclEntities[mp.parent.idx];
 				em.AddComponentData(entity, new Ptcl_Parent{value = parentEnt});
+				em.AddComponentData(entity, new Ptcl_Root{value = ptclEntities[0]});
 				em.AddComponentData(entity, new Ptcl_DefaultL2W());
-				em.AddComponentData(entity, new Ptcl_DefaultL2P{value = mp.defaultL2P});
-				em.AddComponentData(entity, new Ptcl_DefaultParentRot{value = mp.defaultParentRot});
+				em.AddComponentData(entity, new Ptcl_DefaultL2P(mp.trans));
 				var sphere = new IzBCollider.RawCollider.Sphere{ pos=mp.trans.position, r=mp.r };
 				em.AddComponentData(entity, new Ptcl_Sphere{value = sphere});
 				em.AddComponentData(entity, new Ptcl_V());
 				em.AddComponentData(entity, new Ptcl_InvM(mp.m));
 				em.AddComponentData(entity, new Ptcl_DWRot());
-				em.AddComponentData(entity, new Ptcl_MaxAngle{value = mp.maxAngle});
+				em.AddComponentData(entity, new Ptcl_MaxAngle{value = radians(mp.maxAngle)});
 				em.AddComponentData(entity, new Ptcl_AngleCompliance{value = mp.angleCompliance});
 				em.AddComponentData(entity, new Ptcl_RestoreHL{value = mp.restoreHL});
 				em.AddComponentData(entity, new Ptcl_MaxMovableRange{value = mp.maxMovableRange});
@@ -68,8 +66,12 @@ namespace IzBone.PhysCloth.Core {
 			for (int i=0; i<auth._constraints.Length; ++i) {
 				var mc = auth._constraints[i];
 
+				// ここで生成しておかないと、パラメータの再設定ができなくなるので、
+				// Editor中は常に生成しておく
+			#if !UNITY_EDITOR
 				// 強度があまりにも弱い場合は拘束条件を追加しない
 				if (Authoring.ComplianceAttribute.LEFT_VAL*0.98f < mc.compliance) continue;
+			#endif
 
 				Entity entity = default;
 				switch (mc.mode) {
@@ -115,15 +117,22 @@ namespace IzBone.PhysCloth.Core {
 					} break;
 				default:throw new System.InvalidProgramException();
 				}
+				if (entity == default) continue;
+				em.AddComponentData(entity, new Cstr_M2D{auth = mc});
 
 				// Entity・Transformを登録
-				if (entity != default) addEntityCore(entity, regLink);
+				addEntityCore(entity, regLink);
 			}
 
 
 
 			{// OneClothをECSへ変換
-				em.AddComponentData(ptclEntities[0], new OneCloth());
+				em.AddComponentData(ptclEntities[0], new Root());
+				em.AddComponentData(ptclEntities[0], new Root_UseSimulation());
+				em.AddComponentData(ptclEntities[0], new Root_G());
+				em.AddComponentData(ptclEntities[0], new Root_Air());
+				em.AddComponentData(ptclEntities[0], new Root_MaxSpd());
+				em.AddComponentData(ptclEntities[0], new Root_WithAnimation());
 				auth._rootEntity = ptclEntities[0];
 			}
 
@@ -133,6 +142,25 @@ namespace IzBone.PhysCloth.Core {
 
 		/** 指定Entityの再変換処理 */
 		override protected void reconvertOne(Entity entity, EntityManager em) {
+			if (em.HasComponent<Ptcl_M2D>(entity)) {
+
+				var mp = em.GetComponentData<Ptcl_M2D>(entity).auth;
+				var sphere = em.GetComponentData<Ptcl_Sphere>(entity).value;
+				sphere.r = mp.r;
+				em.SetComponentData(entity, new Ptcl_Sphere{value = sphere});
+				em.SetComponentData(entity, new Ptcl_InvM(mp.m));
+				em.SetComponentData(entity, new Ptcl_MaxAngle{value = radians(mp.maxAngle)});
+				em.SetComponentData(entity, new Ptcl_AngleCompliance{value = mp.angleCompliance});
+				em.SetComponentData(entity, new Ptcl_RestoreHL{value = mp.restoreHL});
+				em.SetComponentData(entity, new Ptcl_MaxMovableRange{value = mp.maxMovableRange});
+
+			} else if (em.HasComponent<Cstr_M2D>(entity)) {
+
+				var mc = em.GetComponentData<Cstr_M2D>(entity).auth;
+				// とりあえず今は全部DistanceConstraintとして処理
+				em.SetComponentData(entity, new Cstr_Compliance{value = mc.compliance});
+				em.SetComponentData(entity, new Cstr_DefaultLen{value = mc.param.x});
+			}
 		}
 		
 

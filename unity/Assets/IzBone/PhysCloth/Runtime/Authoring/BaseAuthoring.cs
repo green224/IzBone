@@ -17,10 +17,6 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 	// 衝突検出を行う対象のコライダー一覧
 	[SerializeField] internal IzBCollider.BodiesPackAuthoring _collider = null;
 
-	[Space]
-	[SerializeField][HalfLifeDrag] HalfLife _airDrag = 0.1f;	// 空気抵抗による半減期
-	[SerializeField][Min(0)] float _maxSpeed = 100;				// 最大速度
-
 
 	// --------------------------------------- publicメンバ -------------------------------------
 
@@ -31,6 +27,10 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 	[Space]
 	public Gravity g = new Gravity(1);				// 重力加速度
 	public float3 windSpeed = default;				// 風速
+	[UnityEngine.Serialization.FormerlySerializedAs("_airDrag")]
+	[HalfLifeDrag] public HalfLife airDrag = 0.1f;	// 空気抵抗による半減期
+	[UnityEngine.Serialization.FormerlySerializedAs("_maxSpeed")]
+	[Min(0)] public float maxSpeed = 100;			// 最大速度
 
 	[Space]
 	// アニメーション付きのボーンに対して使用するフラグ。毎フレームデフォルト位置を再キャッシュする。
@@ -93,8 +93,8 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 
 		_world.g = g.evaluate();
 		_world.windSpeed = windSpeed;
-		_world.airHL = _airDrag;		// これは計算負荷削減のためにカーブではなくスカラーで持つ
-		_world.maxSpeed = _maxSpeed;
+		_world.airHL = airDrag;		// これは計算負荷削減のためにカーブではなくスカラーで持つ
+		_world.maxSpeed = maxSpeed;
 		_world.update(
 			dt,
 			useSimulation ? iterationNum : 0,
