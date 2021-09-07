@@ -9,14 +9,14 @@ namespace IzBone.PhysCloth.Core.Constraint {
 
 	/** 可動軸方向による拘束条件 */
 	public unsafe struct Axis : IConstraint {
-		public Particle* src;
-		public Particle* dst;
+		public float3 pos0, pos1;
+		public float invM0, invM1;
 		public float compliance;
 		public float3 axis;
 
-		public bool isValid() => MinimumM < src->invM + dst->invM;
+		public bool isValid() => MinimumM < invM0 + invM1;
 		public float solve(float sqDt, float lambda) {
-			var sumInvM = src->invM + dst->invM;
+			var sumInvM = invM0 + invM1;
 
 			// XPBDでの拘束条件の解決
 			var at = compliance / sqDt;    // a~
@@ -25,7 +25,7 @@ namespace IzBone.PhysCloth.Core.Constraint {
 			//   Cj = |P × A| = |B| , B:= P × A
 			// であるので、計算すると
 			//   ∇Cj = -( B × A ) / |B|
-			var p = src->col.pos - dst->col.pos;
+			var p = pos0 - pos1;
 			var b = cross( p, axis );
 			var bLen = length(b);
 			var dCj = -cross(b, axis) / (bLen + 0.0000001f);
@@ -33,8 +33,8 @@ namespace IzBone.PhysCloth.Core.Constraint {
 			var dlambda = (-bLen - at * lambda) / (dot(dCj,dCj)*sumInvM + at);	// eq.18
 			var correction = dlambda * dCj;			// eq.17
 
-			src->col.pos += +src->invM * correction;
-			dst->col.pos += -dst->invM * correction;
+			pos0 += +invM0 * correction;
+			pos1 += -invM1 * correction;
 
 			return dlambda;
 		}

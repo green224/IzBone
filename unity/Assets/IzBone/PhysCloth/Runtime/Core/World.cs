@@ -197,9 +197,12 @@ namespace IzBone.PhysCloth.Core {
 							(from, to) = getFromToDir(p2, p3, p1->dWRot);
 							var constraint = new Constraint.AngleWithLimit{
 								aglCstr = new Constraint.Angle{
-									parent = p1,
-									self = p2,
-									child = p3,
+									pos0 = p1->col.pos,
+									pos1 = p2->col.pos,
+									pos2 = p3->col.pos,
+									invM0 = p1->invM,
+									invM1 = p2->invM,
+									invM2 = p3->invM,
 									defChildPos = from + p2->col.pos
 								},
 								compliance_nutral = p2->angleCompliance,
@@ -207,9 +210,12 @@ namespace IzBone.PhysCloth.Core {
 								limitAngle = p2->maxDRotAngle,
 							};
 							if (constraint.aglCstr.isValid()) {
-								var a = constraint.solve(sqDt, *lmd2, *(lmd2+1));
-								*lmd2 += a.lambda_nutral;
-								*(++lmd2) += a.lambda_limit;
+								var l0 = *lmd2; var l1 = *(lmd2+1);
+								constraint.solve(sqDt, ref l0, ref l1);
+								*lmd2 = l0; *(lmd2+1) = l1;
+								p1->col.pos = constraint.aglCstr.pos0;
+								p2->col.pos = constraint.aglCstr.pos1;
+								p3->col.pos = constraint.aglCstr.pos2;
 							}
 /*							var constraint = new Constraint.Angle{
 								parent = p1,
@@ -248,11 +254,13 @@ namespace IzBone.PhysCloth.Core {
 							if (p->invM < MinimumM || p->maxMovableRange < 0) continue;
 							var cstr = new Constraint.MaxDistance{
 								compliance = compliance,
-								src = p->defaultL2W.c3.xyz,
-								tgt = p,
+								srcPos = p->defaultL2W.c3.xyz,
+								pos = p->col.pos,
+								invM = p->invM,
 								maxLen = p->maxMovableRange,
 							};
 							*lambda += cstr.solve(sqDt, *lambda);
+							p->col.pos = cstr.pos;
 						}
 					}
 
@@ -297,12 +305,14 @@ namespace IzBone.PhysCloth.Core {
 
 								var cstr = new Constraint.MinDistN{
 									compliance = compliance,
-									src = p->col.pos,
+									srcPos = p->col.pos,
 									n = dPosN,
-									tgt = p,
+									pos = p->col.pos,
+									invM = p->invM,
 									minDist = dPosLen,
 								};
 								*lambda += cstr.solve( sqDt, *lambda );
+								p->col.pos = cstr.pos;
 							} else {
 								*lambda = 0;
 							}

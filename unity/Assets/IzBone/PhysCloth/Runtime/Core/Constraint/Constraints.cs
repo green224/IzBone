@@ -14,7 +14,7 @@ namespace IzBone.PhysCloth.Core.Constraint {
 	/** 複数の拘束条件をまとめて保持するコンテナ。Dotsから使用するのでStruct */
 	public unsafe struct Constraints : IDisposable
 	{
-		public NativeArray<Distance>	distance;
+		public NativeArray<DistanceOld>	distance;
 		public NativeArray<MaxDistance>	maxDistance;
 		public NativeArray<Axis>		axis;
 		
@@ -25,7 +25,7 @@ namespace IzBone.PhysCloth.Core.Constraint {
 			Authoring.ConstraintMng[] src,
 			NativeArray<Particle> points
 		) {
-			var d = new List<Distance>();
+			var d = new List<DistanceOld>();
 			var md = new List<MaxDistance>();
 			var a = new List<Axis>();
 			var pntsPtr = (Particle*)points.GetUnsafePtr();
@@ -37,39 +37,39 @@ namespace IzBone.PhysCloth.Core.Constraint {
 				switch (i.mode) {
 				case Authoring.ConstraintMng.Mode.Distance:
 					{// 距離拘束
-						var b = new Distance{
+						var b = new DistanceOld{
 							compliance = i.compliance,
-							src = pntsPtr + i.srcPtclIdx,
-							dst = pntsPtr + i.dstPtclIdx,
+							ptcl0 = pntsPtr + i.srcPtclIdx,
+							ptcl1 = pntsPtr + i.dstPtclIdx,
 							defLen = i.param.x,
 						};
 						if ( b.isValid() ) d.Add( b );
 					} break;
 				case Authoring.ConstraintMng.Mode.MaxDistance:
 					{// 最大距離拘束
-						var b = new MaxDistance{
-							compliance = i.compliance,
-							src = i.param.xyz,
-							tgt = pntsPtr + i.srcPtclIdx,
-							maxLen = i.param.w,
-						};
-						if ( b.isValid() ) md.Add( b );
+//						var b = new MaxDistance{
+//							compliance = i.compliance,
+//							src = i.param.xyz,
+//							tgt = pntsPtr + i.srcPtclIdx,
+//							maxLen = i.param.w,
+//						};
+//						if ( b.isValid() ) md.Add( b );
 					} break;
 				case Authoring.ConstraintMng.Mode.Axis:
 					{// 稼働軸拘束
-						var b = new Axis{
-							compliance = i.compliance,
-							src = pntsPtr + i.srcPtclIdx,
-							dst = pntsPtr + i.dstPtclIdx,
-							axis = i.param.xyz,
-						};
-						if ( b.isValid() ) a.Add( b );
+//						var b = new Axis{
+//							compliance = i.compliance,
+//							src = pntsPtr + i.srcPtclIdx,
+//							dst = pntsPtr + i.dstPtclIdx,
+//							axis = i.param.xyz,
+//						};
+//						if ( b.isValid() ) a.Add( b );
 					} break;
 				default:throw new InvalidProgramException();
 				}
 			}
 
-			distance = new NativeArray<Distance>( d.ToArray(), Allocator.Persistent );
+			distance = new NativeArray<DistanceOld>( d.ToArray(), Allocator.Persistent );
 			maxDistance = new NativeArray<MaxDistance>( md.ToArray(), Allocator.Persistent );
 			axis = new NativeArray<Axis>( a.ToArray(), Allocator.Persistent );
 		}

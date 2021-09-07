@@ -263,10 +263,12 @@ public sealed class IzBPhysClothSystem : SystemBase {
 						);
 						var constraint = new Constraint.AngleWithLimit{
 							aglCstr = new Constraint.Angle{
-// TODO : ここちゃんと書く
-//								parent = p1,
-//								self = p2,
-//								child = p3,
+								pos0 = spr1.pos,
+								pos1 = spr2.pos,
+								pos2 = spr3.pos,
+								invM0 = GetComponent<Ptcl_InvM>(p1).value,
+								invM1 = GetComponent<Ptcl_InvM>(p2).value,
+								invM2 = GetComponent<Ptcl_InvM>(p3).value,
 								defChildPos = from + spr2.pos
 							},
 							compliance_nutral = GetComponent<Ptcl_AngleCompliance>(p2).value,
@@ -276,10 +278,10 @@ public sealed class IzBPhysClothSystem : SystemBase {
 						if (constraint.aglCstr.isValid()) {
 							var lmd2 = GetComponent<Ptcl_AglLmtLmd>(p2).value;
 							var lmd3 = GetComponent<Ptcl_AglLmtLmd>(p3).value;
-// TODO : ここちゃんと書く
-//							var a = constraint.solve(sqDt, lmd2, lmd3);
-//							lmd2 += a.lambda_nutral;
-//							lmd3 += a.lambda_limit;
+							constraint.solve(sqDt, ref lmd2, ref lmd3);
+							spr1.pos = constraint.aglCstr.pos0;
+							spr2.pos = constraint.aglCstr.pos1;
+							spr3.pos = constraint.aglCstr.pos2;
 							SetComponent(p2, new Ptcl_AglLmtLmd{value = lmd2});
 							SetComponent(p3, new Ptcl_AglLmtLmd{value = lmd3});
 						}

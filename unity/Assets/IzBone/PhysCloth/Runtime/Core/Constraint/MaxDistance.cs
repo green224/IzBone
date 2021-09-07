@@ -9,12 +9,13 @@ namespace IzBone.PhysCloth.Core.Constraint {
 	
 	/**	最大距離による拘束条件。指定距離未満になるように拘束する */
 	public unsafe struct MaxDistance : IConstraint {
-		public float3 src;
-		public Particle* tgt;
+		public float3 srcPos;
+		public float3 pos;
+		public float invM;
 		public float compliance;
 		public float maxLen;
 
-		public bool isValid() => MinimumM < tgt->invM && 0 <= maxLen;
+		public bool isValid() => MinimumM < invM && 0 <= maxLen;
 		public float solve(float sqDt, float lambda) {
 
 			// XPBDでの拘束条件の解決
@@ -24,15 +25,15 @@ namespace IzBone.PhysCloth.Core.Constraint {
 			//   ∇Cj = P / |P|
 			// また |P| < d のときは
 			//   Cj = ∇Cj = 0
-			var p = tgt->col.pos - src;
+			var p = pos - srcPos;
 			var pLen = length(p);
 			if ( pLen <= maxLen ) return -lambda;
 
 			var at = compliance / sqDt;    // a~
-			var dlambda = (maxLen - pLen - at * lambda) / (tgt->invM + at);	// eq.18
+			var dlambda = (maxLen - pLen - at * lambda) / (invM + at);	// eq.18
 			var correction = p * (dlambda / pLen);				// eq.17
 
-			tgt->col.pos += tgt->invM * correction;
+			pos += invM * correction;
 
 			return dlambda;
 		}
