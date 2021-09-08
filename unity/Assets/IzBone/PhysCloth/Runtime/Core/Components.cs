@@ -23,6 +23,7 @@ namespace IzBone.PhysCloth.Core {
 	}
 	public struct Root_MaxSpd : IComponentData {public float value;}		// 最大速度
 	public struct Root_WithAnimation : IComponentData {public bool value;}	// 毎フレームデフォルト位置を再キャッシュする
+	public struct Root_ColliderPack : IComponentData {public Entity value;}	// 衝突検出を行う対象のコライダー
 
 
 
@@ -85,6 +86,14 @@ namespace IzBone.PhysCloth.Core {
 	public struct Ptcl_CldCstLmd:IComponentData {public float value;}
 	public struct Ptcl_AglLmtLmd:IComponentData {public float value;}
 	public struct Ptcl_MvblRngLmd:IComponentData {public float value;}
+
+	// シミュレーション結果をフィードバックする用のTransform情報
+	public struct Ptcl_CurTrans:IComponentData {
+		public float4x4 l2w;
+		public float4x4 w2l;
+		public float3 lPos;
+		public quaternion lRot;
+	}
 	
 
 

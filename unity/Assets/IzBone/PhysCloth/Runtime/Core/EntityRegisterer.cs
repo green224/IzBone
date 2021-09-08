@@ -46,6 +46,7 @@ namespace IzBone.PhysCloth.Core {
 				em.AddComponentData(entity, new Ptcl_Root{value = ptclEntities[0]});
 				em.AddComponentData(entity, new Ptcl_DefaultL2W());
 				em.AddComponentData(entity, new Ptcl_DefaultL2P(mp.trans));
+				em.AddComponentData(entity, new Ptcl_CurTrans());
 				var sphere = new IzBCollider.RawCollider.Sphere{ pos=mp.trans.position, r=mp.r };
 				em.AddComponentData(entity, new Ptcl_Sphere{value = sphere});
 				em.AddComponentData(entity, new Ptcl_V());
@@ -133,6 +134,7 @@ namespace IzBone.PhysCloth.Core {
 				em.AddComponentData(ptclEntities[0], new Root_Air());
 				em.AddComponentData(ptclEntities[0], new Root_MaxSpd());
 				em.AddComponentData(ptclEntities[0], new Root_WithAnimation());
+				em.AddComponentData(ptclEntities[0], new Root_ColliderPack());
 				auth._rootEntity = ptclEntities[0];
 			}
 

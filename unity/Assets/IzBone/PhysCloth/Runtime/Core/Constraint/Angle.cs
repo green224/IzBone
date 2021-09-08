@@ -69,7 +69,7 @@ namespace IzBone.PhysCloth.Core.Constraint {
 					at
 				);									// eq.18
 
-			pos1   += invM1   * dlambda * nblACj;			// eq.17
+			pos1   += invM1   * dlambda * nblACj;		// eq.17
 			pos2  += invM2  * dlambda * nblBCj;			// eq.17
 			pos0 += invM0 * dlambda * nblCCj;			// eq.17
 			return dlambda;
@@ -84,7 +84,7 @@ namespace IzBone.PhysCloth.Core.Constraint {
 	 * 通常の角度拘束と、上限差分角度拘束を二つ同時に行うことで、計算負荷を下げたもの
 	 */
 	public unsafe struct AngleWithLimit {
-		public Angle aglCstr;	// 通常の角度拘束
+		public Angle aglCstr;				// 通常の角度拘束
 		public float compliance_nutral;		// 常にかかる角度拘束のコンプライアンス値
 		public float compliance_limit;		// 制限角度を超えた際にかかる角度拘束のコンプライアンス値
 		public float limitAngle;			// 制限角度。ラジアン角

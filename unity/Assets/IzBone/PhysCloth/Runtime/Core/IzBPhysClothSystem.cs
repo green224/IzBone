@@ -46,6 +46,8 @@ public sealed class IzBPhysClothSystem : SystemBase {
 		[WriteOnly] public ComponentDataFromEntity<Ptcl_DefaultL2W> defaultL2Ws;
 		[NativeDisableParallelForRestriction]
 		[WriteOnly] public ComponentDataFromEntity<Ptcl_DefaultL2P> defaultL2Ps;
+		[NativeDisableParallelForRestriction]
+		[WriteOnly] public ComponentDataFromEntity<Ptcl_CurTrans> curTranss;
 
 		public void Execute(int index, TransformAccess transform)
 		{
@@ -56,9 +58,36 @@ public sealed class IzBPhysClothSystem : SystemBase {
 			if (withAnim.value)
 				defaultL2Ps[entity] = new Ptcl_DefaultL2P(transform);
 
-			// 一番上のパーティクルに対してのみ、TransformのL2Wを転送する
-			if (parents[entity].value != null)
-				defaultL2Ws[entity] = new Ptcl_DefaultL2W{value = transform.localToWorldMatrix};
+			// 現在のTransformをすべてのParticleに対して転送
+			curTranss[entity] = new Ptcl_CurTrans{
+				l2w = transform.localToWorldMatrix,
+				w2l = transform.worldToLocalMatrix,
+				lPos = transform.localPosition,
+				lRot = transform.localRotation,
+			};
+
+			// 一番上のパーティクルに対しては、DefaultL2Wを現在値に更新する
+			if (parents[entity].value != null) {
+				defaultL2Ws[entity] =
+					new Ptcl_DefaultL2W{value = transform.localToWorldMatrix};
+			}
+		}
+	}
+
+
+	/** シミュレーション結果をボーンにフィードバックする */
+	[BurstCompile]
+	struct ApplyToBoneJob : IJobParallelForTransform
+	{
+		[ReadOnly] public NativeArray<Entity> entities;
+		[ReadOnly] public ComponentDataFromEntity<Ptcl_CurTrans> curTranss;
+
+		public void Execute(int index, TransformAccess transform)
+		{
+			var entity = entities[index];
+			var curTrans = curTranss[entity];
+			transform.localPosition = curTrans.lPos;
+			transform.localRotation = curTrans.lRot;
 		}
 	}
 
@@ -77,6 +106,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 
 		// 追加・削除されたAuthの情報をECSへ反映させる
 		_entityReg.apply(EntityManager);
+		var etp = _entityReg.etPacks;
 
 
 		{// マネージド空間から、毎フレーム同期する必要のあるパラメータを同期
@@ -93,6 +123,8 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				});
 				SetComponent(entity, new Root_MaxSpd{value = rootM2D.auth.maxSpeed});
 				SetComponent(entity, new Root_WithAnimation{value = rootM2D.auth.withAnimation});
+				var collider = rootM2D.auth._collider?.RootEntity ?? default;
+				SetComponent(entity, new Root_ColliderPack{value = collider});
 			}).WithoutBurst().Run();
 		}
 
@@ -100,12 +132,13 @@ public sealed class IzBPhysClothSystem : SystemBase {
 		{// デフォルト姿勢でのL2Wを計算しておく
 
 			// ルートのL2WをECSへ転送する
-			var etp = _entityReg.etPacks;
 			if (etp.Length != 0) {
 				Dependency = new MngTrans2ECSJob{
 					entities = etp.Entities,
 					parents = GetComponentDataFromEntity<Ptcl_Parent>(true),
 					defaultL2Ws = GetComponentDataFromEntity<Ptcl_DefaultL2W>(false),
+					defaultL2Ps = GetComponentDataFromEntity<Ptcl_DefaultL2P>(false),
+					curTranss = GetComponentDataFromEntity<Ptcl_CurTrans>(false),
 				}.Schedule( etp.Transforms, Dependency );
 			}
 
@@ -146,16 +179,16 @@ public sealed class IzBPhysClothSystem : SystemBase {
 
 		// 質点の位置を更新
 		Dependency = Entities.ForEach((
-			Entity entity
+			Entity entity,
+			ref Ptcl_Sphere sphere,
+			ref Ptcl_V v
 		)=>{
 			var invM = GetComponent<Ptcl_InvM>(entity).value;
-			var sphere = GetComponent<Ptcl_Sphere>(entity).value;
 			var defL2W = GetComponent<Ptcl_DefaultL2W>(entity).value;
 
 			if (invM == 0) {
-				sphere.pos = defL2W.c3.xyz;
+				sphere.value.pos = defL2W.c3.xyz;
 			} else {
-				var v = GetComponent<Ptcl_V>(entity).value;
 				var restoreHL = GetComponent<Ptcl_RestoreHL>(entity).value;
 				var root = GetComponent<Ptcl_Root>(entity).value;
 				var maxSpeed = GetComponent<Root_MaxSpd>(root).value;
@@ -163,10 +196,10 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				var air = GetComponent<Root_Air>(root);
 						
 				// 速度制限を適応
-				v = clamp(v, -maxSpeed, maxSpeed);
+				var v0 = clamp(v.value, -maxSpeed, maxSpeed);
 
 				// 更新前の位置をvに入れておく。これは後で参照するための一時的なキャッシュ用
-				SetComponent(entity, new Ptcl_V{value=sphere.pos});
+				v.value = sphere.value.pos;
 
 				// 位置を物理で更新する。
 				// 空気抵抗の影響を与えるため、以下のようにしている。
@@ -182,19 +215,17 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				//    airResRateIntegralは空気抵抗の初期値1の減速曲線がグラフ上に描く面積であるので,
 				//    減速が一切ない場合に描く面積1*dtとの差は、dt-airResRateIntegralとなる。
 				//    したがってこれにwindSpeedを掛けて、風速に向かって空気抵抗がかかるようにする。
-				sphere.pos +=
-					(v + g*deltaTime) * air.airResRateIntegral +
+				sphere.value.pos +=
+					(v0 + g*deltaTime) * air.airResRateIntegral +
 					air.winSpdIntegral; // : windSpeed * (dt - airResRateIntegral)
 
 				// 初期位置に戻すようなフェードを掛ける
-				sphere.pos = lerp(
+				sphere.value.pos = lerp(
 					defL2W.c3.xyz,
-					sphere.pos,
+					sphere.value.pos,
 					HalfLifeDragAttribute.evaluate( restoreHL, deltaTime )
 				);
 			}
-
-			SetComponent(entity, new Ptcl_Sphere{value=sphere});
 		}).WithAll<Ptcl>().Schedule( Dependency );
 
 
@@ -319,8 +350,179 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				}
 			}).WithAll<Root>().Schedule( Dependency );
 
+
+
+			// デフォルト位置からの移動可能距離での拘束条件を解決
+			const float DefPosMovRngCompliance = 1e-10f;
+			Dependency = Entities.ForEach((
+				Entity entity,
+				ref Ptcl_Sphere sphere,
+				ref Ptcl_MvblRngLmd lambda
+			)=>{
+				// 固定Particleに対しては何もする必要なし
+				var invM = GetComponent<Ptcl_InvM>(entity).value;
+				if (invM == 0) return;
+
+				var maxMovableRange = GetComponent<Ptcl_MaxMovableRange>(entity).value;
+				if (maxMovableRange < 0) return;
+
+				var cstr = new Constraint.MaxDistance{
+					compliance = DefPosMovRngCompliance,
+					srcPos = GetComponent<Ptcl_DefaultL2W>(entity).value.c3.xyz,
+					pos = sphere.value.pos,
+					invM = invM,
+					maxLen = maxMovableRange,
+				};
+
+				lambda.value += cstr.solve(sqDt, lambda.value);
+				sphere.value.pos = cstr.pos;
+
+			}).Schedule( Dependency );
+
+
+
+			// コライダとの衝突解決
+			const float ColResolveCompliance = 1e-10f;
+			Dependency = Entities.ForEach((
+				Entity entity,
+				ref Ptcl_Sphere sphere,
+				ref Ptcl_CldCstLmd lambda
+			)=>{
+				var mostParent = GetComponent<Ptcl_Root>(entity).value;
+
+				// コライダが未設定の場合は何もしない
+				var colliderPack = GetComponent<Root_ColliderPack>(entity).value;
+				if (colliderPack == null) return;
+
+				// 固定Particleに対しては何もする必要なし
+				var invM = GetComponent<Ptcl_InvM>(entity).value;
+				if (invM == 0) return;
+
+				// コライダとの衝突解決
+				var pos = sphere.value.pos;
+				var isCol = false;
+				for (
+					var e = colliderPack;
+					e != default;
+					e = GetComponent<IzBCollider.Core.Body_Next>(e).value
+				) {
+					var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
+					var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
+					isCol |= rc.solveCollision( st, ref pos, sphere.value.r );
+				}
+
+				// 何かしらに衝突している場合は、引き離し用拘束条件を適応
+				if (isCol) {
+					var dPos = pos - sphere.value.pos;
+					var dPosLen = length(dPos);
+					var dPosN = dPos / (dPosLen + 0.0000001f);
+
+					var cstr = new Constraint.MinDistN{
+						compliance = ColResolveCompliance,
+						srcPos = sphere.value.pos,
+						n = dPosN,
+						pos = sphere.value.pos,
+						invM = invM,
+						minDist = dPosLen,
+					};
+					lambda.value += cstr.solve( sqDt, lambda.value );
+					sphere.value.pos = cstr.pos;
+				} else {
+					lambda.value = 0;
+				}
+			}).Schedule( Dependency );
+
+
+
+			// その他の拘束条件を解決
+			Dependency = Entities.ForEach((
+				Entity entity,
+				ref Cstr_Lmd lambda
+			)=>{
+				var tgt = GetComponent<Cstr_Target>(entity);
+				var compliance = GetComponent<Cstr_Compliance>(entity).value;
+				var defaultLen = GetComponent<Cstr_DefaultLen>(entity).value;
+
+				var sphere0 = GetComponent<Ptcl_Sphere>(tgt.src);
+				var sphere1 = GetComponent<Ptcl_Sphere>(tgt.dst);
+				var cstr = new Constraint.Distance{
+					compliance = compliance,
+					pos0 = sphere0.value.pos,
+					pos1 = sphere1.value.pos,
+					invM0 = GetComponent<Ptcl_InvM>(tgt.src).value,
+					invM1 = GetComponent<Ptcl_InvM>(tgt.dst).value,
+					defLen = defaultLen,
+				};
+
+				lambda.value += cstr.solve(sqDt, lambda.value);
+				sphere0.value.pos = cstr.pos0;
+				sphere1.value.pos = cstr.pos1;
+				SetComponent(tgt.src, sphere0);
+				SetComponent(tgt.dst, sphere1);
+			}).Schedule( Dependency );
 		}
+
+
+		// 速度の保存
+		Dependency = Entities.ForEach((
+			Entity entity,
+			ref Ptcl_V v,
+			in Ptcl_Sphere sphere
+		)=>{
+			v.value = (sphere.value.pos - v.value) / deltaTime;
+		}).Schedule( Dependency );
+
+
+
+		// シミュレーション結果をボーンにフィードバックする
+		Dependency = Entities.ForEach((
+			Entity entity
+		)=>{
+			// これは上から順番に行う必要があるので、
+			// RootごとにRootから順番にParticleをたどって更新する
+			for (; entity!=null; entity=GetComponent<Ptcl_Next>(entity).value) {
+				var parent = GetComponent<Ptcl_Parent>(entity).value;
+				if (parent == null) return;
+
+				var sphere = GetComponent<Ptcl_Sphere>(entity);
+				var maxAngle = GetComponent<Ptcl_MaxAngle>(entity).value;
+				var defaultL2P = GetComponent<Ptcl_DefaultL2P>(entity);
+				var parentTrans = GetComponent<Ptcl_CurTrans>(parent);
+				var curTrans = GetComponent<Ptcl_CurTrans>(entity);
+
+				// 回転する元方向と先方向
+				var from = mul( parentTrans.lRot, defaultL2P.l2p.c3.xyz );
+				var to = mul( parentTrans.w2l, float4(sphere.value.pos, 1) ).xyz;
+
+				// 最大角度制限は制約条件のみだとどうしても完璧にはならず、
+				// コンプライアンス値をきつくし過ぎると暴走するので、
+				// 制約条件で緩く制御した上で、ここで強制的にクリッピングする。
+				var q = Math8.fromToRotation( from, to, maxAngle );
+
+				// 初期姿勢を反映
+				curTrans.lPos = mul(q, defaultL2P.l2p.c3.xyz);
+				curTrans.lRot = mul(q, defaultL2P.rot);
+				curTrans.l2w = mul(
+					parentTrans.l2w,
+					Unity.Mathematics.float4x4.TRS(curTrans.lPos, curTrans.lRot, 1)
+				);
+				curTrans.w2l = inverse(curTrans.l2w);
+				SetComponent(entity, curTrans);
+
+				// 最大角度制限を反映させたので、パーティクルへ変更をフィードバックする
+				sphere.value.pos = curTrans.l2w.c3.xyz;
+				SetComponent(entity, sphere);
+			}
+		}).WithAll<Root>().Schedule( Dependency );
+		if (etp.Length != 0) {
+			Dependency = new ApplyToBoneJob{
+				entities = etp.Entities,
+				curTranss = GetComponentDataFromEntity<Ptcl_CurTrans>(true),
+			}.Schedule( etp.Transforms, Dependency );
+		}
+
 	}
+
 
 }
 }
