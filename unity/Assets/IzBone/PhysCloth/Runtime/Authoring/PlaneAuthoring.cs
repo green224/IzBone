@@ -64,10 +64,10 @@ public unsafe sealed class PlaneAuthoring : SimpleAuthoring {
 
 		{// 質点リストを構築
 			static ParticleMng genPtcl(
-				int ptclIdx, Transform trans,
+				int ptclIdx, Transform transHead, Transform transTail,
 				ParticleMng parent, ParticleMng left
 			) {
-				var ret = new ParticleMng(ptclIdx, trans);
+				ParticleMng ret = new ParticleMng(ptclIdx, transHead, new[]{transTail});
 				if (parent != null) {
 					ret.parent = parent;
 					if (parent.child==null) parent.child = ret;
@@ -77,7 +77,7 @@ public unsafe sealed class PlaneAuthoring : SimpleAuthoring {
 			}
 
 			var particles = new List<ParticleMng>();
-			_rootPtcl = genPtcl(0, _topOfBones[0].parent, null, null);
+			_rootPtcl = genPtcl(0, null, _topOfBones[0].parent, null, null);
 			particles.Add( _rootPtcl );
 
 			ParticleMng topPL = null;
@@ -86,12 +86,12 @@ public unsafe sealed class PlaneAuthoring : SimpleAuthoring {
 				var pL = topPL;
 				var p = _rootPtcl;
 				var trans = i;
-				p = topPL = genPtcl( particles.Count, trans, p, pL );
+				p = topPL = genPtcl( particles.Count, null, trans, p, pL );
 				particles.Add( p );
 				while (trans.childCount != 0) {
 					trans = trans.GetChild( 0 );
 					pL = pL?.child;
-					p = genPtcl( particles.Count, trans, p, pL );
+					p = genPtcl( particles.Count, trans.parent, trans, p, pL );
 					particles.Add( p );
 				}
 			}

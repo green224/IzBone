@@ -73,10 +73,10 @@ public unsafe sealed class TreePlaneAuthoring : SimpleAuthoring {
 
 		// Particleを一つ生成する処理
 		static ParticleMng genPtcl(
-			int ptclIdx, Transform trans,
+			int ptclIdx, Transform transHead, Transform[] transTail,
 			ParticleMng parent
 		) {
-			var ret = new ParticleMng(ptclIdx, trans);
+			ParticleMng ret = new ParticleMng(ptclIdx, transHead, transTail);
 			if (parent != null) {
 				ret.parent = parent;
 				if (parent.child==null) parent.child = ret;
@@ -92,14 +92,14 @@ public unsafe sealed class TreePlaneAuthoring : SimpleAuthoring {
 		for (int topIdx=0; topIdx<_topOfBones.Length; ++topIdx) {
 
 			// TopOfBoneで指定されたTransformの一つ上のTransformをルートParticleとして生成する
-			var p = genPtcl(particles.Count, _topOfBones[topIdx].parent, null);
+			var p = genPtcl(particles.Count, null, new[]{_topOfBones[topIdx].parent}, null);
 //			_rootPtcls[topIdx] = p;
 			particles.Add( p );
 
 			// TopOfBoneで指定されたTransformに対応するParticleを生成する
 			var pLst0 = new List<ParticleMng>();
 			var pLst1 = new List<ParticleMng>();
-			p = genPtcl(particles.Count, _topOfBones[topIdx], p);
+			p = genPtcl(particles.Count, null, new[]{_topOfBones[topIdx]}, p);
 			topPtcls[topIdx] = p;
 			pLst0.Add( p );
 			particles.Add( p );
@@ -110,11 +110,13 @@ public unsafe sealed class TreePlaneAuthoring : SimpleAuthoring {
 			while (true) {
 
 				// パーティクル生成対象の深度を一段階進める。
-				foreach (var i in pLst0) {
-					for (int j=0; j<i.trans.childCount; ++j) {
-						var a = genPtcl(-1, i.trans.GetChild(j), i);
-						pLst1.Add(a);
-					}
+				foreach (var k in pLst0)
+				foreach (var i in k.transTail) {
+					if (i.childCount == 0) continue;
+					var tails = new Transform[i.childCount];
+					for (int j=0; j<tails.Length; ++j) tails[j] = i.GetChild(j);
+					var a = genPtcl(-1, i, tails.ToArray(), k);
+					pLst1.Add(a);
 				}
 				if (pLst1.Count == 0) break;
 
@@ -124,17 +126,17 @@ public unsafe sealed class TreePlaneAuthoring : SimpleAuthoring {
 					// 本当は最小二乗法を用いるべきだが、難しいので適当な方法で近似する
 					static float3 getSpDir(List<ParticleMng> pLst) {
 						float3 ctr = 0;
-						foreach (var i in pLst) ctr = i.trans.position;
+						foreach (var i in pLst) ctr = i.transHead.position;
 						ctr /= pLst.Count;
 
 						float maxDist = 0;
 						ParticleMng retPtcl = pLst[0];
 						foreach (var i in pLst) {
-							var dist = lengthsq((float3)i.trans.position - ctr);
+							var dist = lengthsq((float3)i.transHead.position - ctr);
 							if ( maxDist < dist ) {retPtcl = i; maxDist = dist;}
 						}
 
-						return (float3)retPtcl.trans.position - ctr;
+						return (float3)retPtcl.transHead.position - ctr;
 					}
 
 					// パーティクルの方向を得る。ここで、TopOfBoneが複数ある場合は、
@@ -149,7 +151,7 @@ public unsafe sealed class TreePlaneAuthoring : SimpleAuthoring {
 						if ( dot(spDir, dir) < 0 ) spDir = -spDir;
 					}
 
-					pLst1 = pLst1.OrderBy( a => dot(a.trans.position, spDir) ).ToList();
+					pLst1 = pLst1.OrderBy( a => dot(a.transHead.position, spDir) ).ToList();
 				}
 
 				// 左右を接続する

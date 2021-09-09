@@ -43,11 +43,17 @@ public sealed class IzBPhysClothSystem : SystemBase {
 		[ReadOnly] public ComponentDataFromEntity<Root_WithAnimation> withAnims;
 
 		[NativeDisableParallelForRestriction]
-		[WriteOnly] public ComponentDataFromEntity<Ptcl_DefaultL2W> defaultL2Ws;
+		[WriteOnly] public ComponentDataFromEntity<Ptcl_DefaultHeadL2W> defHeadL2Ws;
 		[NativeDisableParallelForRestriction]
-		[WriteOnly] public ComponentDataFromEntity<Ptcl_DefaultL2P> defaultL2Ps;
+		[WriteOnly] public ComponentDataFromEntity<Ptcl_DefaultHeadL2P> defHeadL2Ps;
+// defTailLPosはWithAnimがTrueのときでも毎フレームは更新しない。
+//		[NativeDisableParallelForRestriction]
+//		[WriteOnly] public ComponentDataFromEntity<Ptcl_DefaultTailLPos> defTailLPoss;
+		[ReadOnly] public ComponentDataFromEntity<Ptcl_DefaultTailLPos> defTailLPoss;
 		[NativeDisableParallelForRestriction]
-		[WriteOnly] public ComponentDataFromEntity<Ptcl_CurTrans> curTranss;
+		[WriteOnly] public ComponentDataFromEntity<Ptcl_DefaultTailWPos> defTailWPoss;
+		[NativeDisableParallelForRestriction]
+		[WriteOnly] public ComponentDataFromEntity<Ptcl_CurHeadTrans> curHeadTranss;
 
 		public void Execute(int index, TransformAccess transform)
 		{
@@ -55,11 +61,13 @@ public sealed class IzBPhysClothSystem : SystemBase {
 			var withAnim = withAnims[ roots[entity].value ];
 
 			// デフォルト姿勢を毎フレーム初期化する必要がある場合は、ここで初期化
-			if (withAnim.value)
-				defaultL2Ps[entity] = new Ptcl_DefaultL2P(transform);
+			if (withAnim.value) {
+				defHeadL2Ps[entity] = new Ptcl_DefaultHeadL2P(transform);
+//				defTailLPoss[entity] = 
+			}
 
 			// 現在のTransformをすべてのParticleに対して転送
-			curTranss[entity] = new Ptcl_CurTrans{
+			curHeadTranss[entity] = new Ptcl_CurHeadTrans{
 				l2w = transform.localToWorldMatrix,
 				w2l = transform.worldToLocalMatrix,
 				lPos = transform.localPosition,
@@ -68,8 +76,11 @@ public sealed class IzBPhysClothSystem : SystemBase {
 
 			// 一番上のパーティクルに対しては、DefaultL2Wを現在値に更新する
 			if (parents[entity].value != null) {
-				defaultL2Ws[entity] =
-					new Ptcl_DefaultL2W{value = transform.localToWorldMatrix};
+				var headL2W = transform.localToWorldMatrix;
+				var tailLPos = defTailLPoss[entity].value;
+				defHeadL2Ws[entity] = new Ptcl_DefaultHeadL2W{value = headL2W};
+				defTailWPoss[entity] =
+					new Ptcl_DefaultTailWPos{value = Math8.trans(headL2W, tailLPos)};
 			}
 		}
 	}
@@ -80,12 +91,12 @@ public sealed class IzBPhysClothSystem : SystemBase {
 	struct ApplyToBoneJob : IJobParallelForTransform
 	{
 		[ReadOnly] public NativeArray<Entity> entities;
-		[ReadOnly] public ComponentDataFromEntity<Ptcl_CurTrans> curTranss;
+		[ReadOnly] public ComponentDataFromEntity<Ptcl_CurHeadTrans> curHeadTranss;
 
 		public void Execute(int index, TransformAccess transform)
 		{
 			var entity = entities[index];
-			var curTrans = curTranss[entity];
+			var curTrans = curHeadTranss[entity];
 			transform.localPosition = curTrans.lPos;
 			transform.localRotation = curTrans.lRot;
 		}
@@ -136,9 +147,11 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				Dependency = new MngTrans2ECSJob{
 					entities = etp.Entities,
 					parents = GetComponentDataFromEntity<Ptcl_Parent>(true),
-					defaultL2Ws = GetComponentDataFromEntity<Ptcl_DefaultL2W>(false),
-					defaultL2Ps = GetComponentDataFromEntity<Ptcl_DefaultL2P>(false),
-					curTranss = GetComponentDataFromEntity<Ptcl_CurTrans>(false),
+					defHeadL2Ws = GetComponentDataFromEntity<Ptcl_DefaultHeadL2W>(false),
+					defHeadL2Ps = GetComponentDataFromEntity<Ptcl_DefaultHeadL2P>(false),
+					defTailLPoss = GetComponentDataFromEntity<Ptcl_DefaultTailLPos>(true),
+					defTailWPoss = GetComponentDataFromEntity<Ptcl_DefaultTailWPos>(false),
+					curHeadTranss = GetComponentDataFromEntity<Ptcl_CurHeadTrans>(false),
 				}.Schedule( etp.Transforms, Dependency );
 			}
 
@@ -150,15 +163,14 @@ public sealed class IzBPhysClothSystem : SystemBase {
 					var parent = GetComponent<Ptcl_Parent>(entity).value;
 					if (parent == null) continue;
 
-					SetComponent(
-						entity,
-						new Ptcl_DefaultL2W{
-							value = mul(
-								GetComponent<Ptcl_DefaultL2W>(parent).value,
-								GetComponent<Ptcl_DefaultL2P>(entity).l2p
-							)
-						}
+					var defHeadL2W = mul(
+						GetComponent<Ptcl_DefaultHeadL2W>(parent).value,
+						GetComponent<Ptcl_DefaultHeadL2P>(entity).l2p
 					);
+					var defTailLPos = GetComponent<Ptcl_DefaultTailLPos>(entity).value;
+					var defTailWPos = Math8.trans(defHeadL2W, defTailLPos);
+					SetComponent(entity, new Ptcl_DefaultHeadL2W{value = defHeadL2W});
+					SetComponent(entity, new Ptcl_DefaultTailWPos{value = defTailWPos});
 				}
 			}).WithAll<Root>().Schedule( Dependency );
 		}
@@ -184,10 +196,10 @@ public sealed class IzBPhysClothSystem : SystemBase {
 			ref Ptcl_V v
 		)=>{
 			var invM = GetComponent<Ptcl_InvM>(entity).value;
-			var defL2W = GetComponent<Ptcl_DefaultL2W>(entity).value;
+			var defTailPos = GetComponent<Ptcl_DefaultTailWPos>(entity).value;
 
 			if (invM == 0) {
-				sphere.value.pos = defL2W.c3.xyz;
+				sphere.value.pos = defTailPos;
 			} else {
 				var restoreHL = GetComponent<Ptcl_RestoreHL>(entity).value;
 				var root = GetComponent<Ptcl_Root>(entity).value;
@@ -221,7 +233,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 
 				// 初期位置に戻すようなフェードを掛ける
 				sphere.value.pos = lerp(
-					defL2W.c3.xyz,
+					defTailPos,
 					sphere.value.pos,
 					HalfLifeDragAttribute.evaluate( restoreHL, deltaTime )
 				);
@@ -263,21 +275,21 @@ public sealed class IzBPhysClothSystem : SystemBase {
 					var spr2 = GetComponent<Ptcl_Sphere>(p2).value;
 					var spr3 = GetComponent<Ptcl_Sphere>(p3).value;
 
-					var defL2W0 = p0==null ? default : GetComponent<Ptcl_DefaultL2W>(p0).value;
-					var defL2W1 = p1==null ? default : GetComponent<Ptcl_DefaultL2W>(p1).value;
-					var defL2W2 = GetComponent<Ptcl_DefaultL2W>(p2).value;
-					var defL2W3 = GetComponent<Ptcl_DefaultL2W>(p3).value;
+					var defWPos0 = p0==null ? default : GetComponent<Ptcl_DefaultTailWPos>(p0).value;
+					var defWPos1 = p1==null ? default : GetComponent<Ptcl_DefaultTailWPos>(p1).value;
+					var defWPos2 = GetComponent<Ptcl_DefaultTailWPos>(p2).value;
+					var defWPos3 = GetComponent<Ptcl_DefaultTailWPos>(p3).value;
 
 					// 回転する元方向と先方向を計算する処理
 					static void getFromToDir(
 						IzBCollider.RawCollider.Sphere srcSphere,
 						IzBCollider.RawCollider.Sphere dstSphere,
-						in float4x4 srcDefL2W, in float4x4 dstDefL2W,
+						float3 srcWPos, float3 dstWPos,
 						quaternion q,
 						out float3 fromDir,
 						out float3 toDir
 					) {
-						var from = dstDefL2W.c3.xyz - srcDefL2W.c3.xyz;
+						var from = dstWPos - srcWPos;
 						var to = dstSphere.pos - srcSphere.pos;
 						fromDir = mul(q, from);
 						toDir = to;
@@ -288,7 +300,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 					if (p1 != null) {
 						getFromToDir(
 							spr2, spr3,
-							defL2W2, defL2W3,
+							defWPos2, defWPos3,
 							GetComponent<Ptcl_DWRot>(p1).value,
 							out from, out to
 						);
@@ -330,20 +342,20 @@ public sealed class IzBPhysClothSystem : SystemBase {
 					var initQ = quaternion(0,0,0,1);
 					if (p0 != null) {
 						var q0 = p00==null ? initQ : GetComponent<Ptcl_DWRot>(p00).value;
-						getFromToDir(spr0, spr1, defL2W0, defL2W1, q0, out from, out to);
+						getFromToDir(spr0, spr1, defWPos0, defWPos1, q0, out from, out to);
 						SetComponent( p0,
 							new Ptcl_DWRot{value = mul( Math8.fromToRotation(from, to), q0 )}
 						);
 					}
 					if (p1 != null) {
 						var q1 = p0==null ? initQ : GetComponent<Ptcl_DWRot>(p0).value;
-						getFromToDir(spr1, spr2, defL2W1, defL2W2, q1, out from, out to);
+						getFromToDir(spr1, spr2, defWPos1, defWPos2, q1, out from, out to);
 						SetComponent( p1,
 							new Ptcl_DWRot{value = mul( Math8.fromToRotation(from, to), q1 )}
 						);
 					}
 					var q2 = p1==null ? initQ : GetComponent<Ptcl_DWRot>(p1).value;
-					getFromToDir(spr2, spr3, defL2W2, defL2W3, q2, out from, out to);
+					getFromToDir(spr2, spr3, defWPos2, defWPos3, q2, out from, out to);
 					SetComponent( p2,
 						new Ptcl_DWRot{value = mul( Math8.fromToRotation(from, to), q2 )}
 					);
@@ -368,7 +380,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 
 				var cstr = new Constraint.MaxDistance{
 					compliance = DefPosMovRngCompliance,
-					srcPos = GetComponent<Ptcl_DefaultL2W>(entity).value.c3.xyz,
+					srcPos = GetComponent<Ptcl_DefaultTailWPos>(entity).value,
 					pos = sphere.value.pos,
 					invM = invM,
 					maxLen = maxMovableRange,
@@ -481,27 +493,42 @@ public sealed class IzBPhysClothSystem : SystemBase {
 			// これは上から順番に行う必要があるので、
 			// RootごとにRootから順番にParticleをたどって更新する
 			for (; entity!=null; entity=GetComponent<Ptcl_Next>(entity).value) {
+
+				// 最親Particleの場合はDefaultTransformをそのまま転写
 				var parent = GetComponent<Ptcl_Parent>(entity).value;
-				if (parent == null) return;
+				if (parent == null) {
+//					var l2w = GetComponent<Ptcl_DefaultHeadL2W>(entity).value;
+//					SetComponent(
+//						entity,　new Ptcl_CurHeadTrans{l2w=l2w, w2l=inverse(l2w)}
+//					);
+					continue;
+				}
+
+				// 親のTransform
+				var parentTrans = GetComponent<Ptcl_CurHeadTrans>(parent);
 
 				var sphere = GetComponent<Ptcl_Sphere>(entity);
-				var maxAngle = GetComponent<Ptcl_MaxAngle>(entity).value;
-				var defaultL2P = GetComponent<Ptcl_DefaultL2P>(entity);
-				var parentTrans = GetComponent<Ptcl_CurTrans>(parent);
-				var curTrans = GetComponent<Ptcl_CurTrans>(entity);
+				var defHeadL2P = GetComponent<Ptcl_DefaultHeadL2P>(entity);
+				var defTailLPos = GetComponent<Ptcl_DefaultTailLPos>(entity).value;
 
 				// 回転する元方向と先方向
-				var from = mul( parentTrans.lRot, defaultL2P.l2p.c3.xyz );
-				var to = mul( parentTrans.w2l, float4(sphere.value.pos, 1) ).xyz;
+				var defTailPPos = Math8.trans( defHeadL2P.l2p, defTailLPos );
+				var curTailPPos = Math8.trans( parentTrans.w2l, sphere.value.pos );
+				var defHeadPPos = defHeadL2P.l2p.c3.xyz;
 
 				// 最大角度制限は制約条件のみだとどうしても完璧にはならず、
 				// コンプライアンス値をきつくし過ぎると暴走するので、
 				// 制約条件で緩く制御した上で、ここで強制的にクリッピングする。
-				var q = Math8.fromToRotation( from, to, maxAngle );
+				var maxAngle = GetComponent<Ptcl_MaxAngle>(entity).value;
+				var q = Math8.fromToRotation(
+					defTailPPos - defHeadPPos,
+					curTailPPos - defHeadPPos,
+					maxAngle
+				);
 
 				// 初期姿勢を反映
-				curTrans.lPos = mul(q, defaultL2P.l2p.c3.xyz);
-				curTrans.lRot = mul(q, defaultL2P.rot);
+				var curTrans = GetComponent<Ptcl_CurHeadTrans>(entity);
+				curTrans.lRot = mul(q, defHeadL2P.rot);
 				curTrans.l2w = mul(
 					parentTrans.l2w,
 					Unity.Mathematics.float4x4.TRS(curTrans.lPos, curTrans.lRot, 1)
@@ -510,14 +537,14 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				SetComponent(entity, curTrans);
 
 				// 最大角度制限を反映させたので、パーティクルへ変更をフィードバックする
-				sphere.value.pos = curTrans.l2w.c3.xyz;
+				sphere.value.pos = Math8.trans(curTrans.l2w, defTailLPos);
 				SetComponent(entity, sphere);
 			}
 		}).WithAll<Root>().Schedule( Dependency );
 		if (etp.Length != 0) {
 			Dependency = new ApplyToBoneJob{
 				entities = etp.Entities,
-				curTranss = GetComponentDataFromEntity<Ptcl_CurTrans>(true),
+				curHeadTranss = GetComponentDataFromEntity<Ptcl_CurHeadTrans>(true),
 			}.Schedule( etp.Transforms, Dependency );
 		}
 

@@ -57,7 +57,7 @@ public unsafe abstract class SimpleAuthoring : BaseAuthoring {
 					mode = ConstraintMng.Mode.Distance,
 					srcPtclIdx = p0.idx,
 					dstPtclIdx = p1.idx,
-					param = length(p0.trans.position - p1.trans.position),
+					param = length(p0.getTailWPos() - p1.getTailWPos()),
 				} );
 			}
 		);

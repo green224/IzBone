@@ -36,13 +36,13 @@ namespace IzBone.PhysCloth.Core {
 	public struct Ptcl_Parent:IComponentData {public Entity value;}
 	public struct Ptcl_Root:IComponentData {public Entity value;}
 
-	// シミュレーションが行われなかった際のL2W,L2P,親の初期姿勢。
+	// シミュレーションが行われなかった際のL2W,L2P。
 	// L2Wはシミュレーション対象外のボーンのアニメーションなどを反映して毎フレーム更新する
-	public struct Ptcl_DefaultL2W:IComponentData {public float4x4 value;}
-	public struct Ptcl_DefaultL2P:IComponentData {
+	public struct Ptcl_DefaultHeadL2W:IComponentData {public float4x4 value;}
+	public struct Ptcl_DefaultHeadL2P:IComponentData {
 		public float4x4 l2p;
 		public quaternion rot;
-		public Ptcl_DefaultL2P(Transform trans) {
+		public Ptcl_DefaultHeadL2P(Transform trans) {
 			rot = trans.localRotation;
 			l2p = float4x4.TRS(
 				trans.localPosition,
@@ -50,7 +50,7 @@ namespace IzBone.PhysCloth.Core {
 				trans.localScale
 			);
 		}
-		public Ptcl_DefaultL2P(TransformAccess trans) {
+		public Ptcl_DefaultHeadL2P(TransformAccess trans) {
 			rot = trans.localRotation;
 			l2p = float4x4.TRS(
 				trans.localPosition,
@@ -59,6 +59,8 @@ namespace IzBone.PhysCloth.Core {
 			);
 		}
 	}
+	public struct Ptcl_DefaultTailLPos:IComponentData {public float3 value;}
+	public struct Ptcl_DefaultTailWPos:IComponentData {public float3 value;}
 
 	// 位置・半径・速度・質量の逆数
 	public struct Ptcl_Sphere:IComponentData {public IzBCollider.RawCollider.Sphere value;}
@@ -88,7 +90,7 @@ namespace IzBone.PhysCloth.Core {
 	public struct Ptcl_MvblRngLmd:IComponentData {public float value;}
 
 	// シミュレーション結果をフィードバックする用のTransform情報
-	public struct Ptcl_CurTrans:IComponentData {
+	public struct Ptcl_CurHeadTrans:IComponentData {
 		public float4x4 l2w;
 		public float4x4 w2l;
 		public float3 lPos;

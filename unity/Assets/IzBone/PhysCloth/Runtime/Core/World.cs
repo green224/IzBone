@@ -32,7 +32,7 @@ namespace IzBone.PhysCloth.Core {
 			_particles = new NativeArray<Particle>(mngParticles.Length, Allocator.Persistent);
 			for (int i=0; i<mngParticles.Length; ++i) {
 				var mp = mngParticles[i];
-				_particles[i] = new Particle(i, mp.parent?.idx??-1, mp.trans.position);
+				_particles[i] = new Particle(i, mp.parent?.idx??-1, mp.getTailWPos());
 			}
 
 			// パラメータを同期
@@ -85,7 +85,7 @@ namespace IzBone.PhysCloth.Core {
 				int i = 0;
 				for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
 					var lastPos = p->col.pos;
-					p->col.pos = mngParticles[i].trans.position;
+					p->col.pos = mngParticles[i].getTailWPos();
 					p->v = (p->col.pos - lastPos) / dt;
 				}
 				return;
@@ -94,12 +94,18 @@ namespace IzBone.PhysCloth.Core {
 			{// デフォルト姿勢でのL2Wを計算しておく
 				int i = 0;
 				for (var p=ptclPtr0; p!=ptclPtrEnd; ++p,++i) {
-					if ( mngParticles[i].parent == null ) {
-						p->defaultL2W = mngParticles[i].trans.localToWorldMatrix;
+					if ( mngParticles[i].transHead == null ) {
+						var transTail = mngParticles[i].transTail[0];
+						p->defaultHeadL2W = transTail.parent.localToWorldMatrix;
+						p->defaultTailWPos = transTail.position;
 					} else {
-						p->defaultL2W = mul(
-							ptclPtr0[p->parentIdx].defaultL2W,
-							mngParticles[i].defaultL2P
+						p->defaultHeadL2W = mul(
+							ptclPtr0[p->parentIdx].defaultHeadL2W,
+							mngParticles[i].defaultHeadL2P
+						);
+						p->defaultTailWPos = Math8.trans(
+							p->defaultHeadL2W,
+							mngParticles[i].defaultTailLPos
 						);
 					}
 				}
@@ -113,7 +119,7 @@ namespace IzBone.PhysCloth.Core {
 			for (var p=ptclPtr0; p!=ptclPtrEnd; ++p) {
 				if (p->invM < MinimumM) {
 					var mngP = mngParticles[p->index];
-					p->col.pos = mngP.trans.position;
+					p->col.pos = p->defaultTailWPos;
 				} else {
 					var v = p->v;
 						
@@ -143,7 +149,7 @@ namespace IzBone.PhysCloth.Core {
 
 					// 初期位置に戻すようなフェードを掛ける
 					p->col.pos = lerp(
-						p->defaultL2W.c3.xyz,
+						p->defaultTailWPos,
 						p->col.pos,
 						HalfLifeDragAttribute.evaluate( p->restoreHL, dt )
 					);
@@ -186,7 +192,7 @@ namespace IzBone.PhysCloth.Core {
 						static (float3 fromDir, float3 toDir) getFromToDir(
 							Particle* src, Particle* dst, Quaternion q
 						) {
-							var from = dst->defaultL2W.c3.xyz - src->defaultL2W.c3.xyz;
+							var from = dst->defaultTailWPos - src->defaultTailWPos;
 							var to = dst->col.pos - src->col.pos;
 							return ( mul(q, from), to );
 						}
@@ -254,7 +260,7 @@ namespace IzBone.PhysCloth.Core {
 							if (p->invM < MinimumM || p->maxMovableRange < 0) continue;
 							var cstr = new Constraint.MaxDistance{
 								compliance = compliance,
-								srcPos = p->defaultL2W.c3.xyz,
+								srcPos = p->defaultTailWPos,
 								pos = p->col.pos,
 								invM = p->invM,
 								maxLen = p->maxMovableRange,
@@ -354,28 +360,34 @@ namespace IzBone.PhysCloth.Core {
 				if (p->parentIdx == -1) continue;
 
 				var j = mngParticles[i];
-				j.trans.parent.localRotation = Unity.Mathematics.quaternion.identity;
+				if (j.transHead == null) continue;
+				
+				var parentL2W = (float4x4)j.transHead.parent.localToWorldMatrix;
+				var parentW2L = (float4x4)j.transHead.parent.worldToLocalMatrix;
 
 				// 回転する元方向と先方向
-				var from = mul( j.defaultParentRot, j.trans.localPosition );
-				var to = mul(
-					j.trans.parent.worldToLocalMatrix,
-					float4( p->col.pos, 1 )
-				).xyz;
+				var defTailPPos = Math8.trans( j.defaultHeadL2P, j.defaultTailLPos );
+				var curTailPPos = Math8.trans( parentW2L, p->col.pos );
+				var defHeadPPos = j.defaultHeadL2P.c3.xyz;
 
 				// 最大角度制限は制約条件のみだとどうしても完璧にはならず、
 				// コンプライアンス値をきつくし過ぎると暴走するので、
 				// 制約条件で緩く制御した上で、ここで強制的にクリッピングする。
-				var q = Math8.fromToRotation( from, to, p->maxDRotAngle );
+				var q = Math8.fromToRotation(
+					defTailPPos - defHeadPPos,
+					curTailPPos - defHeadPPos,
+					p->maxDRotAngle
+				);
 
 				// 初期姿勢を反映
-				q = mul(q, j.defaultParentRot);
+				q = mul(q, j.defaultHeadRot);
 
-				j.trans.parent.localRotation = q;
-//				j.trans.position = p->col.pos;
+				j.transHead.localRotation = q;
+//				j.transHead.localPosition = normalizesafe(j.defaultTailLPos)
+//					* ( length(curTailPPos) - length(defTailPPos) );
 
 				// 最大角度制限を反映させたので、パーティクルへ変更をフィードバックする
-				p->col.pos = j.trans.position;
+				p->col.pos = j.transHead.localToWorldMatrix.MultiplyPoint(j.defaultTailLPos);
 			}
 		}
 

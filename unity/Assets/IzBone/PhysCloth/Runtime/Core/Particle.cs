@@ -19,7 +19,8 @@ namespace IzBone.PhysCloth.Core {
 
 		// シミュレーションが行われなかった際のL2W。
 		// これはシミュレーション対象外のボーンのアニメーションなどを反映して毎フレーム更新する
-		public float4x4 defaultL2W;
+		public float4x4 defaultHeadL2W;
+		public float3 defaultTailWPos;
 
 		// 位置・半径・速度・質量の逆数
 		public IzBCollider.RawCollider.Sphere col;
@@ -51,7 +52,8 @@ namespace IzBone.PhysCloth.Core {
 			this.index = index;
 			this.parentIdx = parentIdx;
 
-			defaultL2W = default;
+			defaultHeadL2W = default;
+			defaultTailWPos = default;
 			col = default;
 			col.pos = initWPos;
 			v = default;

@@ -44,10 +44,12 @@ namespace IzBone.PhysCloth.Core {
 				var parentEnt = mp.parent==null ? default : ptclEntities[mp.parent.idx];
 				em.AddComponentData(entity, new Ptcl_Parent{value = parentEnt});
 				em.AddComponentData(entity, new Ptcl_Root{value = ptclEntities[0]});
-				em.AddComponentData(entity, new Ptcl_DefaultL2W());
-				em.AddComponentData(entity, new Ptcl_DefaultL2P(mp.trans));
-				em.AddComponentData(entity, new Ptcl_CurTrans());
-				var sphere = new IzBCollider.RawCollider.Sphere{ pos=mp.trans.position, r=mp.r };
+				em.AddComponentData(entity, new Ptcl_DefaultHeadL2W());
+				em.AddComponentData(entity, new Ptcl_DefaultHeadL2P(mp.transHead));
+				em.AddComponentData(entity, new Ptcl_DefaultTailLPos{value = mp.defaultTailLPos});
+				em.AddComponentData(entity, new Ptcl_DefaultTailWPos());
+				em.AddComponentData(entity, new Ptcl_CurHeadTrans());
+				var sphere = new IzBCollider.RawCollider.Sphere{ pos=mp.getTailWPos(), r=mp.r };
 				em.AddComponentData(entity, new Ptcl_Sphere{value = sphere});
 				em.AddComponentData(entity, new Ptcl_V());
 				em.AddComponentData(entity, new Ptcl_InvM(mp.m));
@@ -60,7 +62,7 @@ namespace IzBone.PhysCloth.Core {
 
 				// Entity・Transformを登録
 				addEntityCore(entity, regLink);
-				addETPCore(entity, mp.trans, regLink);
+				if (mp.transHead != null) addETPCore(entity, mp.transHead, regLink);
 			}
 
 			// ConstraintのEntityを作成
