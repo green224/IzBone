@@ -104,7 +104,7 @@ public unsafe abstract class SimpleAuthoring : BaseAuthoring {
 	internal float getM(int idx) => idx<JointDepthFixCnt ? 0 : _m.evaluate( idx2rate(idx) );
 	internal float getMaxAgl(int idx) => _maxAngle.evaluate( idx2rate(idx) );
 	internal float getAglCompliance(int idx) =>
-		ComplianceAttribute.showValue2Compliance( _aglRestorePow.evaluate( idx2rate(idx) ) * 0.2f );
+		AngleComplianceAttribute.showValue2Compliance( _aglRestorePow.evaluate( idx2rate(idx) ) );
 	internal float getRestoreHL(int idx) =>
 		HalfLifeDragAttribute.showValue2HalfLife( _restorePow.evaluate( idx2rate(idx) ) );
 	internal float getMaxMovableRange(int idx) => _maxMovableRange.evaluate( idx2rate(idx) );
