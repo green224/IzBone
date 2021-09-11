@@ -383,13 +383,19 @@ public sealed class IzBPhysClothSystem : SystemBase {
 		var sqDt = deltaTime*deltaTime/ITERATION_NUM/ITERATION_NUM;
 		for (int i=0; i<ITERATION_NUM; ++i) {
 
-			// 角度制限の拘束条件を解決
-			var em = EntityManager;
 	#if true
+			{// 角度制限の拘束条件を解決
+			var aglLmtLmds = GetComponentDataFromEntity<Ptcl_AglLmtLmd>();
+			var wPoss = GetComponentDataFromEntity<Ptcl_WPos>();
+			var dWRots = GetComponentDataFromEntity<Ptcl_DWRot>();
 		#if WITH_DEBUG
 			Entities.ForEach((Entity entity)=>{
 		#else
-			Dependency = Entities.ForEach((Entity entity)=>{
+			Dependency = Entities
+			.WithNativeDisableParallelForRestriction(aglLmtLmds)
+			.WithNativeDisableParallelForRestriction(wPoss)
+			.WithNativeDisableParallelForRestriction(dWRots)
+			.ForEach((Entity entity)=>{
 		#endif
 				// これは上から順番に行う必要があるので、
 				// RootごとにRootから順番にParticleをたどって更新する
@@ -401,10 +407,10 @@ public sealed class IzBPhysClothSystem : SystemBase {
 					var p0 = p1==Entity.Null ? Entity.Null : GetComponent<Ptcl_Parent>(p1).value;
 					var p00 = p0==Entity.Null ? Entity.Null : GetComponent<Ptcl_Parent>(p0).value;
 
-					var spr0 = p0==Entity.Null ? default : GetComponent<Ptcl_WPos>(p0).value;
-					var spr1 = p1==Entity.Null ? default : GetComponent<Ptcl_WPos>(p1).value;
-					var spr2 = GetComponent<Ptcl_WPos>(p2).value;
-					var spr3 = GetComponent<Ptcl_WPos>(p3).value;
+					var spr0 = p0==Entity.Null ? default : wPoss[p0].value;
+					var spr1 = p1==Entity.Null ? default : wPoss[p1].value;
+					var spr2 = wPoss[p2].value;
+					var spr3 = wPoss[p3].value;
 
 					var defWPos0 = p0==Entity.Null ? default : GetComponent<Ptcl_DefaultTailWPos>(p0).value;
 					var defWPos1 = p1==Entity.Null ? default : GetComponent<Ptcl_DefaultTailWPos>(p1).value;
@@ -431,7 +437,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 						getFromToDir(
 							spr2, spr3,
 							defWPos2, defWPos3,
-							GetComponent<Ptcl_DWRot>(p1).value,
+							dWRots[p1].value,
 							out from, out to
 						);
 						var constraint = new Constraint.AngleWithLimit{
@@ -449,14 +455,14 @@ public sealed class IzBPhysClothSystem : SystemBase {
 							limitAngle = GetComponent<Ptcl_MaxAngle>(p2).value,
 						};
 						if (constraint.aglCstr.isValid()) {
-							var lmd2 = GetComponent<Ptcl_AglLmtLmd>(p2).value;
-							var lmd3 = GetComponent<Ptcl_AglLmtLmd>(p3).value;
+							var lmd2 = aglLmtLmds[p2].value;
+							var lmd3 = aglLmtLmds[p3].value;
 							constraint.solve(sqDt, ref lmd2, ref lmd3);
-							SetComponent(p2, new Ptcl_AglLmtLmd{value = lmd2});
-							SetComponent(p3, new Ptcl_AglLmtLmd{value = lmd3});
-							SetComponent(p1, new Ptcl_WPos{value = constraint.aglCstr.pos0});
-							SetComponent(p2, new Ptcl_WPos{value = constraint.aglCstr.pos1});
-							SetComponent(p3, new Ptcl_WPos{value = constraint.aglCstr.pos2});
+							aglLmtLmds[p2] = new Ptcl_AglLmtLmd{value = lmd2};
+							aglLmtLmds[p3] = new Ptcl_AglLmtLmd{value = lmd3};
+							wPoss[p1] = new Ptcl_WPos{value = constraint.aglCstr.pos0};
+							wPoss[p2] = new Ptcl_WPos{value = constraint.aglCstr.pos1};
+							wPoss[p3] = new Ptcl_WPos{value = constraint.aglCstr.pos2};
 						}
 /*						var constraint = new Constraint.Angle{
 							parent = p1,
@@ -471,30 +477,25 @@ public sealed class IzBPhysClothSystem : SystemBase {
 					// 位置が変わったので、再度姿勢を計算
 					var initQ = quaternion(0,0,0,1);
 					if (p0 != Entity.Null) {
-						var q0 = p00==Entity.Null ? initQ : GetComponent<Ptcl_DWRot>(p00).value;
+						var q0 = p00==Entity.Null ? initQ : dWRots[p00].value;
 						getFromToDir(spr0, spr1, defWPos0, defWPos1, q0, out from, out to);
-						SetComponent( p0,
-							new Ptcl_DWRot{value = mul( Math8.fromToRotation(from, to), q0 )}
-						);
+						dWRots[p0]= new Ptcl_DWRot{value=mul( Math8.fromToRotation(from, to), q0 )};
 					}
 					if (p1 != Entity.Null) {
-						var q1 = p0==Entity.Null ? initQ : GetComponent<Ptcl_DWRot>(p0).value;
+						var q1 = p0==Entity.Null ? initQ : dWRots[p0].value;
 						getFromToDir(spr1, spr2, defWPos1, defWPos2, q1, out from, out to);
-						SetComponent( p1,
-							new Ptcl_DWRot{value = mul( Math8.fromToRotation(from, to), q1 )}
-						);
+						dWRots[p1]= new Ptcl_DWRot{value=mul( Math8.fromToRotation(from, to), q1 )};
 					}
-					var q2 = p1==Entity.Null ? initQ : GetComponent<Ptcl_DWRot>(p1).value;
+					var q2 = p1==Entity.Null ? initQ : dWRots[p1].value;
 					getFromToDir(spr2, spr3, defWPos2, defWPos3, q2, out from, out to);
-					SetComponent( p2,
-						new Ptcl_DWRot{value = mul( Math8.fromToRotation(from, to), q2 )}
-					);
+					dWRots[p2]= new Ptcl_DWRot{value=mul( Math8.fromToRotation(from, to), q2 )};
 				}
 		#if WITH_DEBUG
 			}).WithAll<Root>().WithoutBurst().Run();
 		#else
-			}).WithAll<Root>().Schedule( Dependency );
+			}).WithAll<Root>().ScheduleParallel( Dependency );
 		#endif
+			}
 	#endif
 
 
