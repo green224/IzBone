@@ -821,7 +821,7 @@ MonoBehaviour:
     y: 0
     z: 0
   airDrag:
-    value: 0.1
+    value: 0.03575105
   maxSpeed: 100
   withAnimation: 0
   _r:
@@ -835,15 +835,15 @@ MonoBehaviour:
     curve: 0.5
     useCurve: 1
   _maxAngle:
-    start: 5
+    start: 10
     end: 40
     curve: 0.7829299
     useCurve: 1
   _aglRestorePow:
-    start: 0.9
-    end: 0.9
-    curve: 0.5
-    useCurve: 0
+    start: 0.2
+    end: 0.8
+    curve: 0.5058824
+    useCurve: 1
   _restorePow:
     start: 1
     end: 0.2
@@ -874,7 +874,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 060a3742b10cc1c41b710270e451d92e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _collider: {fileID: 219253809}
+  _collider: {fileID: 0}
   useSimulation: 1
   iterationNum: 15
   g:
@@ -889,7 +889,7 @@ MonoBehaviour:
     y: 0
     z: 0
   airDrag:
-    value: 0.1
+    value: 0.030606566
   maxSpeed: 100
   withAnimation: 0
   _r:
@@ -903,19 +903,19 @@ MonoBehaviour:
     curve: 0.5
     useCurve: 1
   _maxAngle:
-    start: 5
+    start: 40
     end: 40
     curve: 0.7829299
-    useCurve: 1
+    useCurve: 0
   _aglRestorePow:
     start: 0.5
     end: 0.2
-    curve: 0.4089909
+    curve: 0.20899089
     useCurve: 1
   _restorePow:
     start: 0.5
     end: 0.2
-    curve: 0.28324428
+    curve: 0.1882353
     useCurve: 1
   _maxMovableRange:
     start: 0.1
