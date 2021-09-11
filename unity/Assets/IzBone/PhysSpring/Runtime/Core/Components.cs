@@ -5,9 +5,13 @@ using Unity.Mathematics;
 
 namespace IzBone.PhysSpring.Core {
 	using Common;
+	using ICD = IComponentData;
 
-	/** 1繋がりのSpringリストの最親につけるコンポーネント */
-	public struct MostParent : IComponentData {
+	// 以降、1繋がりのSpringリスト１セットごとのEntityに対して付けるコンポーネント群
+
+	// 1繋がりのSpringリストを管理するコンポーネント。
+	// 再親のEntityについているわけではない事に注意
+	public struct Root:ICD {
 		public int depth;			//!< Springが何個連なっているか
 		public int iterationNum;	//!< 繰り返し計算回数
 		public Entity colliderPack;	//!< 衝突検出を行う対象のコライダー
@@ -18,14 +22,21 @@ namespace IzBone.PhysSpring.Core {
 		 */
 		public float rsRate;
 
-		public float4x4 ppL2W;	//!< ボーン親の更に親のL2W
+		public float4x4 rootL2W;	//!< ボーン親の更に親のL2W
+		public float4x4 rootW2L;	//!< ボーン親の更に親のW2L
+
+		public Entity firstPtcl;	// Springの開始位置のEntity。Ptclがついている
 	}
+
+
+
+	// 以降、１ParticleごとのEntityに対して付けるコンポーネント群
 
 	/**
 	 * シミュレーションの1間接部分の情報を表すコンポーネント。
 	 * 間接ごとのEntityに対して付ける。
 	 */
-	public struct OneSpring : IComponentData {
+	public struct OneSpring:ICD {
 		public Math8.SmoothRange_Float range_rot;		//!< 回転 - 範囲情報
 		public Math8.SmoothRange_Float3 range_sft;		//!< 移動 - 範囲情報
 		public Math8.Spring_Float3 spring_rot;			//!< 回転 - バネ
@@ -33,7 +44,7 @@ namespace IzBone.PhysSpring.Core {
 	}
 
 	/** OneSpringごとのデフォルト位置姿勢情報 */
-	public struct DefaultState : IComponentData {
+	public struct DefaultState:ICD {
 		/**
 		 * 毎フレーム現在位置をデフォルト位置として初期化するか否か。
 		 * しっぽなどのアニメーションを含むボーンに対して後付けで使用する際には、
@@ -51,26 +62,30 @@ namespace IzBone.PhysSpring.Core {
 		public float r;				//!< 衝突判定用の半径
 	}
 
-	/** OneSpringごとのシミュレーション結果の情報 */
-	public struct SpringResult : IComponentData {
-		public float3 trs;			//!< 計算結果のローカル座標
-		public quaternion rot;		//!< 計算結果のローカル姿勢
+	public struct Ptcl_LastWPos:ICD {public float3 value;}	// 前フレームでのワールド位置のキャッシュ
+	public struct Ptcl_Child:ICD {public Entity value;}		// 子供側のEntity
+
+
+
+
+	// シミュレーション毎のTransformの現在値の取得と、
+	// シミュレーション結果をフィードバックする際に使用されるTransform情報。
+	// これは一番末端PtclやRootにも付くが、そいつは参照用のみに使用される。（フィードバックもされてしまうが）
+	public struct CurTrans:ICD {
+		public float3 lPos;
+		public quaternion lRot;
 	}
 
-	/** OneSpringごとのワールド座標のキャッシュ */
-	public struct WPosCache : IComponentData {
-		public float3 lastWPos;		//!< 前フレームでのワールド位置のキャッシュ
-	}
 
-	/** Springの子供側のEntityを得る */
-	public struct Child : IComponentData {
-		public Entity value;
-	}
 
-	/** OneSpringとRootAuthoringとの橋渡し役を行うためのマネージドコンポーネント */
-	public sealed class OneSpring_M2D : IComponentData {
-		public RootAuthoring.Bone boneAuth;			//!< 生成元
-		public Transform parentTrans, childTrans;	//!< Springでつながる親と子のTransform
-		public float depthRate;						//!< 0~Depthを0～1にリマップしたもの
+
+	// ECSとAuthoringとの橋渡し役を行うためのマネージドコンポーネント
+	public sealed class OneSpring_M2D:ICD {
+		public RootAuthoring.Bone boneAuth;			// 生成元
+		public Transform parentTrans, childTrans;	// Springでつながる親と子のTransform
+		public float depthRate;						// 0~Depthを0～1にリマップしたもの
+	}
+	public sealed class Root_M2D:ICD {
+		public RootAuthoring.Bone auth;			// 生成元
 	}
 }

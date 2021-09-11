@@ -63,9 +63,9 @@ namespace IzBone.PhysSpring.Core {
 						),
 						r = bone.radius.evaluate(dRate),
 					});
-					em.AddComponentData(entity, new SpringResult{});
-					em.AddComponentData(entity, new WPosCache{
-						lastWPos = child.position,
+					em.AddComponentData(entity, new CurTrans{});
+					em.AddComponentData(entity, new Ptcl_LastWPos{
+						value = child.position,
 					});
 					em.AddComponentData(entity, new OneSpring_M2D{
 						boneAuth = bone,
@@ -74,17 +74,26 @@ namespace IzBone.PhysSpring.Core {
 						childTrans = child,
 					});
 					if (i!=0)
-						em.AddComponentData(entity, new Child{value = childEntity});
+						em.AddComponentData(entity, new Ptcl_Child{value = childEntity});
 					if (i==bone.depth-1) {
 						var colliderPackEntity = Entity.Null;
 						if (auth._collider != null)
 							colliderPackEntity = auth._collider.RootEntity;
-						em.AddComponentData(entity, new MostParent{
+
+						// Particleをまとめる最上位のコンポーネントを生成。
+						// これは最上位の親のTransformと関連付ける必要があるため、別Entityで登録
+						var rootEntity = em.CreateEntity();
+						em.AddComponentData(rootEntity, new Root{
 							depth = bone.depth,
 							iterationNum = bone.iterationNum,
 							rsRate = bone.rotShiftRate,
 							colliderPack = colliderPackEntity,
+							firstPtcl = entity,
 						});
+						em.AddComponentData(rootEntity, new CurTrans());
+						em.AddComponentData(rootEntity, new Root_M2D{auth=bone});
+						addEntityCore(rootEntity, regLink);
+						addETPCore(rootEntity, parent.parent, regLink);
 					}
 
 					// OneSpringのEntity・Transformを登録
@@ -100,17 +109,20 @@ namespace IzBone.PhysSpring.Core {
 		/** 指定Entityの再変換処理 */
 		override protected void reconvertOne(Entity entity, EntityManager em) {
 			// 出来るものだけ同期を行う
-			var m2d = em.GetComponentData<OneSpring_M2D>(entity);
-			em.SetComponentData(entity, genOneSpring(m2d.boneAuth, m2d.depthRate));
+			if (em.HasComponent<OneSpring_M2D>(entity)) {
+				var m2d = em.GetComponentData<OneSpring_M2D>(entity);
+				em.SetComponentData(entity, genOneSpring(m2d.boneAuth, m2d.depthRate));
 
-			var ds = em.GetComponentData<DefaultState>(entity);
-			ds.r = m2d.boneAuth.radius.evaluate(m2d.depthRate);
-			em.SetComponentData(entity, ds);
+				var ds = em.GetComponentData<DefaultState>(entity);
+				ds.r = m2d.boneAuth.radius.evaluate(m2d.depthRate);
+				em.SetComponentData(entity, ds);
+			}
 
-			if (em.HasComponent<MostParent>(entity)) {
-				var mp = em.GetComponentData<MostParent>(entity);
-				mp.iterationNum = m2d.boneAuth.iterationNum;
-				mp.rsRate = m2d.boneAuth.rotShiftRate;
+			if (em.HasComponent<Root>(entity)) {
+				var m2d = em.GetComponentData<Root_M2D>(entity);
+				var mp = em.GetComponentData<Root>(entity);
+				mp.iterationNum = m2d.auth.iterationNum;
+				mp.rsRate = m2d.auth.rotShiftRate;
 				em.SetComponentData(entity, mp);
 			}
 		}

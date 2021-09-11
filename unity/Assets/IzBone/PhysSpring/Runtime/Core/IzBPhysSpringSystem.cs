@@ -1,4 +1,5 @@
-﻿using UnityEngine.Jobs;
+﻿//#define WITH_DEBUG
+using UnityEngine.Jobs;
 using Unity.Jobs;
 
 using Unity.Burst;
@@ -43,27 +44,72 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			var defState = GetComponent<DefaultState>(e);
 			var childWPos = t.localToWorldMatrix.MultiplyPoint(defState.childDefPos);
 
-			var wPosCache = GetComponent<WPosCache>(e);
-			wPosCache.lastWPos = childWPos;
+			var wPosCache = GetComponent<Ptcl_LastWPos>(e);
+			wPosCache.value = childWPos;
 			SetComponent(e, wPosCache);
 		}
 	}
 
-	/** ECSで得た結果の回転を、マネージドTransformに反映させる処理 */
+	/** 現在のTransformをすべてのECSへ転送する処理 */
+#if WITH_DEBUG
+	struct MngTrans2ECSJob
+#else
 	[BurstCompile]
-	struct SpringTransUpdateJob : IJobParallelForTransform
+	struct MngTrans2ECSJob : IJobParallelForTransform
+#endif
 	{
 		[ReadOnly] public NativeArray<Entity> entities;
-		[ReadOnly] public ComponentDataFromEntity<SpringResult> springResults;
 
+		[NativeDisableParallelForRestriction]
+		[WriteOnly] public ComponentDataFromEntity<CurTrans> curTranss;
+		[NativeDisableParallelForRestriction]
+		public ComponentDataFromEntity<Root> roots;
+
+#if WITH_DEBUG
+		public void Execute(int index, UnityEngine.Transform transform)
+#else
 		public void Execute(int index, TransformAccess transform)
+#endif
 		{
 			var entity = entities[index];
-			var bodyResult = springResults[entity];
+
+			curTranss[entity] = new CurTrans{
+				lPos = transform.localPosition,
+				lRot = transform.localRotation,
+			};
+			if (roots.HasComponent(entity)) {
+				// 最親の場合はL2Wも同期
+				var a = roots[entity];
+				a.rootL2W = transform.localToWorldMatrix;
+				a.rootW2L = transform.worldToLocalMatrix;
+				roots[entity] = a;
+			}
+		}
+	}
+
+	/** ECSで得た結果の回転を、マネージドTransformに反映させる処理 */
+#if WITH_DEBUG
+	struct SpringTransUpdateJob
+#else
+	[BurstCompile]
+	struct SpringTransUpdateJob : IJobParallelForTransform
+#endif
+	{
+		[ReadOnly] public NativeArray<Entity> entities;
+		[ReadOnly] public ComponentDataFromEntity<CurTrans> curTranss;
+
+#if WITH_DEBUG
+		public void Execute(int index, UnityEngine.Transform transform)
+#else
+		public void Execute(int index, TransformAccess transform)
+#endif
+		{
+			var entity = entities[index];
+			var curTrans = curTranss[entity];
 
 			// 適応
-			transform.localPosition = bodyResult.trs;
-			transform.localRotation = bodyResult.rot;
+			transform.localPosition = curTrans.lPos;
+			transform.localRotation = curTrans.lRot;
 		}
 	}
 
@@ -107,37 +153,54 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			defState.curScale = parent.localScale;
 
 		}).WithoutBurst().Run();
-		Entities.ForEach((
-			ref MostParent mostParent,
-			in OneSpring_M2D springM2D
-		)=>{
-			// 最親のL2Wを同期
-			var parent = springM2D.parentTrans;
-			mostParent.ppL2W = parent.parent.localToWorldMatrix;
-		}).WithoutBurst().Run();
 
+
+		// 現在のTransformをすべてのECSへ転送
+		var etp = _entityReg.etPacks;
+		if (etp.Length != 0) {
+		#if WITH_DEBUG
+			var a = new MngTrans2ECSJob{
+		#else
+			Dependency = new MngTrans2ECSJob{
+		#endif
+				entities = etp.Entities,
+				curTranss = GetComponentDataFromEntity<CurTrans>(false),
+				roots = GetComponentDataFromEntity<Root>(false),
+		#if WITH_DEBUG
+			};
+			for (int i=0; i<etp.Transforms.length; ++i) {
+				a.Execute( i, etp.Transforms[i] );
+			}
+		#else
+			}.Schedule( etp.Transforms, Dependency );
+		#endif
+		}
 
 		// シミュレーションの本更新処理
+	#if WITH_DEBUG
+		Entities.ForEach((
+	#else
 		Dependency = Entities.ForEach((
+	#endif
 			Entity entity,
-			in MostParent mostParent
+			in Root mostParent
 		)=>{
 			// 一繋ぎ分のSpringの情報をまとめて取得しておく
 			var buf_spring    = new NativeArray<OneSpring>(mostParent.depth, Allocator.Temp);
 			var buf_defState  = new NativeArray<DefaultState>(mostParent.depth, Allocator.Temp);
-			var buf_wPosCache = new NativeArray<WPosCache>(mostParent.depth, Allocator.Temp);
-			var buf_result    = new NativeArray<SpringResult>(mostParent.depth, Allocator.Temp);
+			var buf_wPosCache = new NativeArray<Ptcl_LastWPos>(mostParent.depth, Allocator.Temp);
+			var buf_curTrans  = new NativeArray<CurTrans>(mostParent.depth, Allocator.Temp);
 			var buf_entity    = new NativeArray<Entity>(mostParent.depth, Allocator.Temp);
 			{
-				var e = entity;
+				var e = mostParent.firstPtcl;
 				for (int i=0;; ++i) {
 					buf_entity[i]    = e;
 					buf_spring[i]    = GetComponent<OneSpring>(e);
 					buf_defState[i]  = GetComponent<DefaultState>(e);
-					buf_wPosCache[i] = GetComponent<WPosCache>(e);
-					buf_result[i]    = GetComponent<SpringResult>(e);
+					buf_wPosCache[i] = GetComponent<Ptcl_LastWPos>(e);
+					buf_curTrans[i]  = GetComponent<CurTrans>(e);
 					if (i == mostParent.depth-1) break;
-					e = GetComponent<Child>(e).value;
+					e = GetComponent<Ptcl_Child>(e).value;
 				}
 			}
 
@@ -145,8 +208,9 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			var iterationNum = mostParent.iterationNum;
 			var rsRate = mostParent.rsRate;
 			var dt = deltaTime / iterationNum;
+			var ppL2W = mostParent.rootL2W;
+			var ppW2L = mostParent.rootW2L;
 			for (int itr=0; itr<iterationNum; ++itr) {
-				var ppL2W = mostParent.ppL2W;
 				for (int i=0; i<mostParent.depth; ++i) {
 
 					// OneSpringごとのコンポーネントを取得
@@ -164,7 +228,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 						) {
 							var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
 							var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
-							rc.solveCollision( st, ref wPosCache.lastWPos, defState.r );
+							rc.solveCollision( st, ref wPosCache.value, defState.r );
 						}
 					}
 
@@ -173,8 +237,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 					float3 sftVec, rotVec;
 					{
 						// ワールド座標をボーンローカル座標に変換する
-						var ppW2L = Math8.inverse(ppL2W);
-						var tgtBPos = mulMxPos(ppW2L, wPosCache.lastWPos) - defState.defPos;
+						var tgtBPos = mulMxPos(ppW2L, wPosCache.value) - defState.defPos;
 
 						// 移動と回転の影響割合を考慮してシミュレーション結果を得る
 						var cdpMPR = defState.childDefPosMPR;
@@ -222,7 +285,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 					} else {
 						trs = defState.defPos;
 					}
-					var result = new SpringResult{ rot=rot, trs=trs };
+					var result = new CurTrans{ lRot=rot, lPos=trs };
 
 
 					// L2W行列をここで再計算する。
@@ -245,11 +308,11 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 					// 現在のワールド位置を保存
 					// これは正確なChildの現在位置ではなく、位置移動のみ考慮から外している。
 					// 位置移動が入っている正確な現在位置で計算すると、位置Spring計算が正常に出来ないためである。
-					wPosCache.lastWPos = mulMxPos(l2w, defState.childDefPos);
+					wPosCache.value = mulMxPos(l2w, defState.childDefPos);
 
 					// バッファを更新
 					buf_spring[i] = spring;
-					buf_result[i] = result;
+					buf_curTrans[i] = result;
 					buf_wPosCache[i] = wPosCache;
 
 					ppL2W = l2w;
@@ -261,16 +324,20 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			for (int i=0; i<mostParent.depth; ++i) {
 				var e = buf_entity[i];
 				SetComponent(e, buf_spring[i]);
-				SetComponent(e, buf_result[i]);
+				SetComponent(e, buf_curTrans[i]);
 				SetComponent(e, buf_wPosCache[i]);
 			}
 			buf_spring.Dispose();
 			buf_defState.Dispose();
 			buf_wPosCache.Dispose();
-			buf_result.Dispose();
+			buf_curTrans.Dispose();
 			buf_entity.Dispose();
 
+	#if WITH_DEBUG
+		}).WithoutBurst().Run();
+	#else
 		}).Schedule(Dependency);
+	#endif
 
 
 
@@ -278,12 +345,22 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 		// 本当はこれは並列にするまでもないが、
 		// IJobParallelForTransformを使用しないとそもそもスレッド化できず、
 		// そうなるとECSに乗せる事自体が瓦解するので、仕方なくこうしている
-		var etp = _entityReg.etPacks;
 		if (etp.Length != 0) {
+		#if WITH_DEBUG
+			var a = new SpringTransUpdateJob{
+		#else
 			Dependency = new SpringTransUpdateJob{
+		#endif
 				entities = etp.Entities,
-				springResults = GetComponentDataFromEntity<SpringResult>(true),
+				curTranss = GetComponentDataFromEntity<CurTrans>(true),
+		#if WITH_DEBUG
+			};
+			for (int i=0; i<etp.Transforms.length; ++i) {
+				a.Execute( i, etp.Transforms[i] );
+			}
+		#else
 			}.Schedule( etp.Transforms, Dependency );
+		#endif
 		}
 
 	}
