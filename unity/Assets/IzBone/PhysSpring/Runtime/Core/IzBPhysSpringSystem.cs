@@ -245,17 +245,24 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 //	#endif
 
 
-		// シミュレーションの本更新処理
+		{// シミュレーションの本更新処理
+		var particles = GetComponentDataFromEntity<Ptcl>();
+		var lastWPoss = GetComponentDataFromEntity<Ptcl_LastWPos>();
+		var curTranss = GetComponentDataFromEntity<CurTrans>();
 	#if WITH_DEBUG
 		Entities.ForEach((
 	#else
-		Dependency = Entities.ForEach((
+		Dependency = Entities
+		.WithNativeDisableParallelForRestriction(particles)
+		.WithNativeDisableParallelForRestriction(lastWPoss)
+		.WithNativeDisableParallelForRestriction(curTranss)
+		.ForEach((
 	#endif
 			Entity entity,
 			in Root root
 		)=>{
 			// 一繋ぎ分のSpringの情報をまとめて取得しておく
-			var buf_spring    = new NativeArray<Ptcl>(root.depth, Allocator.Temp);
+			var buf_particle    = new NativeArray<Ptcl>(root.depth, Allocator.Temp);
 			var buf_defState  = new NativeArray<Ptcl_DefState>(root.depth, Allocator.Temp);
 			var buf_lastWPos  = new NativeArray<Ptcl_LastWPos>(root.depth, Allocator.Temp);
 			var buf_curTrans  = new NativeArray<CurTrans>(root.depth, Allocator.Temp);
@@ -264,10 +271,10 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 				var e = GetComponent<Root_FirstPtcl>(entity).value;
 				for (int i=0;; ++i) {
 					buf_entity[i]    = e;
-					buf_spring[i]    = GetComponent<Ptcl>(e);
+					buf_particle[i]    = particles[e];
 					buf_defState[i]  = GetComponent<Ptcl_DefState>(e);
-					buf_lastWPos[i] = GetComponent<Ptcl_LastWPos>(e);
-					buf_curTrans[i]  = GetComponent<CurTrans>(e);
+					buf_lastWPos[i] = lastWPoss[e];
+					buf_curTrans[i]  = curTranss[e];
 					if (i == root.depth-1) break;
 					e = GetComponent<Ptcl_Child>(e).value;
 				}
@@ -283,7 +290,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 				for (int i=0; i<root.depth; ++i) {
 
 					// OneSpringごとのコンポーネントを取得
-					var spring = buf_spring[i];
+					var spring = buf_particle[i];
 					var defState = buf_defState[i];
 					var lastWPos = buf_lastWPos[i];
 
@@ -390,7 +397,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 					lastWPos.value = mulMxPos(l2w, defState.childDefPos);
 
 					// バッファを更新
-					buf_spring[i] = spring;
+					buf_particle[i] = spring;
 					buf_curTrans[i] = result;
 					buf_lastWPos[i] = lastWPos;
 				}
@@ -400,11 +407,11 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			// コンポーネントへ値を反映
 			for (int i=0; i<root.depth; ++i) {
 				var e = buf_entity[i];
-				SetComponent(e, buf_spring[i]);
-				SetComponent(e, buf_curTrans[i]);
-				SetComponent(e, buf_lastWPos[i]);
+				particles[e] = buf_particle[i];
+				curTranss[e] = buf_curTrans[i];
+				lastWPoss[e] = buf_lastWPos[i];
 			}
-			buf_spring.Dispose();
+			buf_particle.Dispose();
 			buf_defState.Dispose();
 			buf_lastWPos.Dispose();
 			buf_curTrans.Dispose();
@@ -413,8 +420,9 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 	#if WITH_DEBUG
 		}).WithoutBurst().Run();
 	#else
-		}).Schedule(Dependency);
+		}).ScheduleParallel(Dependency);
 	#endif
+		}
 
 
 
