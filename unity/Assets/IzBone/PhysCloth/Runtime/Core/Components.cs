@@ -71,7 +71,8 @@ namespace IzBone.PhysCloth.Core {
 	public struct Ptcl_DefaultTailWPos:ICD {public float3 value;}
 
 	// 位置・半径・速度・質量の逆数
-	public struct Ptcl_Sphere:ICD {public IzBCollider.RawCollider.Sphere value;}
+	public struct Ptcl_WPos:ICD {public float3 value;}
+	public struct Ptcl_R:ICD {public float value;}
 	public struct Ptcl_V:ICD {public float3 value;}
 	public struct Ptcl_InvM:ICD {
 		readonly public float value;

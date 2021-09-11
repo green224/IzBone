@@ -43,12 +43,11 @@ public sealed class IzBPhysClothSystem : SystemBase {
 
 			if (!HasComponent<Ptcl>(e)) continue;
 
-			var sphere = GetComponent<Ptcl_Sphere>(e);
 			var defTailLPos = GetComponent<Ptcl_DefaultTailLPos>(e).value;
-			sphere.value.pos = t.localToWorldMatrix.MultiplyPoint(defTailLPos);
+			var wPos = t.localToWorldMatrix.MultiplyPoint(defTailLPos);
 			
 			SetComponent(e, new Ptcl_V());
-			SetComponent(e, sphere);
+			SetComponent(e, new Ptcl_WPos{value = wPos});
 		}
 	}
 
@@ -180,10 +179,10 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				Entity entity,
 				in Ptcl_M2D ptclM2D,
 				in Ptcl_V ptclV,
-				in Ptcl_Sphere ptclSphere
+				in Ptcl_WPos ptclWPos
 			)=>{
 				ptclM2D.auth.DEBUG_curV = ptclV.value;
-				ptclM2D.auth.DEBUG_curPos = ptclSphere.value.pos;
+				ptclM2D.auth.DEBUG_curPos = ptclWPos.value;
 			}).WithoutBurst().Run();
 		}
 	#endif
@@ -297,7 +296,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 		Dependency = Entities.ForEach((
 	#endif
 			Entity entity,
-			ref Ptcl_Sphere sphere,
+			ref Ptcl_WPos wPos,
 			ref Ptcl_V v
 	#if WITH_DEBUG
 			,in Ptcl_M2D m2d
@@ -307,7 +306,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 			var defTailPos = GetComponent<Ptcl_DefaultTailWPos>(entity).value;
 
 			if (invM == 0) {
-				sphere.value.pos = defTailPos;
+				wPos.value = defTailPos;
 			} else {
 				var restoreHL = GetComponent<Ptcl_RestoreHL>(entity).value;
 				var root = GetComponent<Ptcl_Root>(entity).value;
@@ -319,7 +318,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				var v0 = clamp(v.value, -maxSpeed, maxSpeed);
 
 				// 更新前の位置をvに入れておく。これは後で参照するための一時的なキャッシュ用
-				v.value = sphere.value.pos;
+				v.value = wPos.value;
 
 				// 位置を物理で更新する。
 				// 空気抵抗の影響を与えるため、以下のようにしている。
@@ -335,19 +334,19 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				//    airResRateIntegralは空気抵抗の初期値1の減速曲線がグラフ上に描く面積であるので,
 				//    減速が一切ない場合に描く面積1*dtとの差は、dt-airResRateIntegralとなる。
 				//    したがってこれにwindSpeedを掛けて、風速に向かって空気抵抗がかかるようにする。
-				sphere.value.pos +=
+				wPos.value +=
 					(v0 + g*deltaTime) * air.airResRateIntegral +
 					air.winSpdIntegral; // : windSpeed * (dt - airResRateIntegral)
 
 				// 初期位置に戻すようなフェードを掛ける
-				sphere.value.pos = lerp(
+				wPos.value = lerp(
 					defTailPos,
-					sphere.value.pos,
+					wPos.value,
 					HalfLifeDragAttribute.evaluate( restoreHL, deltaTime )
 				);
 			}
 //UnityEngine.Debug.Log("ccc:"+(m2d.auth.transHead==null?"*":m2d.auth.transHead.name));
-//UnityEngine.Debug.Log(sphere.value.pos);
+//UnityEngine.Debug.Log(sphere.value);
 	#if WITH_DEBUG
 		}).WithAll<Ptcl>().WithoutBurst().Run();
 	#else
@@ -402,10 +401,10 @@ public sealed class IzBPhysClothSystem : SystemBase {
 					var p0 = p1==Entity.Null ? Entity.Null : GetComponent<Ptcl_Parent>(p1).value;
 					var p00 = p0==Entity.Null ? Entity.Null : GetComponent<Ptcl_Parent>(p0).value;
 
-					var spr0 = p0==Entity.Null ? default : GetComponent<Ptcl_Sphere>(p0).value;
-					var spr1 = p1==Entity.Null ? default : GetComponent<Ptcl_Sphere>(p1).value;
-					var spr2 = GetComponent<Ptcl_Sphere>(p2).value;
-					var spr3 = GetComponent<Ptcl_Sphere>(p3).value;
+					var spr0 = p0==Entity.Null ? default : GetComponent<Ptcl_WPos>(p0).value;
+					var spr1 = p1==Entity.Null ? default : GetComponent<Ptcl_WPos>(p1).value;
+					var spr2 = GetComponent<Ptcl_WPos>(p2).value;
+					var spr3 = GetComponent<Ptcl_WPos>(p3).value;
 
 					var defWPos0 = p0==Entity.Null ? default : GetComponent<Ptcl_DefaultTailWPos>(p0).value;
 					var defWPos1 = p1==Entity.Null ? default : GetComponent<Ptcl_DefaultTailWPos>(p1).value;
@@ -414,15 +413,14 @@ public sealed class IzBPhysClothSystem : SystemBase {
 
 					// 回転する元方向と先方向を計算する処理
 					static void getFromToDir(
-						IzBCollider.RawCollider.Sphere srcSphere,
-						IzBCollider.RawCollider.Sphere dstSphere,
-						float3 srcWPos, float3 dstWPos,
+						float3 toWPos0, float3 toWPos1,
+						float3 fromWPos0, float3 fromWPos1,
 						quaternion q,
 						out float3 fromDir,
 						out float3 toDir
 					) {
-						var from = dstWPos - srcWPos;
-						var to = dstSphere.pos - srcSphere.pos;
+						var from = fromWPos1 - fromWPos0;
+						var to = toWPos1 - toWPos0;
 						fromDir = mul(q, from);
 						toDir = to;
 					}
@@ -438,13 +436,13 @@ public sealed class IzBPhysClothSystem : SystemBase {
 						);
 						var constraint = new Constraint.AngleWithLimit{
 							aglCstr = new Constraint.Angle{
-								pos0 = spr1.pos,
-								pos1 = spr2.pos,
-								pos2 = spr3.pos,
+								pos0 = spr1,
+								pos1 = spr2,
+								pos2 = spr3,
 								invM0 = GetComponent<Ptcl_InvM>(p1).value,
 								invM1 = GetComponent<Ptcl_InvM>(p2).value,
 								invM2 = GetComponent<Ptcl_InvM>(p3).value,
-								defChildPos = from + spr2.pos
+								defChildPos = from + spr2
 							},
 							compliance_nutral = GetComponent<Ptcl_AngleCompliance>(p2).value,
 							compliance_limit = 0.0001f,
@@ -454,14 +452,11 @@ public sealed class IzBPhysClothSystem : SystemBase {
 							var lmd2 = GetComponent<Ptcl_AglLmtLmd>(p2).value;
 							var lmd3 = GetComponent<Ptcl_AglLmtLmd>(p3).value;
 							constraint.solve(sqDt, ref lmd2, ref lmd3);
-							spr1.pos = constraint.aglCstr.pos0;
-							spr2.pos = constraint.aglCstr.pos1;
-							spr3.pos = constraint.aglCstr.pos2;
 							SetComponent(p2, new Ptcl_AglLmtLmd{value = lmd2});
 							SetComponent(p3, new Ptcl_AglLmtLmd{value = lmd3});
-							SetComponent(p1, new Ptcl_Sphere{value = spr1});
-							SetComponent(p2, new Ptcl_Sphere{value = spr2});
-							SetComponent(p3, new Ptcl_Sphere{value = spr3});
+							SetComponent(p1, new Ptcl_WPos{value = constraint.aglCstr.pos0});
+							SetComponent(p2, new Ptcl_WPos{value = constraint.aglCstr.pos1});
+							SetComponent(p3, new Ptcl_WPos{value = constraint.aglCstr.pos2});
 						}
 /*						var constraint = new Constraint.Angle{
 							parent = p1,
@@ -512,7 +507,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 			Dependency = Entities.ForEach((
 		#endif
 				Entity entity,
-				ref Ptcl_Sphere sphere,
+				ref Ptcl_WPos wpos,
 				ref Ptcl_MvblRngLmd lambda
 			)=>{
 				// 固定Particleに対しては何もする必要なし
@@ -525,18 +520,18 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				var cstr = new Constraint.MaxDistance{
 					compliance = DefPosMovRngCompliance,
 					srcPos = GetComponent<Ptcl_DefaultTailWPos>(entity).value,
-					pos = sphere.value.pos,
+					pos = wpos.value,
 					invM = invM,
 					maxLen = maxMovableRange,
 				};
 
 				lambda.value += cstr.solve(sqDt, lambda.value);
-				sphere.value.pos = cstr.pos;
+				wpos.value = cstr.pos;
 
 		#if WITH_DEBUG
 			}).WithoutBurst().Run();
 		#else
-			}).Schedule( Dependency );
+			}).ScheduleParallel( Dependency );
 		#endif
 
 
@@ -549,8 +544,9 @@ public sealed class IzBPhysClothSystem : SystemBase {
 			Dependency = Entities.ForEach((
 		#endif
 				Entity entity,
-				ref Ptcl_Sphere sphere,
-				ref Ptcl_CldCstLmd lambda
+				ref Ptcl_WPos wPos,
+				ref Ptcl_CldCstLmd lambda,
+				in Ptcl_R r
 			)=>{
 				var mostParent = GetComponent<Ptcl_Root>(entity).value;
 
@@ -563,7 +559,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				if (invM == 0) return;
 
 				// コライダとの衝突解決
-				var pos = sphere.value.pos;
+				var pos = wPos.value;
 				var isCol = false;
 				for (
 					var e = colliderPack;
@@ -572,25 +568,25 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				) {
 					var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
 					var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
-					isCol |= rc.solveCollision( st, ref pos, sphere.value.r );
+					isCol |= rc.solveCollision( st, ref pos, r.value );
 				}
 
 				// 何かしらに衝突している場合は、引き離し用拘束条件を適応
 				if (isCol) {
-					var dPos = pos - sphere.value.pos;
+					var dPos = pos - wPos.value;
 					var dPosLen = length(dPos);
 					var dPosN = dPos / (dPosLen + 0.0000001f);
 
 					var cstr = new Constraint.MinDistN{
 						compliance = ColResolveCompliance,
-						srcPos = sphere.value.pos,
+						srcPos = wPos.value,
 						n = dPosN,
-						pos = sphere.value.pos,
+						pos = wPos.value,
 						invM = invM,
 						minDist = dPosLen,
 					};
 					lambda.value += cstr.solve( sqDt, lambda.value );
-					sphere.value.pos = cstr.pos;
+					wPos.value = cstr.pos;
 				} else {
 					lambda.value = 0;
 				}
@@ -615,22 +611,22 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				var compliance = GetComponent<Cstr_Compliance>(entity).value;
 				var defaultLen = GetComponent<Cstr_DefaultLen>(entity).value;
 
-				var sphere0 = GetComponent<Ptcl_Sphere>(tgt.src);
-				var sphere1 = GetComponent<Ptcl_Sphere>(tgt.dst);
+				var wPos0 = GetComponent<Ptcl_WPos>(tgt.src);
+				var wPos1 = GetComponent<Ptcl_WPos>(tgt.dst);
 				var cstr = new Constraint.Distance{
 					compliance = compliance,
-					pos0 = sphere0.value.pos,
-					pos1 = sphere1.value.pos,
+					pos0 = wPos0.value,
+					pos1 = wPos1.value,
 					invM0 = GetComponent<Ptcl_InvM>(tgt.src).value,
 					invM1 = GetComponent<Ptcl_InvM>(tgt.dst).value,
 					defLen = defaultLen,
 				};
 
 				lambda.value += cstr.solve(sqDt, lambda.value);
-				sphere0.value.pos = cstr.pos0;
-				sphere1.value.pos = cstr.pos1;
-				SetComponent(tgt.src, sphere0);
-				SetComponent(tgt.dst, sphere1);
+				wPos0.value = cstr.pos0;
+				wPos1.value = cstr.pos1;
+				SetComponent(tgt.src, wPos0);
+				SetComponent(tgt.dst, wPos1);
 		#if WITH_DEBUG
 			}).WithoutBurst().Run();
 		#else
@@ -647,9 +643,9 @@ public sealed class IzBPhysClothSystem : SystemBase {
 	#endif
 			Entity entity,
 			ref Ptcl_V v,
-			in Ptcl_Sphere sphere
+			in Ptcl_WPos wPos
 		)=>{
-			v.value = (sphere.value.pos - v.value) / deltaTime;
+			v.value = (wPos.value - v.value) / deltaTime;
 	#if WITH_DEBUG
 		}).WithoutBurst().Run();
 	#else
@@ -684,13 +680,13 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				// 親のTransform
 				var parentTrans = GetComponent<Ptcl_CurHeadTrans>(parent);
 
-				var sphere = GetComponent<Ptcl_Sphere>(entity);
+				var wPos = GetComponent<Ptcl_WPos>(entity);
 				var defHeadL2P = GetComponent<Ptcl_DefaultHeadL2P>(entity);
 				var defTailLPos = GetComponent<Ptcl_DefaultTailLPos>(entity).value;
 
 				// 回転する元方向と先方向
 				var defTailPPos = Math8.trans( defHeadL2P.l2p, defTailLPos );
-				var curTailPPos = Math8.trans( parentTrans.w2l, sphere.value.pos );
+				var curTailPPos = Math8.trans( parentTrans.w2l, wPos.value );
 				var defHeadPPos = defHeadL2P.l2p.c3.xyz;
 
 				// 最大角度制限は制約条件のみだとどうしても完璧にはならず、
@@ -714,8 +710,8 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				SetComponent(entity, curTrans);
 
 				// 最大角度制限を反映させたので、パーティクルへ変更をフィードバックする
-				sphere.value.pos = Math8.trans(curTrans.l2w, defTailLPos);
-				SetComponent(entity, sphere);
+				wPos.value = Math8.trans(curTrans.l2w, defTailLPos);
+				SetComponent(entity, wPos);
 			}
 	#if WITH_DEBUG
 		}).WithAll<Root>().WithoutBurst().Run();

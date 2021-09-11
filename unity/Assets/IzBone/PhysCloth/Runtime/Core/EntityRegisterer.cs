@@ -49,8 +49,8 @@ namespace IzBone.PhysCloth.Core {
 				em.AddComponentData(entity, new Ptcl_DefaultTailLPos{value = mp.defaultTailLPos});
 				em.AddComponentData(entity, new Ptcl_DefaultTailWPos());
 				em.AddComponentData(entity, new Ptcl_CurHeadTrans());
-				var sphere = new IzBCollider.RawCollider.Sphere{ pos=mp.getTailWPos(), r=mp.r };
-				em.AddComponentData(entity, new Ptcl_Sphere{value = sphere});
+				em.AddComponentData(entity, new Ptcl_WPos{value = mp.getTailWPos()});
+				em.AddComponentData(entity, new Ptcl_R{value = mp.r});
 				em.AddComponentData(entity, new Ptcl_V());
 				em.AddComponentData(entity, new Ptcl_InvM(mp.m));
 				em.AddComponentData(entity, new Ptcl_DWRot());
@@ -155,9 +155,7 @@ namespace IzBone.PhysCloth.Core {
 			if (em.HasComponent<Ptcl_M2D>(entity)) {
 
 				var mp = em.GetComponentData<Ptcl_M2D>(entity).auth;
-				var sphere = em.GetComponentData<Ptcl_Sphere>(entity).value;
-				sphere.r = mp.r;
-				em.SetComponentData(entity, new Ptcl_Sphere{value = sphere});
+				em.SetComponentData(entity, new Ptcl_R{value = mp.r});
 				em.SetComponentData(entity, new Ptcl_InvM(mp.m));
 				em.SetComponentData(entity, new Ptcl_MaxAngle{value = radians(mp.maxAngle)});
 				em.SetComponentData(entity, new Ptcl_AngleCompliance{value = mp.angleCompliance});
