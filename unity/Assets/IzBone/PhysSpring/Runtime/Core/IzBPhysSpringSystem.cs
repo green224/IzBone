@@ -41,7 +41,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			spring.spring_sft.v = 0;
 			SetComponent(e, spring);
 
-			var defState = GetComponent<DefaultState>(e);
+			var defState = GetComponent<Ptcl_DefState>(e);
 			var childWPos = t.localToWorldMatrix.MultiplyPoint(defState.childDefPos);
 
 			var wPosCache = GetComponent<Ptcl_LastWPos>(e);
@@ -191,7 +191,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 				var childTrans = GetComponent<CurTrans>(childEntity);
 
 				// 初期位置情報を更新
-				var defState = GetComponent<DefaultState>(entity);
+				var defState = GetComponent<Ptcl_DefState>(entity);
 				defState.defRot = curTrans.lRot;
 				defState.defPos = curTrans.lPos;
 				defState.childDefPos = childTrans.lPos;
@@ -210,6 +210,41 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 	#endif
 
 
+// コライダ衝突処理はECS的にはこうやって分離するべきだが、分離してみたところ逆に処理負荷が増えているので、いったんコメントアウト
+//		// コライダの衝突判定
+//	#if WITH_DEBUG
+//		Entities.ForEach((
+//	#else
+//		Dependency = Entities.ForEach((
+//	#endif
+//			ref Ptcl_LastWPos lastWPos,
+//			in Ptcl_R r,
+//			in Ptcl_Child child,
+//			in Ptcl_Root root
+//		)=>{
+//			var collider = GetComponent<Root_ColliderPack>(root.value).value;
+//			if (collider == Entity.Null) return;
+//
+//			// 前フレームにキャッシュされた位置にパーティクルが移動したとして、
+//			// その位置でコライダとの衝突解決をしておく
+//
+//			var rVal = r.value;
+//			for (
+//				var e = collider;
+//				e != Entity.Null;
+//				e = GetComponent<IzBCollider.Core.Body_Next>(e).value
+//			) {
+//				var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
+//				var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
+//				rc.solveCollision( st, ref lastWPos.value, rVal );
+//			}
+//	#if WITH_DEBUG
+//		}).WithoutBurst().Run();
+//	#else
+//		}).Schedule(Dependency);
+//	#endif
+
+
 		// シミュレーションの本更新処理
 	#if WITH_DEBUG
 		Entities.ForEach((
@@ -221,7 +256,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 		)=>{
 			// 一繋ぎ分のSpringの情報をまとめて取得しておく
 			var buf_spring    = new NativeArray<Ptcl>(root.depth, Allocator.Temp);
-			var buf_defState  = new NativeArray<DefaultState>(root.depth, Allocator.Temp);
+			var buf_defState  = new NativeArray<Ptcl_DefState>(root.depth, Allocator.Temp);
 			var buf_lastWPos  = new NativeArray<Ptcl_LastWPos>(root.depth, Allocator.Temp);
 			var buf_curTrans  = new NativeArray<CurTrans>(root.depth, Allocator.Temp);
 			var buf_entity    = new NativeArray<Entity>(root.depth, Allocator.Temp);
@@ -230,7 +265,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 				for (int i=0;; ++i) {
 					buf_entity[i]    = e;
 					buf_spring[i]    = GetComponent<Ptcl>(e);
-					buf_defState[i]  = GetComponent<DefaultState>(e);
+					buf_defState[i]  = GetComponent<Ptcl_DefState>(e);
 					buf_lastWPos[i] = GetComponent<Ptcl_LastWPos>(e);
 					buf_curTrans[i]  = GetComponent<CurTrans>(e);
 					if (i == root.depth-1) break;
@@ -242,6 +277,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			var iterationNum = root.iterationNum;
 			var rsRate = root.rsRate;
 			var dt = deltaTime / iterationNum;
+			var collider = GetComponent<Root_ColliderPack>(entity).value;
 			for (int itr=0; itr<iterationNum; ++itr) {
 				var l2w = root.l2w;
 				for (int i=0; i<root.depth; ++i) {
@@ -253,15 +289,16 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 
 					// 前フレームにキャッシュされた位置にパーティクルが移動したとして、
 					// その位置でコライダとの衝突解決をしておく
-					if (root.colliderPack != Entity.Null) {
+					if (collider != Entity.Null) {
+						var r = GetComponent<Ptcl_R>(buf_entity[i]).value;
 						for (
-							var e = root.colliderPack;
+							var e = collider;
 							e != Entity.Null;
 							e = GetComponent<IzBCollider.Core.Body_Next>(e).value
 						) {
 							var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
 							var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
-							rc.solveCollision( st, ref lastWPos.value, defState.r );
+							rc.solveCollision( st, ref lastWPos.value, r );
 						}
 					}
 

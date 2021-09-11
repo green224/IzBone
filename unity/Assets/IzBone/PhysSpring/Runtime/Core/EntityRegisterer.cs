@@ -60,7 +60,7 @@ namespace IzBone.PhysSpring.Core {
 					// コンポーネントを割り当て
 					var entity = em.CreateEntity();
 					em.AddComponentData(entity, genOneSpring(bone, dRate));
-					em.AddComponentData(entity, new DefaultState{
+					em.AddComponentData(entity, new Ptcl_DefState{
 						defRot = parent.localRotation,
 						defPos = parent.localPosition,
 						childDefPos = child.localPosition,
@@ -68,11 +68,9 @@ namespace IzBone.PhysSpring.Core {
 							parent.localRotation,
 							parent.localScale * (float3)child.localPosition
 						),
-						r = bone.radius.evaluate(dRate),
 					});
-					em.AddComponentData(entity, new Ptcl_LastWPos{
-						value = child.position,
-					});
+					em.AddComponentData(entity, new Ptcl_LastWPos{value=child.position});
+					em.AddComponentData(entity, new Ptcl_R{value=bone.radius.evaluate(dRate)});
 					em.AddComponentData(entity, new Ptcl_Root{value = rootEntity});
 					em.AddComponentData(entity, new Ptcl_Child{value = childEntity});
 					em.AddComponentData(entity, new CurTrans{});
@@ -102,10 +100,10 @@ namespace IzBone.PhysSpring.Core {
 						depth = bone.depth,
 						iterationNum = bone.iterationNum,
 						rsRate = bone.rotShiftRate,
-						colliderPack = colliderPackEntity,
 					});
 					em.AddComponentData(rootEntity, new Root_FirstPtcl{value=childEntity});
 					em.AddComponentData(rootEntity, new Root_WithAnimation{value=bone.withAnimation});
+					em.AddComponentData(rootEntity, new Root_ColliderPack{value=colliderPackEntity});
 					em.AddComponentData(rootEntity, new CurTrans());
 					em.AddComponentData(rootEntity, new Root_M2D{auth=bone});
 					addEntityCore(rootEntity, regLink);
@@ -120,10 +118,7 @@ namespace IzBone.PhysSpring.Core {
 			if (em.HasComponent<Ptcl_M2D>(entity)) {
 				var m2d = em.GetComponentData<Ptcl_M2D>(entity);
 				em.SetComponentData(entity, genOneSpring(m2d.boneAuth, m2d.depthRate));
-
-				var ds = em.GetComponentData<DefaultState>(entity);
-				ds.r = m2d.boneAuth.radius.evaluate(m2d.depthRate);
-				em.SetComponentData(entity, ds);
+				em.SetComponentData(entity, new Ptcl_R{value=m2d.boneAuth.radius.evaluate(m2d.depthRate)});
 			}
 
 			if (em.HasComponent<Root>(entity)) {

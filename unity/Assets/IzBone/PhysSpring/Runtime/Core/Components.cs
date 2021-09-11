@@ -14,7 +14,6 @@ namespace IzBone.PhysSpring.Core {
 	public struct Root:ICD {
 		public int depth;			// Springが何個連なっているか
 		public int iterationNum;	// 繰り返し計算回数
-		public Entity colliderPack;	// 衝突検出を行う対象のコライダー
 
 		/**
 		 * 回転と移動の影響割合。
@@ -26,6 +25,7 @@ namespace IzBone.PhysSpring.Core {
 	}
 	public struct Root_WithAnimation:ICD {public bool value;}	// 毎フレームデフォルト位置を再キャッシュするか否か
 	public struct Root_FirstPtcl:ICD {public Entity value;}		// Springの開始位置のEntity。Ptclがついている
+	public struct Root_ColliderPack:ICD {public Entity value;}	// 衝突検出を行う対象のコライダー
 
 
 
@@ -43,18 +43,17 @@ namespace IzBone.PhysSpring.Core {
 	}
 
 	/** OneSpringごとのデフォルト位置姿勢情報 */
-	public struct DefaultState:ICD {
+	public struct Ptcl_DefState:ICD {
 		public quaternion defRot;		// 親の初期姿勢
 		public float3 defPos;			// 親の初期ローカル座標
 		public float3 childDefPos;		// 子の初期ローカル座標
 		public float3 childDefPosMPR;	// 子の初期ローカル座標に親の回転とスケールを掛けたもの。これはキャッシュすべきか悩みどころ…
-
-		public float r;				// 衝突判定用の半径
 	}
 
 	public struct Ptcl_LastWPos:ICD {public float3 value;}	// 前フレームでのワールド位置のキャッシュ
 	public struct Ptcl_Root:ICD {public Entity value;}		// RootのEntity
 	public struct Ptcl_Child:ICD {public Entity value;}		// 子供側のEntity
+	public struct Ptcl_R:ICD {public float value;}			// 衝突判定用の半径
 
 
 
