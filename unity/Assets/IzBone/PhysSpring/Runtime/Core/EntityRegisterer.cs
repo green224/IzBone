@@ -38,6 +38,7 @@ namespace IzBone.PhysSpring.Core {
 				}
 
 				// Particleを生成
+				var rootEntity = em.CreateEntity();
 				for (int i=0; i<bone.depth; ++i) {
 					var parent = child.parent;
 
@@ -60,7 +61,6 @@ namespace IzBone.PhysSpring.Core {
 					var entity = em.CreateEntity();
 					em.AddComponentData(entity, genOneSpring(bone, dRate));
 					em.AddComponentData(entity, new DefaultState{
-						resetDefPosAlways = bone.withAnimation,
 						defRot = parent.localRotation,
 						defPos = parent.localPosition,
 						childDefPos = child.localPosition,
@@ -73,6 +73,7 @@ namespace IzBone.PhysSpring.Core {
 					em.AddComponentData(entity, new Ptcl_LastWPos{
 						value = child.position,
 					});
+					em.AddComponentData(entity, new Ptcl_Root{value = rootEntity});
 					em.AddComponentData(entity, new Ptcl_Child{value = childEntity});
 					em.AddComponentData(entity, new CurTrans{});
 					em.AddComponentData(entity, new Ptcl_M2D{
@@ -97,14 +98,14 @@ namespace IzBone.PhysSpring.Core {
 					if (auth._collider != null)
 						colliderPackEntity = auth._collider.RootEntity;
 
-					var rootEntity = em.CreateEntity();
 					em.AddComponentData(rootEntity, new Root{
 						depth = bone.depth,
 						iterationNum = bone.iterationNum,
 						rsRate = bone.rotShiftRate,
 						colliderPack = colliderPackEntity,
-						firstPtcl = childEntity,
 					});
+					em.AddComponentData(rootEntity, new Root_FirstPtcl{value=childEntity});
+					em.AddComponentData(rootEntity, new Root_WithAnimation{value=bone.withAnimation});
 					em.AddComponentData(rootEntity, new CurTrans());
 					em.AddComponentData(rootEntity, new Root_M2D{auth=bone});
 					addEntityCore(rootEntity, regLink);
@@ -127,10 +128,11 @@ namespace IzBone.PhysSpring.Core {
 
 			if (em.HasComponent<Root>(entity)) {
 				var m2d = em.GetComponentData<Root_M2D>(entity);
-				var mp = em.GetComponentData<Root>(entity);
-				mp.iterationNum = m2d.auth.iterationNum;
-				mp.rsRate = m2d.auth.rotShiftRate;
-				em.SetComponentData(entity, mp);
+				var root = em.GetComponentData<Root>(entity);
+				root.iterationNum = m2d.auth.iterationNum;
+				root.rsRate = m2d.auth.rotShiftRate;
+				em.SetComponentData(entity, root);
+				em.SetComponentData(entity, new Root_WithAnimation{value=m2d.auth.withAnimation});
 			}
 		}
 

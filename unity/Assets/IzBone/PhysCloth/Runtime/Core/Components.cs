@@ -25,7 +25,7 @@ namespace IzBone.PhysCloth.Core {
 		public float airResRateIntegral;		// 空気抵抗の積分結果
 	}
 	public struct Root_MaxSpd:ICD {public float value;}			// 最大速度
-	public struct Root_WithAnimation:ICD {public bool value;}	// 毎フレームデフォルト位置を再キャッシュする
+	public struct Root_WithAnimation:ICD {public bool value;}	// 毎フレームデフォルト位置を再キャッシュするか否か
 	public struct Root_ColliderPack:ICD {public Entity value;}	// 衝突検出を行う対象のコライダー
 
 

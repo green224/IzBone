@@ -81,7 +81,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			if (roots.HasComponent(entity)) {
 				// 最親の場合はL2Wも同期
 				var a = roots[entity];
-				a.rootL2W = transform.localToWorldMatrix;
+				a.l2w = transform.localToWorldMatrix;
 				roots[entity] = a;
 			}
 		}
@@ -160,18 +160,49 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 	#else
 		Dependency = Entities.ForEach((
 	#endif
+#if false
+			Entity entity,
 			ref DefaultState defState,
+			in CurTrans curTrans,
 			in Ptcl_Child child,
-			in CurTrans curTrans
+			in Ptcl_Root root
 		)=>{
-			if (!defState.resetDefPosAlways) return;
+			if (!GetComponent<Root_WithAnimation>(root.value).value) return;
 
-			var childTrans = GetComponent<CurTrans>( child.value );
+			var childTrans = GetComponent<CurTrans>(child.value);
 
+			// 初期位置情報を更新
 			defState.defRot = curTrans.lRot;
 			defState.defPos = curTrans.lPos;
 			defState.childDefPos = childTrans.lPos;
 			defState.childDefPosMPR = mul(curTrans.lRot, curTrans.lScl * childTrans.lPos);
+#else
+			Entity entity,
+			in Root_WithAnimation withAnimation
+		)=>{
+			if (!withAnimation.value) return;
+
+			// WithAnimの場合のみ、Root以下の全Ptclに対して処理
+			entity = GetComponent<Root_FirstPtcl>(entity).value;
+			var curTrans = GetComponent<CurTrans>(entity);
+			while (true) {
+				if (!HasComponent<Ptcl_Child>(entity)) break;
+				var childEntity = GetComponent<Ptcl_Child>(entity).value;
+				var childTrans = GetComponent<CurTrans>(childEntity);
+
+				// 初期位置情報を更新
+				var defState = GetComponent<DefaultState>(entity);
+				defState.defRot = curTrans.lRot;
+				defState.defPos = curTrans.lPos;
+				defState.childDefPos = childTrans.lPos;
+				defState.childDefPosMPR = mul(curTrans.lRot, curTrans.lScl * childTrans.lPos);
+				SetComponent(entity, defState);
+
+				// ループを次に進める
+				entity = childEntity;
+				curTrans = childTrans;
+			}
+#endif
 	#if WITH_DEBUG
 		}).WithoutBurst().Run();
 	#else
@@ -186,34 +217,34 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 		Dependency = Entities.ForEach((
 	#endif
 			Entity entity,
-			in Root mostParent
+			in Root root
 		)=>{
 			// 一繋ぎ分のSpringの情報をまとめて取得しておく
-			var buf_spring    = new NativeArray<Ptcl>(mostParent.depth, Allocator.Temp);
-			var buf_defState  = new NativeArray<DefaultState>(mostParent.depth, Allocator.Temp);
-			var buf_lastWPos  = new NativeArray<Ptcl_LastWPos>(mostParent.depth, Allocator.Temp);
-			var buf_curTrans  = new NativeArray<CurTrans>(mostParent.depth, Allocator.Temp);
-			var buf_entity    = new NativeArray<Entity>(mostParent.depth, Allocator.Temp);
+			var buf_spring    = new NativeArray<Ptcl>(root.depth, Allocator.Temp);
+			var buf_defState  = new NativeArray<DefaultState>(root.depth, Allocator.Temp);
+			var buf_lastWPos  = new NativeArray<Ptcl_LastWPos>(root.depth, Allocator.Temp);
+			var buf_curTrans  = new NativeArray<CurTrans>(root.depth, Allocator.Temp);
+			var buf_entity    = new NativeArray<Entity>(root.depth, Allocator.Temp);
 			{
-				var e = mostParent.firstPtcl;
+				var e = GetComponent<Root_FirstPtcl>(entity).value;
 				for (int i=0;; ++i) {
 					buf_entity[i]    = e;
 					buf_spring[i]    = GetComponent<Ptcl>(e);
 					buf_defState[i]  = GetComponent<DefaultState>(e);
 					buf_lastWPos[i] = GetComponent<Ptcl_LastWPos>(e);
 					buf_curTrans[i]  = GetComponent<CurTrans>(e);
-					if (i == mostParent.depth-1) break;
+					if (i == root.depth-1) break;
 					e = GetComponent<Ptcl_Child>(e).value;
 				}
 			}
 
 			// 本更新処理
-			var iterationNum = mostParent.iterationNum;
-			var rsRate = mostParent.rsRate;
+			var iterationNum = root.iterationNum;
+			var rsRate = root.rsRate;
 			var dt = deltaTime / iterationNum;
 			for (int itr=0; itr<iterationNum; ++itr) {
-				var l2w = mostParent.rootL2W;
-				for (int i=0; i<mostParent.depth; ++i) {
+				var l2w = root.l2w;
+				for (int i=0; i<root.depth; ++i) {
 
 					// OneSpringごとのコンポーネントを取得
 					var spring = buf_spring[i];
@@ -222,9 +253,9 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 
 					// 前フレームにキャッシュされた位置にパーティクルが移動したとして、
 					// その位置でコライダとの衝突解決をしておく
-					if (mostParent.colliderPack != Entity.Null) {
+					if (root.colliderPack != Entity.Null) {
 						for (
-							var e = mostParent.colliderPack;
+							var e = root.colliderPack;
 							e != Entity.Null;
 							e = GetComponent<IzBCollider.Core.Body_Next>(e).value
 						) {
@@ -330,7 +361,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 
 
 			// コンポーネントへ値を反映
-			for (int i=0; i<mostParent.depth; ++i) {
+			for (int i=0; i<root.depth; ++i) {
 				var e = buf_entity[i];
 				SetComponent(e, buf_spring[i]);
 				SetComponent(e, buf_curTrans[i]);

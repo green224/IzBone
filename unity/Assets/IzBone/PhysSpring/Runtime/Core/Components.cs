@@ -12,9 +12,9 @@ namespace IzBone.PhysSpring.Core {
 	// 1繋がりのSpringリストを管理するコンポーネント。
 	// 再親のEntityについているわけではない事に注意
 	public struct Root:ICD {
-		public int depth;			//!< Springが何個連なっているか
-		public int iterationNum;	//!< 繰り返し計算回数
-		public Entity colliderPack;	//!< 衝突検出を行う対象のコライダー
+		public int depth;			// Springが何個連なっているか
+		public int iterationNum;	// 繰り返し計算回数
+		public Entity colliderPack;	// 衝突検出を行う対象のコライダー
 
 		/**
 		 * 回転と移動の影響割合。
@@ -22,10 +22,10 @@ namespace IzBone.PhysSpring.Core {
 		 */
 		public float rsRate;
 
-		public float4x4 rootL2W;	//!< ボーン親の更に親のL2W
-
-		public Entity firstPtcl;	// Springの開始位置のEntity。Ptclがついている
+		public float4x4 l2w;		// ボーン親の更に親のL2W
 	}
+	public struct Root_WithAnimation:ICD {public bool value;}	// 毎フレームデフォルト位置を再キャッシュするか否か
+	public struct Root_FirstPtcl:ICD {public Entity value;}		// Springの開始位置のEntity。Ptclがついている
 
 
 
@@ -36,30 +36,24 @@ namespace IzBone.PhysSpring.Core {
 	 * 間接ごとのEntityに対して付ける。
 	 */
 	public struct Ptcl:ICD {
-		public Math8.SmoothRange_Float range_rot;		//!< 回転 - 範囲情報
-		public Math8.SmoothRange_Float3 range_sft;		//!< 移動 - 範囲情報
-		public Math8.Spring_Float3 spring_rot;			//!< 回転 - バネ
-		public Math8.Spring_Float3 spring_sft;			//!< 移動 - バネ
+		public Math8.SmoothRange_Float range_rot;		// 回転 - 範囲情報
+		public Math8.SmoothRange_Float3 range_sft;		// 移動 - 範囲情報
+		public Math8.Spring_Float3 spring_rot;			// 回転 - バネ
+		public Math8.Spring_Float3 spring_sft;			// 移動 - バネ
 	}
 
 	/** OneSpringごとのデフォルト位置姿勢情報 */
 	public struct DefaultState:ICD {
-		/**
-		 * 毎フレーム現在位置をデフォルト位置として初期化するか否か。
-		 * しっぽなどのアニメーションを含むボーンに対して後付けで使用する際には、
-		 * これを有効にして毎フレームデフォルト位置を更新する。
-		 */
-		public bool resetDefPosAlways;
+		public quaternion defRot;		// 親の初期姿勢
+		public float3 defPos;			// 親の初期ローカル座標
+		public float3 childDefPos;		// 子の初期ローカル座標
+		public float3 childDefPosMPR;	// 子の初期ローカル座標に親の回転とスケールを掛けたもの。これはキャッシュすべきか悩みどころ…
 
-		public quaternion defRot;		//!< 親の初期姿勢
-		public float3 defPos;			//!< 親の初期ローカル座標
-		public float3 childDefPos;		//!< 子の初期ローカル座標
-		public float3 childDefPosMPR;	//!< 子の初期ローカル座標に親の回転とスケールを掛けたもの。これはキャッシュすべきか悩みどころ…
-
-		public float r;				//!< 衝突判定用の半径
+		public float r;				// 衝突判定用の半径
 	}
 
 	public struct Ptcl_LastWPos:ICD {public float3 value;}	// 前フレームでのワールド位置のキャッシュ
+	public struct Ptcl_Root:ICD {public Entity value;}		// RootのEntity
 	public struct Ptcl_Child:ICD {public Entity value;}		// 子供側のEntity
 
 
