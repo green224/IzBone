@@ -25,15 +25,15 @@ namespace IzBone.IzBCollider.Core {
 		) {
 
 			// 参照先のBodyをECSへ変換
-			Entity firstBody = default;
+			var firstBody = Entity.Null;
 			{
-				Entity lastBody = default;
+				var lastBody = Entity.Null;
 				foreach (var i in auth.Bodies) {
 
 					// コンポーネントを割り当て
 					var entity = em.CreateEntity();
-					if (firstBody == default) firstBody = entity;
-					if (lastBody != default)
+					if (firstBody == Entity.Null) firstBody = entity;
+					if (lastBody != Entity.Null)
 						em.AddComponentData(lastBody, new Body_Next{value=entity});
 					em.AddComponentData(entity, new Body());
 					em.AddComponentData(entity, new Body_ShapeType{value=i.mode});
@@ -49,7 +49,7 @@ namespace IzBone.IzBCollider.Core {
 
 					lastBody = entity;
 				}
-				if (lastBody != default)
+				if (lastBody != Entity.Null)
 					em.AddComponentData(lastBody, new Body_Next());
 			}
 

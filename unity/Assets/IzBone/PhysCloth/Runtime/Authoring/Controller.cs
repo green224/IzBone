@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#1define USE_ECS
+
+using System;
 using UnityEngine;
 
 using Unity.Mathematics;
@@ -18,9 +20,13 @@ namespace IzBone.PhysCloth.Authoring {
 		public readonly Transform transHead;
 		public readonly Transform[] transTail;
 
+#if USE_ECS
+#else
 		public quaternion defaultHeadRot;		// 初期姿勢
 		public float4x4 defaultHeadL2P;			// 初期L2P行列
-		public float3 defaultTailLPos;			// 初期先端ローカル位置
+#endif
+		public readonly float3 defaultTailLPos;	// 初期先端ローカル位置。これは変更しない
+
 		public ParticleMng parent, child, left, right;	// 上下左右のパーティクル。childは一番最初の子供
 		public float m;
 		public float r;
@@ -29,11 +35,24 @@ namespace IzBone.PhysCloth.Authoring {
 		public HalfLife restoreHL;		// 初期位置への復元半減期
 		public float maxMovableRange;	// デフォルト位置からの移動可能距離
 
+	#if UNITY_EDITOR
+		// デバッグ表示用のバッファ
+		internal float3 DEBUG_curPos;
+		internal float3 DEBUG_curV;
+	#endif
+
+
 		public ParticleMng(int idx, Transform transHead, Transform[] transTail) {
 			this.idx = idx;
 			this.transHead = transHead;
 			this.transTail = transTail;
+#if USE_ECS
+#else
 			resetDefaultPose();
+#endif
+			defaultTailLPos = default;
+			foreach (var i in transTail) defaultTailLPos += (float3)i.localPosition;
+			defaultTailLPos /= transTail.Length;
 		}
 
 		// Headのみを指定して生成する
@@ -66,11 +85,13 @@ namespace IzBone.PhysCloth.Authoring {
 			this.maxMovableRange = maxMovableRange;
 		}
 
+#if USE_ECS
+#else
 		public void resetDefaultPose() {
 			if (transHead==null) {
 				defaultHeadRot = default;
 				defaultHeadL2P = default;
-				defaultTailLPos = 0;
+//				defaultTailLPos = 0;
 			} else {
 				defaultHeadRot = transHead.localRotation;
 				defaultHeadL2P = Unity.Mathematics.float4x4.TRS(
@@ -78,12 +99,9 @@ namespace IzBone.PhysCloth.Authoring {
 					transHead.localRotation,
 					transHead.localScale
 				);
-
-				defaultTailLPos = default;
-				foreach (var i in transTail) defaultTailLPos += (float3)i.localPosition;
-				defaultTailLPos /= transTail.Length;
 			}
 		}
+#endif
 
 		public float3 getTailWPos() {
 			if (transHead == null) {

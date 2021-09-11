@@ -15,10 +15,10 @@ namespace IzBone.IzBCollider {
 	{
 		public BodyAuthoring[] srcList;
 
-		public NativeArray<Sphere>		spheres;
+		public NativeArray<Sphere>	spheres;
 		public NativeArray<Capsule>	capsules;
 		public NativeArray<Box>		boxes;
-		public NativeArray<Plane>		planes;
+		public NativeArray<Plane>	planes;
 
 		public Colliders(BodyAuthoring[] srcList) {
 			this.srcList = srcList ?? new BodyAuthoring[0];

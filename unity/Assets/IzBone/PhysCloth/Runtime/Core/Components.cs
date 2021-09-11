@@ -1,9 +1,11 @@
 ﻿
 using UnityEngine;
 using Unity.Entities;
-using Unity.Mathematics;
 using UnityEngine.Jobs;
 using System.Runtime.InteropServices;
+using Unity.Mathematics;
+using static Unity.Mathematics.math;
+
 
 namespace IzBone.PhysCloth.Core {
 	using Common;
@@ -43,16 +45,21 @@ namespace IzBone.PhysCloth.Core {
 		public float4x4 l2p;
 		public quaternion rot;
 		public Ptcl_DefaultHeadL2P(Transform trans) {
-			rot = trans.localRotation;
-			l2p = float4x4.TRS(
-				trans.localPosition,
-				trans.localRotation,
-				trans.localScale
-			);
+			if (trans == null) {
+				rot = Unity.Mathematics.quaternion.identity;
+				l2p = Unity.Mathematics.float4x4.identity;
+			} else {
+				rot = trans.localRotation;
+				l2p = Unity.Mathematics.float4x4.TRS(
+					trans.localPosition,
+					trans.localRotation,
+					trans.localScale
+				);
+			}
 		}
 		public Ptcl_DefaultHeadL2P(TransformAccess trans) {
 			rot = trans.localRotation;
-			l2p = float4x4.TRS(
+			l2p = Unity.Mathematics.float4x4.TRS(
 				trans.localPosition,
 				trans.localRotation,
 				trans.localScale

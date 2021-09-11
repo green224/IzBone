@@ -28,7 +28,7 @@ namespace IzBone.PhysSpring.Core {
 			foreach (var bone in auth._bones)
 			foreach (var j in bone.targets) {
 				var child = j.endOfBone;
-				Entity childEntity = default;
+				var childEntity = Entity.Null;
 
 				// OneSpringコンポーネントを生成
 				for (int i=0; i<bone.depth; ++i) {
@@ -76,7 +76,7 @@ namespace IzBone.PhysSpring.Core {
 					if (i!=0)
 						em.AddComponentData(entity, new Child{value = childEntity});
 					if (i==bone.depth-1) {
-						Entity colliderPackEntity = default;
+						var colliderPackEntity = Entity.Null;
 						if (auth._collider != null)
 							colliderPackEntity = auth._collider.RootEntity;
 						em.AddComponentData(entity, new MostParent{

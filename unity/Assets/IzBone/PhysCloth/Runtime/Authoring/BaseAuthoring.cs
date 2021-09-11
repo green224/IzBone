@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#1define USE_ECS
+
+using System;
 using UnityEngine;
 
 using Unity.Entities;
@@ -38,49 +40,70 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 	public bool withAnimation = false;
 
 
+	/** 物理状態をリセットする */
+	[ContextMenu("reset")]
+	public void reset() {
+#if USE_ECS
+		GetSys().reset(_erRegLink);
+#else
+#endif
+	}
+
+
 	// ----------------------------------- private/protected メンバ -------------------------------
 
+#if USE_ECS
+	/** ECSで得た結果をマネージドTransformに反映するためのバッファのリンク情報。System側から設定・参照される */
+	Core.EntityRegisterer.RegLink _erRegLink = new Core.EntityRegisterer.RegLink();
+#else
+	internal Core.World _world;
 	protected IzBCollider.Colliders _coreColliders;
+#endif
 	internal ConstraintMng[] _constraints;
 	internal ParticleMng[] _particles;
-	internal Core.World _world;
-	internal Entity _rootEntity;
+	internal Entity _rootEntity = Entity.Null;
 
 
-	virtual protected void Start() {
+	/** メインのシステムを取得する */
+	Core.IzBPhysClothSystem GetSys() {
+		var w = World.DefaultGameObjectInjectionWorld;
+		if (w == null) return null;
+		return w.GetOrCreateSystem<Core.IzBPhysClothSystem>();
+	}
+
+	virtual protected void OnEnable() {
+		buildBuffers();
+		rebuildParameters();
+
+#if USE_ECS
+		var sys = GetSys();
+		if (sys != null) sys.register(this, _erRegLink);
+#else
 		_coreColliders = new IzBCollider.Colliders(
 			_collider==null ? null : _collider.Bodies
 		);
-		buildBuffers();
-		rebuildParameters();
 		_world = new Core.World( _particles, _constraints );
+#endif
 	}
 
-	virtual protected void LateUpdate() {
-		if (withAnimation)
-			foreach (var i in _particles) i.resetDefaultPose();
-
-		coreUpdate(Time.smoothDeltaTime);
-		_world.applyToBone(_particles);
-	}
-//	virtual protected void FixedUpdate() {
-//		coreUpdate(Time.fixedDeltaTime);
-//	}
-
-	virtual protected void OnDestroy() {
+	virtual protected void OnDisable() {
+#if USE_ECS
+		var sys = GetSys();
+		if (sys != null) sys.unregister(this, _erRegLink);
+#else
 		_coreColliders?.Dispose();
 		_coreColliders = null;
 		_world?.Dispose();
 		_world = null;
+#endif
 	}
 
-	/** コアの更新処理 */
-	virtual protected void coreUpdate(float dt) {
-
-		// とりあえずdt=0のときはやらないでおく。TODO: あとで何とかする
-		if (dt < 0.000001f) return;
-
-		_coreColliders.update();
+#if USE_ECS
+#else
+//	virtual protected void FixedUpdate() {
+	virtual protected void LateUpdate() {
+		if (withAnimation)
+			foreach (var i in _particles) i.resetDefaultPose();
 
 	#if UNITY_EDITOR
 		// インスペクタが更新された場合は同期を行う
@@ -90,18 +113,24 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 			__need2syncManage = false;
 		}
 	#endif
-
+		var dt = Time.smoothDeltaTime;
 		_world.g = g.evaluate();
 		_world.windSpeed = windSpeed;
 		_world.airHL = airDrag;		// これは計算負荷削減のためにカーブではなくスカラーで持つ
 		_world.maxSpeed = maxSpeed;
-		_world.update(
-			dt,
-			useSimulation ? iterationNum : 0,
-			_particles,
-			_coreColliders
-		);
+		if (0.000001f < dt) {		// とりあえずdt=0のときはやらないでおく。TODO: あとで何とかする
+			_coreColliders.update();
+			_world.update(
+				dt,
+				useSimulation ? iterationNum : 0,
+				_particles,
+				_coreColliders
+			);
+			_world.applyToBone(_particles);
+		}
 	}
+#endif
+
 
 	/** ParticlesとConstraintsのバッファをビルドする処理。派生先で実装すること */
 	abstract protected void buildBuffers();
@@ -118,11 +147,20 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 //		_izColliders = GetComponentsInChildren< IzBCollider.BodyAuthoring >();
 //	}
 
+#	if USE_ECS
+	virtual protected void OnValidate() {
+		if (Application.isPlaying) {
+			var sys = GetSys();
+			if (sys != null) sys.resetParameters(_erRegLink);
+		}
+	}
+#	else
 	// 実行中にプロパティが変更された場合は、次回Update時に同期を行う
 	bool __need2syncManage = false;
 	virtual protected void OnValidate() {
 		if (Application.isPlaying) __need2syncManage = true;
 	}
+#	endif
 #endif
 }
 

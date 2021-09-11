@@ -52,7 +52,7 @@ namespace IzBone.IzBCollider {
 		{
 			var sys = GetSys();
 			if (sys != null) sys.unregister(this, _erRegLink);
-			_rootEntity = default;
+			_rootEntity = Entity.Null;
 
 #if UNITY_EDITOR
 			foreach (var i in _bodies) i.__parents.Remove(this);

@@ -26,7 +26,7 @@ namespace IzBone.PhysCloth.Core {
 		) {
 
 			// ParticleのEntity一覧をまず作成
-			var ptclEntities = new NativeArray<Entity>();
+			var ptclEntities = new NativeArray<Entity>( auth._particles.Length, Allocator.Temp );
 			for (int i=0; i<auth._particles.Length; ++i) {
 				var entity = em.CreateEntity();
 				ptclEntities[i] = entity;
@@ -39,9 +39,9 @@ namespace IzBone.PhysCloth.Core {
 
 				// コンポーネントを割り当て
 				em.AddComponentData(entity, new Ptcl());
-				var nextEnt = i==ptclEntities.Length-1 ? default : ptclEntities[i+1];
+				var nextEnt = i==ptclEntities.Length-1 ? Entity.Null : ptclEntities[i+1];
 				em.AddComponentData(entity, new Ptcl_Next{value = nextEnt});
-				var parentEnt = mp.parent==null ? default : ptclEntities[mp.parent.idx];
+				var parentEnt = mp.parent==null ? Entity.Null : ptclEntities[mp.parent.idx];
 				em.AddComponentData(entity, new Ptcl_Parent{value = parentEnt});
 				em.AddComponentData(entity, new Ptcl_Root{value = ptclEntities[0]});
 				em.AddComponentData(entity, new Ptcl_DefaultHeadL2W());
@@ -58,11 +58,15 @@ namespace IzBone.PhysCloth.Core {
 				em.AddComponentData(entity, new Ptcl_AngleCompliance{value = mp.angleCompliance});
 				em.AddComponentData(entity, new Ptcl_RestoreHL{value = mp.restoreHL});
 				em.AddComponentData(entity, new Ptcl_MaxMovableRange{value = mp.maxMovableRange});
+				em.AddComponentData(entity, new Ptcl_CldCstLmd());
+				em.AddComponentData(entity, new Ptcl_AglLmtLmd());
+				em.AddComponentData(entity, new Ptcl_MvblRngLmd());
 				em.AddComponentData(entity, new Ptcl_M2D{auth = mp});
 
 				// Entity・Transformを登録
 				addEntityCore(entity, regLink);
-				if (mp.transHead != null) addETPCore(entity, mp.transHead, regLink);
+				var transHead = mp.transHead == null ? mp.transTail[0].parent : mp.transHead;
+				addETPCore(entity, transHead, regLink);
 			}
 
 			// ConstraintのEntityを作成
@@ -76,7 +80,7 @@ namespace IzBone.PhysCloth.Core {
 				if (Authoring.ComplianceAttribute.LEFT_VAL*0.98f < mc.compliance) continue;
 			#endif
 
-				Entity entity = default;
+				Entity entity = Entity.Null;
 				switch (mc.mode) {
 				case Authoring.ConstraintMng.Mode.Distance:
 					{// 距離拘束
@@ -94,6 +98,7 @@ namespace IzBone.PhysCloth.Core {
 						em.AddComponentData(entity, new Cstr_Target{src=srcEnt, dst=dstEnt});
 						em.AddComponentData(entity, new Cstr_Compliance{value = mc.compliance});
 						em.AddComponentData(entity, new Cstr_DefaultLen{value = mc.param.x});
+						em.AddComponentData(entity, new Cstr_Lmd());
 
 					} break;
 				case Authoring.ConstraintMng.Mode.MaxDistance:
@@ -120,7 +125,7 @@ namespace IzBone.PhysCloth.Core {
 					} break;
 				default:throw new System.InvalidProgramException();
 				}
-				if (entity == default) continue;
+				if (entity == Entity.Null) continue;
 				em.AddComponentData(entity, new Cstr_M2D{auth = mc});
 
 				// Entity・Transformを登録
@@ -137,6 +142,7 @@ namespace IzBone.PhysCloth.Core {
 				em.AddComponentData(ptclEntities[0], new Root_MaxSpd());
 				em.AddComponentData(ptclEntities[0], new Root_WithAnimation());
 				em.AddComponentData(ptclEntities[0], new Root_ColliderPack());
+				em.AddComponentData(ptclEntities[0], new Root_M2D{auth=auth});
 				auth._rootEntity = ptclEntities[0];
 			}
 

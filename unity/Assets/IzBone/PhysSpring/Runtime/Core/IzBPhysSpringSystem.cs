@@ -156,10 +156,10 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 
 					// 前フレームにキャッシュされた位置にパーティクルが移動したとして、
 					// その位置でコライダとの衝突解決をしておく
-					if (mostParent.colliderPack != default) {
+					if (mostParent.colliderPack != Entity.Null) {
 						for (
 							var e = mostParent.colliderPack;
-							e != default;
+							e != Entity.Null;
 							e = GetComponent<IzBCollider.Core.Body_Next>(e).value
 						) {
 							var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);

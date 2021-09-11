@@ -1,4 +1,7 @@
-﻿using System;
+﻿//#1define USE_ECS
+#if !USE_ECS
+
+using System;
 using UnityEngine;
 
 using Unity.Mathematics;
@@ -417,3 +420,6 @@ namespace IzBone.PhysCloth.Core {
 	}
 
 }
+
+
+#endif
