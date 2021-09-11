@@ -1,4 +1,4 @@
-﻿//#1define USE_ECS
+﻿#define USE_ECS
 
 using System;
 using UnityEngine;

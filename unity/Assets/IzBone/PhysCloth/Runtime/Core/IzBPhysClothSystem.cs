@@ -459,6 +459,9 @@ public sealed class IzBPhysClothSystem : SystemBase {
 							spr3.pos = constraint.aglCstr.pos2;
 							SetComponent(p2, new Ptcl_AglLmtLmd{value = lmd2});
 							SetComponent(p3, new Ptcl_AglLmtLmd{value = lmd3});
+							SetComponent(p1, new Ptcl_Sphere{value = spr1});
+							SetComponent(p2, new Ptcl_Sphere{value = spr2});
+							SetComponent(p3, new Ptcl_Sphere{value = spr3});
 						}
 /*						var constraint = new Constraint.Angle{
 							parent = p1,

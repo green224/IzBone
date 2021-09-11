@@ -1,4 +1,4 @@
-﻿//#1define USE_ECS
+﻿#define USE_ECS
 #if !USE_ECS
 
 using System;
