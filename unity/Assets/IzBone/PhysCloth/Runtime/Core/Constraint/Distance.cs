@@ -47,6 +47,7 @@ namespace IzBone.PhysCloth.Core.Constraint {
 	}
 
 
+#if !USE_ECS
 	public unsafe struct DistanceOld : IConstraint {
 		public Particle* ptcl0, ptcl1;
 		public float compliance;
@@ -83,5 +84,6 @@ namespace IzBone.PhysCloth.Core.Constraint {
 
 		const float MinimumM = 0.00000001f;
 	}
+#endif
 
 }

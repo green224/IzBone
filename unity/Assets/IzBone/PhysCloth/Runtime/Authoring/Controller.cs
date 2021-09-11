@@ -1,6 +1,4 @@
-﻿#define USE_ECS
-
-using System;
+﻿using System;
 using UnityEngine;
 
 using Unity.Mathematics;

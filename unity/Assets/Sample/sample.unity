@@ -1698,9 +1698,9 @@ MonoBehaviour:
   maxSpeed: 100
   withAnimation: 1
   _r:
-    start: 0.01
+    start: 0.012
     end: 0.02
-    curve: 0.7173913
+    curve: 0.5217391
     useCurve: 1
   _m:
     start: 1
