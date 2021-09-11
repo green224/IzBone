@@ -96,8 +96,7 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 #endif
 	}
 
-#if USE_ECS
-#else
+#if !USE_ECS
 //	virtual protected void FixedUpdate() {
 	virtual protected void LateUpdate() {
 		if (withAnimation)
@@ -146,19 +145,20 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 //	}
 
 #	if USE_ECS
-	virtual protected void OnValidate() {
-		if (Application.isPlaying) {
+	void LateUpdate() {
+		if (__need2syncManage) {
+			rebuildParameters();
 			var sys = GetSys();
 			if (sys != null) sys.resetParameters(_erRegLink);
+			__need2syncManage = false;
 		}
 	}
-#	else
+#	endif
 	// 実行中にプロパティが変更された場合は、次回Update時に同期を行う
 	bool __need2syncManage = false;
 	virtual protected void OnValidate() {
 		if (Application.isPlaying) __need2syncManage = true;
 	}
-#	endif
 #endif
 }
 
