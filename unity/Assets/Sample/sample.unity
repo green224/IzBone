@@ -3236,10 +3236,10 @@ MonoBehaviour:
     - endOfBone: {fileID: 1529500021}
       defaultRot: {x: 0, y: 0, z: 0, w: 0}
     angleMax:
-      start: 10
-      end: 80
+      start: 180
+      end: 180
       curve: 0.41318503
-      useCurve: 1
+      useCurve: 0
     angleMargin:
       start: 0.3
       end: 0.3
@@ -3294,7 +3294,7 @@ MonoBehaviour:
     iterationNum: 3
     rotShiftRate: 0
     withAnimation: 0
-  _collider: {fileID: 74349236}
+  _collider: {fileID: 0}
 --- !u!4 &1647675476 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}

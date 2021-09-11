@@ -23,7 +23,6 @@ namespace IzBone.PhysSpring.Core {
 		public float rsRate;
 
 		public float4x4 rootL2W;	//!< ボーン親の更に親のL2W
-		public float4x4 rootW2L;	//!< ボーン親の更に親のW2L
 
 		public Entity firstPtcl;	// Springの開始位置のEntity。Ptclがついている
 	}
@@ -36,7 +35,7 @@ namespace IzBone.PhysSpring.Core {
 	 * シミュレーションの1間接部分の情報を表すコンポーネント。
 	 * 間接ごとのEntityに対して付ける。
 	 */
-	public struct OneSpring:ICD {
+	public struct Ptcl:ICD {
 		public Math8.SmoothRange_Float range_rot;		//!< 回転 - 範囲情報
 		public Math8.SmoothRange_Float3 range_sft;		//!< 移動 - 範囲情報
 		public Math8.Spring_Float3 spring_rot;			//!< 回転 - バネ
@@ -57,8 +56,6 @@ namespace IzBone.PhysSpring.Core {
 		public float3 childDefPos;		//!< 子の初期ローカル座標
 		public float3 childDefPosMPR;	//!< 子の初期ローカル座標に親の回転とスケールを掛けたもの。これはキャッシュすべきか悩みどころ…
 
-		public float3 curScale;		//!< 現在のローカルスケール。これは毎フレームTransformからコピーする
-
 		public float r;				//!< 衝突判定用の半径
 	}
 
@@ -74,13 +71,14 @@ namespace IzBone.PhysSpring.Core {
 	public struct CurTrans:ICD {
 		public float3 lPos;
 		public quaternion lRot;
+		public float3 lScl;
 	}
 
 
 
 
 	// ECSとAuthoringとの橋渡し役を行うためのマネージドコンポーネント
-	public sealed class OneSpring_M2D:ICD {
+	public sealed class Ptcl_M2D:ICD {
 		public RootAuthoring.Bone boneAuth;			// 生成元
 		public Transform parentTrans, childTrans;	// Springでつながる親と子のTransform
 		public float depthRate;						// 0~Depthを0～1にリマップしたもの

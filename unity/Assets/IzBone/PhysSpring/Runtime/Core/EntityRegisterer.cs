@@ -28,9 +28,16 @@ namespace IzBone.PhysSpring.Core {
 			foreach (var bone in auth._bones)
 			foreach (var j in bone.targets) {
 				var child = j.endOfBone;
-				var childEntity = Entity.Null;
 
-				// OneSpringコンポーネントを生成
+				// 最も末端のTransformに対応するEntityを生成
+				var childEntity = em.CreateEntity();
+				{
+					em.AddComponentData(childEntity, new CurTrans());
+					addEntityCore(childEntity, regLink);
+					addETPCore(childEntity, child, regLink);
+				}
+
+				// Particleを生成
 				for (int i=0; i<bone.depth; ++i) {
 					var parent = child.parent;
 
@@ -63,45 +70,45 @@ namespace IzBone.PhysSpring.Core {
 						),
 						r = bone.radius.evaluate(dRate),
 					});
-					em.AddComponentData(entity, new CurTrans{});
 					em.AddComponentData(entity, new Ptcl_LastWPos{
 						value = child.position,
 					});
-					em.AddComponentData(entity, new OneSpring_M2D{
+					em.AddComponentData(entity, new Ptcl_Child{value = childEntity});
+					em.AddComponentData(entity, new CurTrans{});
+					em.AddComponentData(entity, new Ptcl_M2D{
 						boneAuth = bone,
 						depthRate = dRate,
 						parentTrans = parent,
 						childTrans = child,
 					});
-					if (i!=0)
-						em.AddComponentData(entity, new Ptcl_Child{value = childEntity});
-					if (i==bone.depth-1) {
-						var colliderPackEntity = Entity.Null;
-						if (auth._collider != null)
-							colliderPackEntity = auth._collider.RootEntity;
 
-						// Particleをまとめる最上位のコンポーネントを生成。
-						// これは最上位の親のTransformと関連付ける必要があるため、別Entityで登録
-						var rootEntity = em.CreateEntity();
-						em.AddComponentData(rootEntity, new Root{
-							depth = bone.depth,
-							iterationNum = bone.iterationNum,
-							rsRate = bone.rotShiftRate,
-							colliderPack = colliderPackEntity,
-							firstPtcl = entity,
-						});
-						em.AddComponentData(rootEntity, new CurTrans());
-						em.AddComponentData(rootEntity, new Root_M2D{auth=bone});
-						addEntityCore(rootEntity, regLink);
-						addETPCore(rootEntity, parent.parent, regLink);
-					}
-
-					// OneSpringのEntity・Transformを登録
+					// ParticleのEntity・Transformを登録
 					addEntityCore(entity, regLink);
 					addETPCore(entity, parent, regLink);
 
 					child = parent;
 					childEntity = entity;
+				}
+
+				// Particleをまとめる最上位のコンポーネントを生成。
+				// これは最上位の親のTransformと関連付ける必要があるため、別Entityで登録
+				{
+					var colliderPackEntity = Entity.Null;
+					if (auth._collider != null)
+						colliderPackEntity = auth._collider.RootEntity;
+
+					var rootEntity = em.CreateEntity();
+					em.AddComponentData(rootEntity, new Root{
+						depth = bone.depth,
+						iterationNum = bone.iterationNum,
+						rsRate = bone.rotShiftRate,
+						colliderPack = colliderPackEntity,
+						firstPtcl = childEntity,
+					});
+					em.AddComponentData(rootEntity, new CurTrans());
+					em.AddComponentData(rootEntity, new Root_M2D{auth=bone});
+					addEntityCore(rootEntity, regLink);
+					addETPCore(rootEntity, child.parent, regLink);
 				}
 			}
 		}
@@ -109,8 +116,8 @@ namespace IzBone.PhysSpring.Core {
 		/** 指定Entityの再変換処理 */
 		override protected void reconvertOne(Entity entity, EntityManager em) {
 			// 出来るものだけ同期を行う
-			if (em.HasComponent<OneSpring_M2D>(entity)) {
-				var m2d = em.GetComponentData<OneSpring_M2D>(entity);
+			if (em.HasComponent<Ptcl_M2D>(entity)) {
+				var m2d = em.GetComponentData<Ptcl_M2D>(entity);
 				em.SetComponentData(entity, genOneSpring(m2d.boneAuth, m2d.depthRate));
 
 				var ds = em.GetComponentData<DefaultState>(entity);
@@ -127,8 +134,8 @@ namespace IzBone.PhysSpring.Core {
 			}
 		}
 
-		static OneSpring genOneSpring(RootAuthoring.Bone bone, float dRate) {
-			var ret = new OneSpring{};
+		static Ptcl genOneSpring(RootAuthoring.Bone bone, float dRate) {
+			var ret = new Ptcl{};
 			var rotMax = radians( bone.angleMax.evaluate(dRate) );
 			var rotMargin = rotMax * bone.angleMargin.evaluate(dRate);
 			ret.range_rot.reset(-rotMax, rotMax, rotMargin);
