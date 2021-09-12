@@ -56,7 +56,7 @@ public unsafe sealed class PlaneAuthoring : SimpleAuthoring {
 			}
 			_jointDepth = max(_jointDepth, depth);
 		}
-		return _jointDepth;
+		return _jointDepth + 1;
 	}}
 
 	/** Particlesのバッファをビルドする処理 */

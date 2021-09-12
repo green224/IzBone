@@ -19,7 +19,7 @@ sealed class BodiesPackAutoringInspector : Editor
 		var tgt = (BodiesPackAuthoring)target;
 
 		if (tgt.Bodies != null) foreach (var i in tgt.Bodies) {
-			i.DEBUG_drawGizmos();
+			if (i != null) i.DEBUG_drawGizmos();
 		}
 	}
 
