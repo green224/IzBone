@@ -27,9 +27,7 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 	[Space]
 	public Gravity g = new Gravity(1);				// 重力加速度
 	public float3 windSpeed = default;				// 風速
-	[UnityEngine.Serialization.FormerlySerializedAs("_airDrag")]
 	[HalfLifeDrag] public HalfLife airDrag = 0.1f;	// 空気抵抗による半減期
-	[UnityEngine.Serialization.FormerlySerializedAs("_maxSpeed")]
 	[Min(0)] public float maxSpeed = 100;			// 最大速度
 
 	[Space]

@@ -16,7 +16,7 @@ namespace IzBone.PhysCloth.Core {
 
 	public struct Root:ICD {}
 	public struct Root_UseSimulation:ICD {public bool value;}	// 物理演算を行うか否か
-	public struct Root_G:ICD {public float3 value;}				// 重力加速度
+	public struct Root_G:ICD {public Gravity src; public float3 value;}	// 重力加速度
 	public struct Root_Air:ICD {			// 空気関連のパラメータ
 		public float3 winSpd;					// 風速
 		public HalfLife airDrag;				// 空気抵抗

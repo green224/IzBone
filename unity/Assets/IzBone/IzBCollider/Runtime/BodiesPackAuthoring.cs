@@ -22,14 +22,32 @@ namespace IzBone.IzBCollider {
 		// このBodiesPackの対応するルートのEntity
 		public Entity RootEntity => _rootEntity;
 
+		// このBodiesPackの対応するルートのEntityを設定する。
+		// もしまだ未精製の場合は、生成時にコールバックを実行する
+		public void getRootEntity(
+			EntityManager em,
+			Action< EntityManager, Entity > onSetRootEntity
+		) {
+			if (_rootEntity == Entity.Null) {_onSetRootEntity += onSetRootEntity; return;}
+			onSetRootEntity(em, _rootEntity);
+		}
+
 
 		// ----------------------------------- private/protected メンバ -------------------------------
 
 		/** ECSで得た結果をマネージドTransformに反映するためのバッファのリンク情報。System側から設定・参照される */
 		Core.EntityRegisterer.RegLink _erRegLink = new Core.EntityRegisterer.RegLink();
 
-		// このBodiesPackの対応するルートのEntity。EntityRegistererから設定される
-		internal Entity _rootEntity;
+		Entity _rootEntity = Entity.Null;		// このBodiesPackの対応するルートのEntity
+		event Action< EntityManager, Entity > _onSetRootEntity;		// RootEntityが設定されたときのコールバック
+
+		/** RootEntityを設定する処理。EntityRegistererから呼ばれる */
+		internal void setRootEntity(Entity entity, EntityManager em) {
+			if (_rootEntity != Entity.Null) throw new InvalidProgramException();
+			_rootEntity = entity;
+			_onSetRootEntity?.Invoke(em, entity);
+			_onSetRootEntity = null;
+		}
 
 		/** メインのシステムを取得する */
 		Core.IzBColliderSystem GetSys() {

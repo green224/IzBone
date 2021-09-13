@@ -95,22 +95,33 @@ namespace IzBone.PhysSpring.Core {
 				// Particleをまとめる最上位のコンポーネントを生成。
 				// これは最上位の親のTransformと関連付ける必要があるため、別Entityで登録
 				{
-					var colliderPackEntity = Entity.Null;
-					if (auth._collider != null)
-						colliderPackEntity = auth._collider.RootEntity;
-
 					em.AddComponentData(rootEntity, new Root{
 						depth = bone.depth,
 						iterationNum = bone.iterationNum,
 						rsRate = bone.rotShiftRate,
 					});
-					em.AddComponentData(rootEntity, new Root_FirstPtcl{value=childEntity});
+					em.AddComponentData(rootEntity, new Root_G{src=bone.g});
+					em.AddComponentData(rootEntity, new Root_Air{
+						winSpd = bone.windSpeed,
+						airDrag = bone.airDrag,
+					});
 					em.AddComponentData(rootEntity, new Root_WithAnimation{value=bone.withAnimation});
-					em.AddComponentData(rootEntity, new Root_ColliderPack{value=colliderPackEntity});
+					em.AddComponentData(rootEntity, new Root_FirstPtcl{value=childEntity});
+					em.AddComponentData(rootEntity, new Root_ColliderPack{value=Entity.Null});
 					em.AddComponentData(rootEntity, new CurTrans());
 					em.AddComponentData(rootEntity, new Root_M2D{auth=bone});
 					addEntityCore(rootEntity, regLink);
 					addETPCore(rootEntity, child.parent, regLink);
+
+					// ColliderPackを設定する処理。これは遅延して実行される可能性もある
+					if (auth._collider != null) {
+						auth._collider.getRootEntity( em, (em, cpEnt)=>
+							em.SetComponentData(
+								rootEntity,
+								new Root_ColliderPack{value=cpEnt}
+							)
+						);
+					}
 				}
 			}
 		}
@@ -127,10 +138,16 @@ namespace IzBone.PhysSpring.Core {
 			if (em.HasComponent<Root>(entity)) {
 				var m2d = em.GetComponentData<Root_M2D>(entity);
 				var root = em.GetComponentData<Root>(entity);
-				root.iterationNum = m2d.auth.iterationNum;
-				root.rsRate = m2d.auth.rotShiftRate;
+				var auth = m2d.auth;
+				root.iterationNum = auth.iterationNum;
+				root.rsRate = auth.rotShiftRate;
 				em.SetComponentData(entity, root);
-				em.SetComponentData(entity, new Root_WithAnimation{value=m2d.auth.withAnimation});
+				em.SetComponentData(entity, new Root_G{src=auth.g});
+//				em.SetComponentData(entity, new Root_Air{
+//					winSpd = auth.windSpeed,
+//					airDrag = auth.airDrag,
+//				});
+				em.SetComponentData(entity, new Root_WithAnimation{value=auth.withAnimation});
 			}
 		}
 

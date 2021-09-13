@@ -27,14 +27,14 @@ public sealed class RootAuthoring : MonoBehaviour {
 
 	[Serializable] public sealed class Bone {
 
-		public string name = "name";		//!< 名前。これはEditor表示用なので特別な意味はない
+		public string name = "name";		// 名前。これはEditor表示用なので特別な意味はない
 
-		[Serializable] public sealed class OneTrnasParam {			//!< 目標の1Transformごとのパラメータ
-			public Transform topOfBone = null;									//!< 再親のTransform
-			[UseEuler] public Quaternion defaultRot = Quaternion.identity;		//!< 根元の初期姿勢
+		[Serializable] public sealed class OneTrnasParam {			// 目標の1Transformごとのパラメータ
+			public Transform topOfBone = null;									// 再親のTransform
+			[UseEuler] public Quaternion defaultRot = Quaternion.identity;		// 根元の初期姿勢
 		}
 		[Space]
-		public OneTrnasParam[] targets = null;			//!< 目標のTransformたち
+		public OneTrnasParam[] targets = null;			// 目標のTransformたち
 
 		[Space]
 		[RangeSC(0,180)] public SC angleMax = 60;
@@ -51,12 +51,15 @@ public sealed class RootAuthoring : MonoBehaviour {
 		[RangeSC(0,1)] public SC vDrag = 0.5f;
 
 		[Space]
-		[RangeSC(0)] public SC radius = 0.1f;			//!< パーティクル半径
-		[JointCount(1)] public int depth = 1;			//!< ボーン深度
-		[Range(1,10)] public int iterationNum = 1;		//!< 繰り返し計算回数
+		public Gravity g = new Gravity(0);				// 重力加速度
+		public float3 windSpeed = default;				// 風速
+		public HalfLife airDrag = 0.1f;					// 風速
+		[RangeSC(0)] public SC radius = 0.1f;			// パーティクル半径
+		[JointCount(1)] public int depth = 1;			// ボーン深度
+		[Range(1,10)] public int iterationNum = 1;		// 繰り返し計算回数
 
-		[Range(0,1)] public float rotShiftRate = 0.5f;	//!< 回転と移動の反映割合
-		public bool withAnimation = false;				//!< アニメーション付きのボーンに対して使用するフラグ。毎フレームデフォルト位置を再キャッシュする。
+		[Range(0,1)] public float rotShiftRate = 0.5f;	// 回転と移動の反映割合
+		public bool withAnimation = false;				// アニメーション付きのボーンに対して使用するフラグ。毎フレームデフォルト位置を再キャッシュする。
 	}
 
 	[SerializeField] internal Bone[] _bones = new []{new Bone()};

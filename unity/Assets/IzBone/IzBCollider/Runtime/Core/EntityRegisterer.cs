@@ -56,7 +56,7 @@ namespace IzBone.IzBCollider.Core {
 
 			{// BodiesPackをECSへ変換
 				em.AddComponentData(firstBody, new BodiesPack());
-				auth._rootEntity = firstBody;
+				auth.setRootEntity( firstBody, em );
 			}
 		}
 

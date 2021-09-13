@@ -135,15 +135,26 @@ namespace IzBone.PhysCloth.Core {
 
 
 			{// OneClothをECSへ変換
-				em.AddComponentData(ptclEntities[0], new Root());
-				em.AddComponentData(ptclEntities[0], new Root_UseSimulation());
-				em.AddComponentData(ptclEntities[0], new Root_G());
-				em.AddComponentData(ptclEntities[0], new Root_Air());
-				em.AddComponentData(ptclEntities[0], new Root_MaxSpd());
-				em.AddComponentData(ptclEntities[0], new Root_WithAnimation());
-				em.AddComponentData(ptclEntities[0], new Root_ColliderPack());
-				em.AddComponentData(ptclEntities[0], new Root_M2D{auth=auth});
-				auth._rootEntity = ptclEntities[0];
+				var rootEntity = ptclEntities[0];
+				em.AddComponentData(rootEntity, new Root());
+				em.AddComponentData(rootEntity, new Root_UseSimulation{value = auth.useSimulation});
+				em.AddComponentData(rootEntity, new Root_G{src = auth.g});
+				em.AddComponentData(rootEntity, new Root_Air());
+				em.AddComponentData(rootEntity, new Root_MaxSpd{value = auth.maxSpeed});
+				em.AddComponentData(rootEntity, new Root_WithAnimation{value = auth.withAnimation});
+				em.AddComponentData(rootEntity, new Root_ColliderPack());
+				em.AddComponentData(rootEntity, new Root_M2D{auth = auth});
+				auth._rootEntity = rootEntity;
+
+				// ColliderPackを設定する処理。これは遅延して実行される可能性もある
+				if (auth._collider != null) {
+					auth._collider.getRootEntity( em, (em, cpEnt)=>
+						em.SetComponentData(
+							rootEntity,
+							new Root_ColliderPack{value=cpEnt}
+						)
+					);
+				}
 			}
 
 
@@ -161,6 +172,15 @@ namespace IzBone.PhysCloth.Core {
 				em.SetComponentData(entity, new Ptcl_AngleCompliance{value = mp.angleCompliance});
 				em.SetComponentData(entity, new Ptcl_RestoreHL{value = mp.restoreHL});
 				em.SetComponentData(entity, new Ptcl_MaxMovableRange{value = mp.maxMovableRange});
+
+				if (em.HasComponent<Root_M2D>(entity)) {
+					var mr = em.GetComponentData<Root_M2D>(entity).auth;
+					em.SetComponentData(entity, new Root_UseSimulation{value = mr.useSimulation});
+					em.AddComponentData(entity, new Root_G{src = mr.g});
+//					em.SetComponentData(entity, new Root_Air());
+					em.SetComponentData(entity, new Root_MaxSpd{value = mr.maxSpeed});
+					em.SetComponentData(entity, new Root_WithAnimation{value = mr.withAnimation});
+				}
 
 			} else if (em.HasComponent<Cstr_M2D>(entity)) {
 

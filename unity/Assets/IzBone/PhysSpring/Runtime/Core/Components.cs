@@ -5,6 +5,7 @@ using Unity.Mathematics;
 
 namespace IzBone.PhysSpring.Core {
 	using Common;
+	using Common.Field;
 	using ICD = IComponentData;
 
 	// 以降、1繋がりのSpringリスト１セットごとのEntityに対して付けるコンポーネント群
@@ -23,6 +24,8 @@ namespace IzBone.PhysSpring.Core {
 
 		public float4x4 l2w;		// ボーン親の更に親のL2W
 	}
+	public struct Root_G:ICD {public Gravity src; public float3 value;}				// 重力加速度
+	public struct Root_Air:ICD {public float3 winSpd; public HalfLife airDrag;}		// 風の影響
 	public struct Root_WithAnimation:ICD {public bool value;}	// 毎フレームデフォルト位置を再キャッシュするか否か
 	public struct Root_FirstPtcl:ICD {public Entity value;}		// Springの開始位置のEntity。Ptclがついている
 	public struct Root_ColliderPack:ICD {public Entity value;}	// 衝突検出を行う対象のコライダー

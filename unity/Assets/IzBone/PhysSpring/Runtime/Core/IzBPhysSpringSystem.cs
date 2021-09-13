@@ -130,6 +130,28 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 		_entityReg.apply(EntityManager);
 
 
+		{// 風の影響を決定する処理。
+			// TODO : これは今はWithoutBurstだが、後で何とかする
+			Entities.ForEach((
+				Entity entity,
+				in Root_M2D rootM2D
+			)=>{
+				SetComponent(entity, new Root_Air{
+					winSpd = rootM2D.auth.windSpeed,
+					airDrag = rootM2D.auth.airDrag,
+				});
+			}).WithoutBurst().Run();
+		}
+
+
+		{// 重力加速度を決定する処理
+			var defG = (float3)UnityEngine.Physics.gravity;
+			Dependency = Entities.ForEach((ref Root_G g)=>{
+				g.value = g.src.evaluate(defG);
+			}).Schedule( Dependency );
+		}
+
+
 		// 現在のTransformをすべてのECSへ転送
 		var etp = _entityReg.etPacks;
 		if (etp.Length != 0) {

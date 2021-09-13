@@ -19,8 +19,8 @@ WebPlayerを含む全プラットフォームに対応(しているはず)
 
 * ドキュメントをまとめる
 * PhysSpringに重力/風の影響を追加
-* PhysSpringのボーン設定をPhysClothに合わせる
 * PhysCloth/PhysSpringのインスペクタを改善
+* WithoutBurst.Runを一掃する
 * インスペクタを日/英対応
 * Unity標準のColliderに対応
 * ECS部分のヒープアロケーションを何とかする

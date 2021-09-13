@@ -187,23 +187,25 @@ public sealed class IzBPhysClothSystem : SystemBase {
 		}
 	#endif
 
-		{// マネージド空間から、毎フレーム同期する必要のあるパラメータを同期
-			var defG = (float3)UnityEngine.Physics.gravity;
+		{// 風の影響を決定する処理。
+			// TODO : これは今はWithoutBurstだが、後で何とかする
 			Entities.ForEach((
 				Entity entity,
 				in Root_M2D rootM2D
 			)=>{
-				SetComponent(entity, new Root_UseSimulation{value = rootM2D.auth.useSimulation});
-				SetComponent(entity, new Root_G{value = rootM2D.auth.g.evaluate(defG)});
 				SetComponent(entity, new Root_Air{
 					winSpd = rootM2D.auth.windSpeed,
 					airDrag = rootM2D.auth.airDrag,
 				});
-				SetComponent(entity, new Root_MaxSpd{value = rootM2D.auth.maxSpeed});
-				SetComponent(entity, new Root_WithAnimation{value = rootM2D.auth.withAnimation});
-				var collider = rootM2D.auth._collider?.RootEntity ?? Entity.Null;
-				SetComponent(entity, new Root_ColliderPack{value = collider});
 			}).WithoutBurst().Run();
+		}
+
+
+		{// 重力加速度を決定する処理
+			var defG = (float3)UnityEngine.Physics.gravity;
+			Dependency = Entities.ForEach((ref Root_G g)=>{
+				g.value = g.src.evaluate(defG);
+			}).Schedule( Dependency );
 		}
 
 
