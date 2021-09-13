@@ -15,7 +15,7 @@ namespace IzBone.PhysCloth.Authoring {
  * IzBoneを使用するオブジェクトにつけるコンポーネント。
  * ツリー構造のように、根本から接続が複数に広がっていく形状に対して使用する。
  */
-[AddComponentMenu("IzBone/PhysCloth_TreePlane")]
+[AddComponentMenu("IzBone/IzBone_PhysCloth_TreePlane")]
 public unsafe sealed class TreePlaneAuthoring : SimpleAuthoring {
 	// ------------------------------- inspectorに公開しているフィールド ------------------------
 

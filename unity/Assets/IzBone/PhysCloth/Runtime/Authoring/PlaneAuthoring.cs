@@ -14,7 +14,7 @@ namespace IzBone.PhysCloth.Authoring {
  * IzBoneを使用するオブジェクトにつけるコンポーネント。
  * 平面的な布のようなものを再現する際に使用する
  */
-[AddComponentMenu("IzBone/PhysCloth_Plane")]
+[AddComponentMenu("IzBone/IzBone_PhysCloth_Plane")]
 public unsafe sealed class PlaneAuthoring : SimpleAuthoring {
 	// ------------------------------- inspectorに公開しているフィールド ------------------------
 
@@ -23,9 +23,7 @@ public unsafe sealed class PlaneAuthoring : SimpleAuthoring {
 	[SerializeField] internal bool _isLoopConnect = false;		// スカートなどの筒状のつながりにする
 
 	[Space]
-	[UnityEngine.Serialization.FormerlySerializedAs("_cmpl_direct")]
 	[Compliance][SerializeField] float _cmpl_vert = 0.000000001f;		//!< Compliance値 上下方向接続
-	[UnityEngine.Serialization.FormerlySerializedAs("_cmpl_side")]
 	[Compliance][SerializeField] float _cmpl_hori = 0.000000001f;		//!< Compliance値 左右方向接続
 	[Compliance][SerializeField] float _cmpl_diag = 0.0000001f;			//!< Compliance値 対角方向接続
 

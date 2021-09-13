@@ -19,7 +19,7 @@ using SC = Common.Field.SimpleCurve;
  * 重力は考慮せず、正確な物理近似ではないのでボーン数が少ない方がよい見た目になる事が多い。
  * 必要であればアニメーション付きのボーンに、ゆれを付加することもできる。
  */
-[AddComponentMenu("IzBone/PhysSpring")]
+[AddComponentMenu("IzBone/IzBone_PhysSpring")]
 //[UnityEngine.Animations.NotKeyable]
 //[DisallowMultipleComponent]
 public sealed class RootAuthoring : MonoBehaviour {
@@ -30,7 +30,7 @@ public sealed class RootAuthoring : MonoBehaviour {
 		public string name = "name";		//!< 名前。これはEditor表示用なので特別な意味はない
 
 		[Serializable] public sealed class OneTrnasParam {			//!< 目標の1Transformごとのパラメータ
-			public Transform endOfBone = null;									//!< 末端Transform
+			public Transform topOfBone = null;									//!< 再親のTransform
 			[UseEuler] public Quaternion defaultRot = Quaternion.identity;		//!< 根元の初期姿勢
 		}
 		[Space]
@@ -110,8 +110,8 @@ public sealed class RootAuthoring : MonoBehaviour {
 			if (i.targets != null)
 			foreach (var t in i.targets) {
 				int s = 0;
-				if (t.endOfBone == null) break;
-				for (var j=t.endOfBone; j.parent!=null; j=j.parent) ++s;
+				if (t.topOfBone == null) break;
+				for (var j=t.topOfBone; j.childCount!=0; j=j.GetChild(0)) ++s;
 				depthMax = max(s, depthMax);
 			}
 

@@ -29,8 +29,10 @@ sealed class RootAuthoringInspector : Editor
 		if (bone.targets != null)
 		foreach (var boneTgt in bone.targets) {
 
-			var trns = boneTgt.endOfBone;
+			// 末端のTransformを得る
+			var trns = boneTgt.topOfBone;
 			if (trns == null) continue;
+			for (int i=0; i<bone.depth; ++i) trns = trns.GetChild(0);
 
 			// ジョイントごとに描画
 			var posLst = new float3[bone.depth + 1];
