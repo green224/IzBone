@@ -74,6 +74,9 @@ namespace IzBone.PhysSpring.Core {
 					});
 					em.AddComponentData(entity, new Ptcl_LastWPos{value=child.position});
 					em.AddComponentData(entity, new Ptcl_R{value=bone.radius.evaluate(dRate)});
+					em.AddComponentData(entity, new Ptcl_RestoreHL{
+						value = HalfLifeDragAttribute.showValue2HalfLife( bone.restorePow.evaluate(dRate) )
+					});
 					em.AddComponentData(entity, new Ptcl_Root{value = rootEntity});
 					em.AddComponentData(entity, new Ptcl_Child{value = childEntity});
 					em.AddComponentData(entity, new CurTrans{});
@@ -133,6 +136,11 @@ namespace IzBone.PhysSpring.Core {
 				var m2d = em.GetComponentData<Ptcl_M2D>(entity);
 				em.SetComponentData(entity, genOneSpring(m2d.boneAuth, m2d.depthRate));
 				em.SetComponentData(entity, new Ptcl_R{value=m2d.boneAuth.radius.evaluate(m2d.depthRate)});
+				em.SetComponentData(entity, new Ptcl_RestoreHL{
+					value = HalfLifeDragAttribute.showValue2HalfLife(
+						m2d.boneAuth.restorePow.evaluate(m2d.depthRate)
+					)
+				});
 			}
 
 			if (em.HasComponent<Root>(entity)) {
@@ -164,15 +172,11 @@ namespace IzBone.PhysSpring.Core {
 			ret.spring_rot.kpm = bone.rotKpm.evaluate(dRate);
 			ret.spring_rot.maxV = bone.omgMax.evaluate(dRate);
 			ret.spring_rot.maxX = ret.range_rot.localMax;
-			ret.spring_rot.vHL = HalfLifeDragAttribute.showValue2HalfLife(
-				bone.omgDrag.evaluate(dRate)
-			);
+			ret.spring_rot.vHL = 0;
 			ret.spring_sft.kpm = bone.shiftKpm.evaluate(dRate);
 			ret.spring_sft.maxV = bone.vMax.evaluate(dRate);
 			ret.spring_sft.maxX = ret.range_sft.localMax.x;
-			ret.spring_sft.vHL = HalfLifeDragAttribute.showValue2HalfLife(
-				bone.vDrag.evaluate(dRate)
-			);
+			ret.spring_sft.vHL = 0;
 
 			return ret;
 		}

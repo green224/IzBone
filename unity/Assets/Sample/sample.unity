@@ -1296,6 +1296,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1310164858}
     m_Modifications:
+    - target: {fileID: 708634136, guid: d1f46dcff5682cf4d88e0da9a90a16b7, type: 3}
+      propertyPath: _bones.Array.data[0].restorePow.value
+      value: 0.01
+      objectReference: {fileID: 0}
     - target: {fileID: 7077518588395828675, guid: d1f46dcff5682cf4d88e0da9a90a16b7, type: 3}
       propertyPath: m_RootOrder
       value: 0

@@ -24,8 +24,14 @@ namespace IzBone.PhysSpring.Core {
 
 		public float4x4 l2w;		// ボーン親の更に親のL2W
 	}
-	public struct Root_G:ICD {public Gravity src; public float3 value;}				// 重力加速度
-	public struct Root_Air:ICD {public float3 winSpd; public HalfLife airDrag;}		// 風の影響
+	public struct Root_G:ICD {public Gravity src; public float3 value;}	// 重力加速度
+	public struct Root_Air:ICD {			// 空気関連のパラメータ
+		public float3 winSpd;					// 風速
+		public HalfLife airDrag;				// 空気抵抗
+
+		public float3 winSpdIntegral;			// 空気抵抗を考慮して積分した結果
+		public float airResRateIntegral;		// 空気抵抗の積分結果
+	}
 	public struct Root_WithAnimation:ICD {public bool value;}	// 毎フレームデフォルト位置を再キャッシュするか否か
 	public struct Root_FirstPtcl:ICD {public Entity value;}		// Springの開始位置のEntity。Ptclがついている
 	public struct Root_ColliderPack:ICD {public Entity value;}	// 衝突検出を行う対象のコライダー
@@ -57,6 +63,7 @@ namespace IzBone.PhysSpring.Core {
 	public struct Ptcl_Root:ICD {public Entity value;}		// RootのEntity
 	public struct Ptcl_Child:ICD {public Entity value;}		// 子供側のEntity
 	public struct Ptcl_R:ICD {public float value;}			// 衝突判定用の半径
+	public struct Ptcl_RestoreHL:ICD {public HalfLife value;}	// Default位置への復元半減期
 
 
 

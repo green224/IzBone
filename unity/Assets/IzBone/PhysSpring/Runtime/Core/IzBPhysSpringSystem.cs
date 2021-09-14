@@ -13,6 +13,7 @@ using System.Runtime.CompilerServices;
 
 namespace IzBone.PhysSpring.Core {
 using Common;
+using Common.Field;
 
 [UpdateInGroup(typeof(IzBoneSystemGroup))]
 [UpdateAfter(typeof(IzBCollider.Core.IzBColliderSystem))]
@@ -129,6 +130,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 		// 追加・削除されたAuthの情報をECSへ反映させる
 		_entityReg.apply(EntityManager);
 
+// TODO : 風・重力の処理は別システムへ一括して移す
 
 		{// 風の影響を決定する処理。
 			// TODO : これは今はWithoutBurstだが、後で何とかする
@@ -144,12 +146,34 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 		}
 
 
-		{// 重力加速度を決定する処理
+		{// 重力加速度を決定する
 			var defG = (float3)UnityEngine.Physics.gravity;
 			Dependency = Entities.ForEach((ref Root_G g)=>{
 				g.value = g.src.evaluate(defG);
 			}).Schedule( Dependency );
 		}
+
+
+		// 空気抵抗関係の値を事前計算しておく
+	#if WITH_DEBUG
+		Entities.ForEach((
+	#else
+		Dependency = Entities.ForEach((
+	#endif
+			Entity entity,
+			ref Root_Air air
+		)=>{
+			var airResRateIntegral =
+				HalfLifeDragAttribute.evaluateIntegral(air.airDrag, deltaTime);
+
+			air.winSpdIntegral = air.winSpd * (deltaTime - airResRateIntegral);
+			air.airResRateIntegral = airResRateIntegral;
+	#if WITH_DEBUG
+		}).WithoutBurst().Run();
+	#else
+		}).Schedule( Dependency );
+	#endif
+
 
 
 		// 現在のTransformをすべてのECSへ転送
@@ -232,39 +256,49 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 	#endif
 
 
-// コライダ衝突処理はECS的にはこうやって分離するべきだが、分離してみたところ逆に処理負荷が増えているので、いったんコメントアウト
-//		// コライダの衝突判定
-//	#if WITH_DEBUG
-//		Entities.ForEach((
-//	#else
-//		Dependency = Entities.ForEach((
-//	#endif
-//			ref Ptcl_LastWPos lastWPos,
-//			in Ptcl_R r,
-//			in Ptcl_Child child,
-//			in Ptcl_Root root
-//		)=>{
-//			var collider = GetComponent<Root_ColliderPack>(root.value).value;
-//			if (collider == Entity.Null) return;
-//
-//			// 前フレームにキャッシュされた位置にパーティクルが移動したとして、
-//			// その位置でコライダとの衝突解決をしておく
-//
-//			var rVal = r.value;
-//			for (
-//				var e = collider;
-//				e != Entity.Null;
-//				e = GetComponent<IzBCollider.Core.Body_Next>(e).value
-//			) {
-//				var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
-//				var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
-//				rc.solveCollision( st, ref lastWPos.value, rVal );
-//			}
-//	#if WITH_DEBUG
-//		}).WithoutBurst().Run();
-//	#else
-//		}).Schedule(Dependency);
-//	#endif
+
+		// 環境による位置更新
+	#if WITH_DEBUG
+		Entities.ForEach((
+	#else
+		Dependency = Entities.ForEach((
+	#endif
+			ref Ptcl_LastWPos lastWPos,
+			in Ptcl_R r,
+			in Ptcl_Child child,
+			in Ptcl_Root root
+		)=>{
+			// 重力・空気関係の値
+			var g = GetComponent<Root_G>(root.value).value;
+			var air = GetComponent<Root_Air>(root.value);
+
+			// 前フレームにキャッシュされた位置を重力・風の影響によりずらず
+			lastWPos.value +=
+				(g*deltaTime) * air.airResRateIntegral +
+				air.winSpdIntegral;
+
+			// コライダの衝突判定
+			var collider = GetComponent<Root_ColliderPack>(root.value).value;
+			if (collider != Entity.Null) {
+
+				// 前フレームにキャッシュされた位置にパーティクルが移動したとして、
+				// その位置でコライダとの衝突解決をしておく
+				var rVal = r.value;
+				for (
+					var e = collider;
+					e != Entity.Null;
+					e = GetComponent<IzBCollider.Core.Body_Next>(e).value
+				) {
+					var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
+					var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
+					rc.solveCollision( st, ref lastWPos.value, rVal );
+				}
+			}
+	#if WITH_DEBUG
+		}).WithoutBurst().Run();
+	#else
+		}).Schedule(Dependency);
+	#endif
 
 
 		{// シミュレーションの本更新処理
@@ -283,30 +317,38 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			Entity entity,
 			in Root root
 		)=>{
+			var iterationNum = root.iterationNum;
+			var dt = deltaTime / iterationNum;
+
 			// 一繋ぎ分のSpringの情報をまとめて取得しておく
 			var buf_particle    = new NativeArray<Ptcl>(root.depth, Allocator.Temp);
 			var buf_defState  = new NativeArray<Ptcl_DefState>(root.depth, Allocator.Temp);
 			var buf_lastWPos  = new NativeArray<Ptcl_LastWPos>(root.depth, Allocator.Temp);
 			var buf_curTrans  = new NativeArray<CurTrans>(root.depth, Allocator.Temp);
 			var buf_entity    = new NativeArray<Entity>(root.depth, Allocator.Temp);
+			var buf_restoreRate = new NativeArray<float>(root.depth, Allocator.Temp);
 			{
 				var e = GetComponent<Root_FirstPtcl>(entity).value;
 				for (int i=0;; ++i) {
-					buf_entity[i]    = e;
-					buf_particle[i]    = particles[e];
-					buf_defState[i]  = GetComponent<Ptcl_DefState>(e);
+					buf_entity[i]   = e;
+					buf_particle[i] = particles[e];
+					buf_defState[i] = GetComponent<Ptcl_DefState>(e);
 					buf_lastWPos[i] = lastWPoss[e];
-					buf_curTrans[i]  = curTranss[e];
+					buf_curTrans[i] = curTranss[e];
+					buf_restoreRate[i] = GetComponent<Ptcl_RestoreHL>(e).value.evaluate(dt);
 					if (i == root.depth-1) break;
 					e = GetComponent<Ptcl_Child>(e).value;
 				}
 			}
 
 			// 本更新処理
-			var iterationNum = root.iterationNum;
 			var rsRate = root.rsRate;
-			var dt = deltaTime / iterationNum;
-			var collider = GetComponent<Root_ColliderPack>(entity).value;
+			var airResRateIntegral =
+				HalfLifeDragAttribute.evaluateIntegral(
+					GetComponent<Root_Air>(entity).airDrag,
+					dt
+				);
+//			var collider = GetComponent<Root_ColliderPack>(entity).value;
 			for (int itr=0; itr<iterationNum; ++itr) {
 				var l2w = root.l2w;
 				for (int i=0; i<root.depth; ++i) {
@@ -316,20 +358,20 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 					var defState = buf_defState[i];
 					var lastWPos = buf_lastWPos[i];
 
-					// 前フレームにキャッシュされた位置にパーティクルが移動したとして、
-					// その位置でコライダとの衝突解決をしておく
-					if (collider != Entity.Null) {
-						var r = GetComponent<Ptcl_R>(buf_entity[i]).value;
-						for (
-							var e = collider;
-							e != Entity.Null;
-							e = GetComponent<IzBCollider.Core.Body_Next>(e).value
-						) {
-							var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
-							var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
-							rc.solveCollision( st, ref lastWPos.value, r );
-						}
-					}
+//					// 前フレームにキャッシュされた位置にパーティクルが移動したとして、
+//					// その位置でコライダとの衝突解決をしておく
+//					if (collider != Entity.Null) {
+//						var r = GetComponent<Ptcl_R>(buf_entity[i]).value;
+//						for (
+//							var e = collider;
+//							e != Entity.Null;
+//							e = GetComponent<IzBCollider.Core.Body_Next>(e).value
+//						) {
+//							var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
+//							var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
+//							rc.solveCollision( st, ref lastWPos.value, r );
+//						}
+//					}
 
 					// 前フレームにキャッシュされた位置を先端目標位置として、
 					// 先端目標位置へ移動した結果の移動・姿勢ベクトルを得る
@@ -362,14 +404,26 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 
 					// バネ振動を更新
 					if ( rsRate <= 0.999f ) {
-						spring.spring_rot.x = rotVec;
-						spring.spring_rot.update(dt);
-						rotVec = spring.spring_rot.x;
+//						spring.spring_rot.update(dt);
+						updateSpring(
+							dt,
+							ref rotVec, ref spring.spring_rot.v,
+							spring.spring_rot.maxX, spring.spring_rot.maxV,
+							spring.spring_rot.kpm,
+							airResRateIntegral,
+							buf_restoreRate[i]
+						);
 					}
 					if ( 0.001f <= rsRate ) {
-						spring.spring_sft.x = sftVec;
-						spring.spring_sft.update(dt);
-						sftVec = spring.spring_sft.x;
+//						spring.spring_sft.update(dt);
+						updateSpring(
+							dt,
+							ref sftVec, ref spring.spring_sft.v,
+							spring.spring_sft.maxX, spring.spring_sft.maxV,
+							spring.spring_sft.kpm,
+							airResRateIntegral,
+							buf_restoreRate[i]
+						);
 					}
 
 					// 現在の姿勢情報から、Transformに設定するための情報を構築
@@ -438,6 +492,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			buf_lastWPos.Dispose();
 			buf_curTrans.Dispose();
 			buf_entity.Dispose();
+			buf_restoreRate.Dispose();
 
 	#if WITH_DEBUG
 		}).WithoutBurst().Run();
@@ -497,6 +552,34 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 		}
 
 		return ret;
+	}
+
+
+	/** バネ更新処理 */
+	static void updateSpring(
+		float dt,
+		ref float3 x, ref float3 v,	// 位置と速度
+		float3 maxX, float3 maxV,	// 位置・速度最大値
+		float kpm,					// バネ係数/質量
+		float airResRateIntegral,	// 空気抵抗を積分したもの
+		float restoreRate			// 強制復元力による戻し
+	) {
+		if (dt < 0.000001f) return;
+
+		// バネ振動による加速度と空気抵抗から、新しい位置を算出
+		var a = -x * kpm;
+		var dX = (v + a/2*dt) * airResRateIntegral;
+
+		// 新しい速度に直線的に遷移したと仮定して、速度を更新
+		x += dX;
+		v = dX/dt*2 - v;
+
+		// 強制復元力による復元処理
+		x *= restoreRate;
+
+		// 範囲情報でクリッピング
+		x = clamp(x, -maxX, maxX);
+		v = clamp(v, -maxV, maxV);
 	}
 
 }

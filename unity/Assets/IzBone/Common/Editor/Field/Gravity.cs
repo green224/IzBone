@@ -32,6 +32,9 @@ namespace IzBone.Common.Field {
 			var pos = EditorGUI.PrefixLabel(line, label);
 
 			{// カスタム重力を使用するか否か
+				var lastIdtLv = EditorGUI.indentLevel;
+				EditorGUI.indentLevel = 0;
+
 				var p0 = pos;
 				var p1 = pos;
 				p0.xMax -= 18;
@@ -40,6 +43,8 @@ namespace IzBone.Common.Field {
 				EditorGUI.LabelField( p0, "UseCustom", style );
 				p1.xMin = p1.xMax - 14;
 				EditorGUI.PropertyField( p1, prop_useCustom, GUIContent.none );
+
+				EditorGUI.indentLevel = lastIdtLv;
 			}
 
 			// 中身

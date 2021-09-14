@@ -187,6 +187,8 @@ public sealed class IzBPhysClothSystem : SystemBase {
 		}
 	#endif
 
+// TODO : 風・重力の処理は別システムへ一括して移す
+
 		{// 風の影響を決定する処理。
 			// TODO : これは今はWithoutBurstだが、後で何とかする
 			Entities.ForEach((
@@ -201,12 +203,33 @@ public sealed class IzBPhysClothSystem : SystemBase {
 		}
 
 
-		{// 重力加速度を決定する処理
+		{// 重力加速度を決定する
 			var defG = (float3)UnityEngine.Physics.gravity;
 			Dependency = Entities.ForEach((ref Root_G g)=>{
 				g.value = g.src.evaluate(defG);
 			}).Schedule( Dependency );
 		}
+
+
+		// 空気抵抗関係の値を事前計算しておく
+	#if WITH_DEBUG
+		Entities.ForEach((
+	#else
+		Dependency = Entities.ForEach((
+	#endif
+			Entity entity,
+			ref Root_Air air
+		)=>{
+			var airResRateIntegral =
+				HalfLifeDragAttribute.evaluateIntegral(air.airDrag, deltaTime);
+
+			air.winSpdIntegral = air.winSpd * (deltaTime - airResRateIntegral);
+			air.airResRateIntegral = airResRateIntegral;
+	#if WITH_DEBUG
+		}).WithoutBurst().Run();
+	#else
+		}).Schedule( Dependency );
+	#endif
 
 
 		{// デフォルト姿勢でのL2Wを計算しておく
@@ -268,27 +291,6 @@ public sealed class IzBPhysClothSystem : SystemBase {
 			}).WithAll<Root>().Schedule( Dependency );
 		#endif
 		}
-
-
-		// 空気抵抗関係の値を事前計算しておく
-	#if WITH_DEBUG
-		Entities.ForEach((
-	#else
-		Dependency = Entities.ForEach((
-	#endif
-			Entity entity,
-			ref Root_Air air
-		)=>{
-			var airResRateIntegral =
-				HalfLifeDragAttribute.evaluateIntegral(air.airDrag, deltaTime);
-
-			air.winSpdIntegral = air.winSpd * (deltaTime - airResRateIntegral);
-			air.airResRateIntegral = airResRateIntegral;
-	#if WITH_DEBUG
-		}).WithoutBurst().Run();
-	#else
-		}).Schedule( Dependency );
-	#endif
 
 
 		// 質点の位置を更新

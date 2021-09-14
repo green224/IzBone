@@ -41,19 +41,18 @@ public sealed class RootAuthoring : MonoBehaviour {
 		[RangeSC(0,1)] public SC angleMargin = 0.3f;
 		[RangeSC(0,100)] public SC omgMax = 20;
 		[RangeSC(0,1000)] public SC rotKpm = 70;
-		[RangeSC(0,1)] public SC omgDrag = 0.5f;
 
 		[Space]
 		[RangeSC(0)] public SC shiftMax = 1;
 		[RangeSC(0,1)] public SC shiftMargin = 0.3f;
 		[RangeSC(0)] public SC vMax = 1;
 		[RangeSC(0)] public SC shiftKpm = 1000;
-		[RangeSC(0,1)] public SC vDrag = 0.5f;
 
 		[Space]
 		public Gravity g = new Gravity(0);				// 重力加速度
 		public float3 windSpeed = default;				// 風速
-		public HalfLife airDrag = 0.1f;					// 風速
+		[HalfLifeDrag] public HalfLife airDrag = 0.5f;	// 空気抵抗
+		[RangeSC(0,1)] public SC restorePow = 0.1f;		// 初期位置への強制戻し力
 		[RangeSC(0)] public SC radius = 0.1f;			// パーティクル半径
 		[JointCount(1)] public int depth = 1;			// ボーン深度
 		[Range(1,10)] public int iterationNum = 1;		// 繰り返し計算回数
