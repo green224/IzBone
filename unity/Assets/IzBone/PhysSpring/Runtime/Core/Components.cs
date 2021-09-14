@@ -40,29 +40,37 @@ namespace IzBone.PhysSpring.Core {
 
 	// 以降、１ParticleごとのEntityに対して付けるコンポーネント群
 
-	/**
-	 * シミュレーションの1間接部分の情報を表すコンポーネント。
-	 * 間接ごとのEntityに対して付ける。
-	 */
-	public struct Ptcl:ICD {
-		public Math8.SmoothRange_Float range_rot;		// 回転 - 範囲情報
-		public Math8.SmoothRange_Float3 range_sft;		// 移動 - 範囲情報
-		public Math8.Spring_Float3 spring_rot;			// 回転 - バネ
-		public Math8.Spring_Float3 spring_sft;			// 移動 - バネ
+	public struct Ptcl:ICD {}
+	public struct Ptcl_Spring:ICD {
+		public float aglMax; public float aglMargin;	// 範囲 - 回転
+		public float posMax; public float posMargin;	// 範囲 - 移動
+		public float springPow;							// バネ係数のスケール
+		public float maxV;								// 最高速度のスケール
+
+		public Math8.SmoothRange_Float getAglRange() {
+			Math8.SmoothRange_Float ret = default;
+			ret.reset(-aglMax, aglMax, aglMargin);
+			return ret;
+		}
+		public Math8.SmoothRange_Float3 getPosRange() {
+			Math8.SmoothRange_Float3 ret = default;
+			ret.reset(-posMax, posMax, posMargin);
+			return ret;
+		}
+	}
+	public struct Ptcl_V:ICD {public float3 v; public float3 omg;}	// 速度・角速度
+
+	public struct Ptcl_DefState:ICD {	// 関節ごとのデフォルト位置姿勢情報
+		public quaternion defRot;			// 親の初期姿勢
+		public float3 defPos;				// 親の初期ローカル座標
+		public float3 childDefPos;			// 子の初期ローカル座標
+		public float3 childDefPosMPR;		// 子の初期ローカル座標に親の回転とスケールを掛けたもの。これはキャッシュすべきか悩みどころ…
 	}
 
-	/** OneSpringごとのデフォルト位置姿勢情報 */
-	public struct Ptcl_DefState:ICD {
-		public quaternion defRot;		// 親の初期姿勢
-		public float3 defPos;			// 親の初期ローカル座標
-		public float3 childDefPos;		// 子の初期ローカル座標
-		public float3 childDefPosMPR;	// 子の初期ローカル座標に親の回転とスケールを掛けたもの。これはキャッシュすべきか悩みどころ…
-	}
-
-	public struct Ptcl_LastWPos:ICD {public float3 value;}	// 前フレームでのワールド位置のキャッシュ
-	public struct Ptcl_Root:ICD {public Entity value;}		// RootのEntity
-	public struct Ptcl_Child:ICD {public Entity value;}		// 子供側のEntity
-	public struct Ptcl_R:ICD {public float value;}			// 衝突判定用の半径
+	public struct Ptcl_LastWPos:ICD {public float3 value;}		// 前フレームでのワールド位置のキャッシュ
+	public struct Ptcl_Root:ICD {public Entity value;}			// RootのEntity
+	public struct Ptcl_Child:ICD {public Entity value;}			// 子供側のEntity
+	public struct Ptcl_R:ICD {public float value;}				// 衝突判定用の半径
 	public struct Ptcl_RestoreHL:ICD {public HalfLife value;}	// Default位置への復元半減期
 
 

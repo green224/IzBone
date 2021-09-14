@@ -358,44 +358,14 @@ MonoBehaviour:
       end: 0.5
       curve: 0.5
       useCurve: 0
-    omgMax:
-      start: 20
-      end: 20
-      curve: 0.5
-      useCurve: 0
-    rotKpm:
-      start: 70
-      end: 30
-      curve: 0.5
-      useCurve: 1
-    omgDrag:
-      start: 0.6
-      end: 0.8
-      curve: 0.5
-      useCurve: 1
     shiftMax:
-      start: 0.01
-      end: 0.01
+      start: 0.39
+      end: 0.39
       curve: 0.5
       useCurve: 0
     shiftMargin:
       start: 0.3
       end: 0.3
-      curve: 0.5
-      useCurve: 0
-    vMax:
-      start: 1
-      end: 1
-      curve: 0.5
-      useCurve: 0
-    shiftKpm:
-      start: 300
-      end: 300
-      curve: 0.5
-      useCurve: 0
-    vDrag:
-      start: 0.5
-      end: 0.5
       curve: 0.5
       useCurve: 0
     g:
@@ -411,6 +381,16 @@ MonoBehaviour:
       z: 0
     airDrag:
       value: 0.12011243
+    springPow:
+      start: 0.38
+      end: 0.38
+      curve: 0.5
+      useCurve: 0
+    maxV:
+      start: 0.5
+      end: 0.5
+      curve: 0.5
+      useCurve: 0
     restorePow:
       start: 0.1
       end: 0.5
@@ -439,44 +419,14 @@ MonoBehaviour:
       end: 0.3
       curve: 0.5
       useCurve: 0
-    omgMax:
-      start: 20
-      end: 20
-      curve: 0.5
-      useCurve: 0
-    rotKpm:
-      start: 54
-      end: 54
-      curve: 0.5
-      useCurve: 0
-    omgDrag:
-      start: 0.8
-      end: 0.532
-      curve: 0.34807378
-      useCurve: 1
     shiftMax:
-      start: 0.01
-      end: 0.01
+      start: 0.38
+      end: 0.38
       curve: 0.5
       useCurve: 0
     shiftMargin:
       start: 0.3
       end: 0.3
-      curve: 0.5
-      useCurve: 0
-    vMax:
-      start: 1
-      end: 1
-      curve: 0.5
-      useCurve: 0
-    shiftKpm:
-      start: 300
-      end: 300
-      curve: 0.5
-      useCurve: 0
-    vDrag:
-      start: 0.5
-      end: 0.5
       curve: 0.5
       useCurve: 0
     g:
@@ -491,10 +441,20 @@ MonoBehaviour:
       y: 0
       z: 0
     airDrag:
-      value: 0.18328121
+      value: 0.056978565
+    springPow:
+      start: 0.48
+      end: 0.48
+      curve: 0.5
+      useCurve: 0
+    maxV:
+      start: 0.58
+      end: 0.58
+      curve: 0.5
+      useCurve: 0
     restorePow:
       start: 0.3
-      end: 0
+      end: 0.1
       curve: 0.36960065
       useCurve: 1
     radius:
@@ -614,44 +574,14 @@ MonoBehaviour:
       end: 0.8
       curve: 0.5
       useCurve: 0
-    omgMax:
-      start: 4
-      end: 4
-      curve: 0.5
-      useCurve: 0
-    rotKpm:
-      start: 77
-      end: 77
-      curve: 0.5
-      useCurve: 0
-    omgDrag:
-      start: 0.4
-      end: 0.4
-      curve: 0.5
-      useCurve: 0
     shiftMax:
-      start: 0.01
-      end: 0.01
+      start: 0.1
+      end: 1
       curve: 0.5
-      useCurve: 0
+      useCurve: 1
     shiftMargin:
       start: 0.3
       end: 0.3
-      curve: 0.5
-      useCurve: 0
-    vMax:
-      start: 1
-      end: 1
-      curve: 0.5
-      useCurve: 0
-    shiftKpm:
-      start: 10
-      end: 10
-      curve: 0.5
-      useCurve: 0
-    vDrag:
-      start: 0.79
-      end: 0.79
       curve: 0.5
       useCurve: 0
     g:
@@ -667,6 +597,16 @@ MonoBehaviour:
       z: 0
     airDrag:
       value: 0.0880318
+    springPow:
+      start: 0.1
+      end: 0.1
+      curve: 0.5
+      useCurve: 0
+    maxV:
+      start: 0.5
+      end: 0.5
+      curve: 0.5
+      useCurve: 0
     restorePow:
       start: 0
       end: 0
@@ -1395,15 +1335,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 686e2045b199c5b4fa2ce73d7dca5d46, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

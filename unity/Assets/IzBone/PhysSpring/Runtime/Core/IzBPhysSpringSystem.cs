@@ -37,10 +37,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			var e = etp.Entities[ etpIdx ];
 			var t = etp.Transforms[ etpIdx ];
 
-			var spring = GetComponent<Ptcl>(e);
-			spring.spring_rot.v = 0;
-			spring.spring_sft.v = 0;
-			SetComponent(e, spring);
+			SetComponent(e, new Ptcl_V());
 
 			var defState = GetComponent<Ptcl_DefState>(e);
 			var childWPos = t.localToWorldMatrix.MultiplyPoint(defState.childDefPos);
@@ -302,14 +299,14 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 
 
 		{// シミュレーションの本更新処理
-		var particles = GetComponentDataFromEntity<Ptcl>();
+		var vs = GetComponentDataFromEntity<Ptcl_V>();
 		var lastWPoss = GetComponentDataFromEntity<Ptcl_LastWPos>();
 		var curTranss = GetComponentDataFromEntity<CurTrans>();
 	#if WITH_DEBUG
 		Entities.ForEach((
 	#else
 		Dependency = Entities
-		.WithNativeDisableParallelForRestriction(particles)
+		.WithNativeDisableParallelForRestriction(vs)
 		.WithNativeDisableParallelForRestriction(lastWPoss)
 		.WithNativeDisableParallelForRestriction(curTranss)
 		.ForEach((
@@ -321,7 +318,8 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			var dt = deltaTime / iterationNum;
 
 			// 一繋ぎ分のSpringの情報をまとめて取得しておく
-			var buf_particle    = new NativeArray<Ptcl>(root.depth, Allocator.Temp);
+			var buf_spring    = new NativeArray<Ptcl_Spring>(root.depth, Allocator.Temp);
+			var buf_v         = new NativeArray<Ptcl_V>(root.depth, Allocator.Temp);
 			var buf_defState  = new NativeArray<Ptcl_DefState>(root.depth, Allocator.Temp);
 			var buf_lastWPos  = new NativeArray<Ptcl_LastWPos>(root.depth, Allocator.Temp);
 			var buf_curTrans  = new NativeArray<CurTrans>(root.depth, Allocator.Temp);
@@ -331,7 +329,8 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 				var e = GetComponent<Root_FirstPtcl>(entity).value;
 				for (int i=0;; ++i) {
 					buf_entity[i]   = e;
-					buf_particle[i] = particles[e];
+					buf_spring[i] = GetComponent<Ptcl_Spring>(e);
+					buf_v[i] = vs[e];
 					buf_defState[i] = GetComponent<Ptcl_DefState>(e);
 					buf_lastWPos[i] = lastWPoss[e];
 					buf_curTrans[i] = curTranss[e];
@@ -354,7 +353,8 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 				for (int i=0; i<root.depth; ++i) {
 
 					// OneSpringごとのコンポーネントを取得
-					var spring = buf_particle[i];
+					var spring = buf_spring[i];
+					var v = buf_v[i];
 					var defState = buf_defState[i];
 					var lastWPos = buf_lastWPos[i];
 
@@ -395,32 +395,31 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 							sftVec = Unity.Mathematics.float3.zero;
 						} else if ( 0.999f < rsRate ) {
 							rotVec = Unity.Mathematics.float3.zero;
-							sftVec = spring.range_sft.local2global(tgtBPos - cdpMPR);
+							sftVec = spring.getPosRange().local2global(tgtBPos - cdpMPR);
 						} else {
 							rotVec = getRotVecFromTgtBPos( tgtBPos, ref spring, cdpMPR ) * (1f - rsRate);
-							sftVec = spring.range_sft.local2global((tgtBPos - cdpMPR) * rsRate);
+							sftVec = spring.getPosRange().local2global((tgtBPos - cdpMPR) * rsRate);
 						}
 					}
 
 					// バネ振動を更新
 					if ( rsRate <= 0.999f ) {
-//						spring.spring_rot.update(dt);
 						updateSpring(
 							dt,
-							ref rotVec, ref spring.spring_rot.v,
-							spring.spring_rot.maxX, spring.spring_rot.maxV,
-							spring.spring_rot.kpm,
+							ref rotVec, ref v.omg,
+							spring.aglMax, spring.maxV,
+							spring.springPow,
 							airResRateIntegral,
 							buf_restoreRate[i]
 						);
 					}
 					if ( 0.001f <= rsRate ) {
-//						spring.spring_sft.update(dt);
+						var r = length( defState.childDefPos );
 						updateSpring(
 							dt,
-							ref sftVec, ref spring.spring_sft.v,
-							spring.spring_sft.maxX, spring.spring_sft.maxV,
-							spring.spring_sft.kpm,
+							ref sftVec, ref v.v,
+							spring.posMax, spring.maxV * r,
+							spring.springPow * r,
 							airResRateIntegral,
 							buf_restoreRate[i]
 						);
@@ -473,7 +472,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 					lastWPos.value = mulMxPos(l2w, defState.childDefPos);
 
 					// バッファを更新
-					buf_particle[i] = spring;
+					buf_v[i] = v;
 					buf_curTrans[i] = result;
 					buf_lastWPos[i] = lastWPos;
 				}
@@ -483,11 +482,12 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			// コンポーネントへ値を反映
 			for (int i=0; i<root.depth; ++i) {
 				var e = buf_entity[i];
-				particles[e] = buf_particle[i];
+				vs[e] = buf_v[i];
 				curTranss[e] = buf_curTrans[i];
 				lastWPoss[e] = buf_lastWPos[i];
 			}
-			buf_particle.Dispose();
+			buf_spring.Dispose();
+			buf_v.Dispose();
 			buf_defState.Dispose();
 			buf_lastWPos.Dispose();
 			buf_curTrans.Dispose();
@@ -534,7 +534,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 	// 先端目標位置へ移動した結果の姿勢ベクトルを得る処理
 	static float3 getRotVecFromTgtBPos(
 		float3 tgtBPos,
-		ref Ptcl spring,
+		ref Ptcl_Spring spring,
 		float3 childDefPosMPR
 	) {
 		var childDefDir = normalize( childDefPosMPR );
@@ -547,7 +547,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			ret = Unity.Mathematics.float3.zero;
 		} else {
 			var theta = acos( dot(childDefDir, tgtBPos) );
-			theta = spring.range_rot.local2global( theta );
+			theta = spring.getAglRange().local2global( theta );
 			ret = crs * (theta/crsNrm);
 		}
 

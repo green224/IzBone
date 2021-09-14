@@ -62,7 +62,13 @@ namespace IzBone.PhysSpring.Core {
 
 					// コンポーネントを割り当て
 					var entity = em.CreateEntity();
-					em.AddComponentData(entity, genOneSpring(bone, dRate));
+					em.AddComponentData(entity, new Ptcl());
+					em.AddComponentData( entity, genOneSpring(
+						bone,
+						dRate,
+						length(child.localPosition)
+					));
+					em.AddComponentData(entity, new Ptcl_V());
 					em.AddComponentData(entity, new Ptcl_DefState{
 						defRot = parent.localRotation,
 						defPos = parent.localPosition,
@@ -134,7 +140,11 @@ namespace IzBone.PhysSpring.Core {
 			// 出来るものだけ同期を行う
 			if (em.HasComponent<Ptcl_M2D>(entity)) {
 				var m2d = em.GetComponentData<Ptcl_M2D>(entity);
-				em.SetComponentData(entity, genOneSpring(m2d.boneAuth, m2d.depthRate));
+				em.SetComponentData(entity, genOneSpring(
+					m2d.boneAuth,
+					m2d.depthRate,
+					length( em.GetComponentData<Ptcl_DefState>(entity).childDefPos )
+				));
 				em.SetComponentData(entity, new Ptcl_R{value=m2d.boneAuth.radius.evaluate(m2d.depthRate)});
 				em.SetComponentData(entity, new Ptcl_RestoreHL{
 					value = HalfLifeDragAttribute.showValue2HalfLife(
@@ -159,26 +169,31 @@ namespace IzBone.PhysSpring.Core {
 			}
 		}
 
-		static Ptcl genOneSpring(RootAuthoring.Bone bone, float dRate) {
-			var ret = new Ptcl{};
+		static Ptcl_Spring genOneSpring(
+			RootAuthoring.Bone bone,
+			float dRate,
+			float toChildDist
+		) {
 			var rotMax = radians( bone.angleMax.evaluate(dRate) );
 			var rotMargin = rotMax * bone.angleMargin.evaluate(dRate);
-			ret.range_rot.reset(-rotMax, rotMax, rotMargin);
-			var shiftMax = bone.shiftMax.evaluate(dRate);
+			var shiftMax = bone.shiftMax.evaluate(dRate) * toChildDist;	// 子供までの距離までを移動距離の最大量とする
 			var shiftMargin = shiftMax * bone.shiftMargin.evaluate(dRate);
-			ret.range_sft.reset(-shiftMax, shiftMax, shiftMargin);
 
-			// バネを初期化
-			ret.spring_rot.kpm = bone.rotKpm.evaluate(dRate);
-			ret.spring_rot.maxV = bone.omgMax.evaluate(dRate);
-			ret.spring_rot.maxX = ret.range_rot.localMax;
-			ret.spring_rot.vHL = 0;
-			ret.spring_sft.kpm = bone.shiftKpm.evaluate(dRate);
-			ret.spring_sft.maxV = bone.vMax.evaluate(dRate);
-			ret.spring_sft.maxX = ret.range_sft.localMax.x;
-			ret.spring_sft.vHL = 0;
-
-			return ret;
+			return new Ptcl_Spring{
+				aglMax = rotMax,
+				aglMargin = rotMargin,
+				posMax = shiftMax,
+				posMargin = shiftMargin,
+				springPow = lerp(
+					0,
+					1000,
+					pow( bone.springPow.evaluate(dRate), 2f )
+				),
+				maxV = pow(
+					10,
+					lerp( 0, 100, bone.maxV.evaluate(dRate) )
+				),
+			};
 		}
 
 

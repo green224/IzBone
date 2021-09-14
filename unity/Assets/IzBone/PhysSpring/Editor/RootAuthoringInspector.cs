@@ -96,6 +96,7 @@ sealed class RootAuthoringInspector : Editor
 					&& 0.00001f < bone.rotShiftRate
 				) {
 					var sft = bone.shiftMax.evaluate(iRate);
+					sft *= length(trns.localPosition)/2;
 					var scl1 = Unity.Mathematics.float4x4.TRS(
 						0, Unity.Mathematics.quaternion.identity, sft
 					);

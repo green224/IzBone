@@ -166,44 +166,14 @@ MonoBehaviour:
       end: 0.3
       curve: 0.5
       useCurve: 0
-    omgMax:
-      start: 20
-      end: 20
-      curve: 0.5
-      useCurve: 0
-    rotKpm:
-      start: 70
-      end: 70
-      curve: 0.5
-      useCurve: 0
-    omgDrag:
-      start: 0.5
-      end: 0.5
-      curve: 0.5
-      useCurve: 0
     shiftMax:
-      start: 0.001
-      end: 1
+      start: 0.16
+      end: 0.16
       curve: 0.5
       useCurve: 0
     shiftMargin:
       start: 0.7
       end: 0.3
-      curve: 0.5
-      useCurve: 0
-    vMax:
-      start: 0.1
-      end: 0.1
-      curve: 0.5
-      useCurve: 0
-    shiftKpm:
-      start: 10
-      end: 10
-      curve: 0.5
-      useCurve: 0
-    vDrag:
-      start: 0.5
-      end: 0.5
       curve: 0.5
       useCurve: 0
     g:
@@ -219,6 +189,16 @@ MonoBehaviour:
       z: 0
     airDrag:
       value: 0.2236068
+    springPow:
+      start: 0.1
+      end: 0.1
+      curve: 0.5
+      useCurve: 0
+    maxV:
+      start: 0.5
+      end: 0.5
+      curve: 0.5
+      useCurve: 0
     restorePow:
       start: 0.1
       end: 0.1
