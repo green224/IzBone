@@ -34,42 +34,44 @@ namespace IzBone.IzBCollider {
 
 		// ----------------------------------- private/protected メンバ -------------------------------
 
-	[NonSerialized] internal float4x4 l2wMtx;
-	[NonSerialized] internal float3 l2wMtxClmNorm;
+		[NonSerialized] internal float4x4 l2wMtx;
+		[NonSerialized] internal float3 l2wMtxClmNorm;
 
-	/** 更新処理。l2gMtx等を呼ぶ前に必ずこれを読んで更新すること */
-	internal void update_phase0() { checkRebuildL2GMat(); }
-	internal void update_phase1() { _transform.hasChanged = false; }
+#if !USE_ECS
+		/** 更新処理。l2gMtx等を呼ぶ前に必ずこれを読んで更新すること */
+		internal void update_phase0() { checkRebuildL2GMat(); }
+		internal void update_phase1() { _transform.hasChanged = false; }
+#endif
 
-	new Transform transform {get{
-		if (_transform == null) _transform = ((MonoBehaviour)this).transform;
-		return _transform;
-	}}
-	Transform _transform;
+		new Transform transform {get{
+			if (_transform == null) _transform = ((MonoBehaviour)this).transform;
+			return _transform;
+		}}
+		Transform _transform;
 
-	float3 _ctrCache = default;
-	quaternion rotCache = Unity.Mathematics.quaternion.identity;
-	void checkRebuildL2GMat() {
-		var trans = transform;
-		if (_shapeType == ShapeType.Sphere) {
-			if (!trans.hasChanged && _ctrCache.Equals(_center)) return;
-			var tr = Unity.Mathematics.float4x4.identity;
-			tr.c3.xyz = _center;
-			l2wMtx = mul(trans.localToWorldMatrix, tr);
-		} else {
-			if (!trans.hasChanged && _ctrCache.Equals(_center) && rotCache.Equals(_rot)) return;
-			var tr = float4x4(_rot, _center);
-			l2wMtx = mul(trans.localToWorldMatrix, tr);
-			rotCache = _rot;
+		float3 _ctrCache = default;
+		quaternion rotCache = Unity.Mathematics.quaternion.identity;
+		void checkRebuildL2GMat() {
+			var trans = transform;
+			if (_shapeType == ShapeType.Sphere) {
+				if (!trans.hasChanged && _ctrCache.Equals(_center)) return;
+				var tr = Unity.Mathematics.float4x4.identity;
+				tr.c3.xyz = _center;
+				l2wMtx = mul(trans.localToWorldMatrix, tr);
+			} else {
+				if (!trans.hasChanged && _ctrCache.Equals(_center) && rotCache.Equals(_rot)) return;
+				var tr = float4x4(_rot, _center);
+				l2wMtx = mul(trans.localToWorldMatrix, tr);
+				rotCache = _rot;
+			}
+			_ctrCache = _center;
+
+			l2wMtxClmNorm = float3(
+				length( l2wMtx.c0.xyz ),
+				length( l2wMtx.c1.xyz ),
+				length( l2wMtx.c2.xyz )
+			);
 		}
-		_ctrCache = _center;
-
-		l2wMtxClmNorm = float3(
-			length( l2wMtx.c0.xyz ),
-			length( l2wMtx.c1.xyz ),
-			length( l2wMtx.c2.xyz )
-		);
-	}
 
 
 		// --------------------------------------------------------------------------------------------
@@ -83,7 +85,8 @@ namespace IzBone.IzBCollider {
 		// OnDrawGizmosで呼べるようにここに定義しているが、
 		// .Editorアセンブリからのみ呼んでいる現状、ここではなくEditorアセンブリに移動するべきかもしれない。
 		internal void DEBUG_drawGizmos() {
-			if ( !Application.isPlaying ) checkRebuildL2GMat();
+//			if ( !Application.isPlaying ) checkRebuildL2GMat();
+			checkRebuildL2GMat();
 			Gizmos8.drawMode = Gizmos8.DrawMode.Handle;
 
 			Gizmos8.color = Gizmos8.Colors.Collider;

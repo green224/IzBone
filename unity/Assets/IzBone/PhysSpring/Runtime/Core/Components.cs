@@ -67,6 +67,9 @@ namespace IzBone.PhysSpring.Core {
 		public float3 childDefPosMPR;		// 子の初期ローカル座標に親の回転とスケールを掛けたもの。これはキャッシュすべきか悩みどころ…
 	}
 
+	// 子の位置までのワールド座標での距離。これをもとにいくつかのパラメータが自動スケールされる
+	public struct Ptcl_ToChildWDist:ICD {public float value;}
+
 	public struct Ptcl_LastWPos:ICD {public float3 value;}		// 前フレームでのワールド位置のキャッシュ
 	public struct Ptcl_Root:ICD {public Entity value;}			// RootのEntity
 	public struct Ptcl_Child:ICD {public Entity value;}			// 子供側のEntity
@@ -80,7 +83,7 @@ namespace IzBone.PhysSpring.Core {
 	// シミュレーション結果をフィードバックする際に使用されるTransform情報。
 	// これは一番末端PtclやRootにも付くが、そいつは参照用のみに使用される。（フィードバックもされてしまうが）
 	public struct CurTrans:ICD {
-		public float3 lPos;
+		public float3 lPos, wPos;
 		public quaternion lRot;
 		public float3 lScl;
 	}

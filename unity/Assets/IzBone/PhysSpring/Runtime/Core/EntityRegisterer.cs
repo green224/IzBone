@@ -61,13 +61,10 @@ namespace IzBone.PhysSpring.Core {
 					}
 
 					// コンポーネントを割り当て
+					var r = length(child.localPosition);
 					var entity = em.CreateEntity();
 					em.AddComponentData(entity, new Ptcl());
-					em.AddComponentData( entity, genOneSpring(
-						bone,
-						dRate,
-						length(child.localPosition)
-					));
+					em.AddComponentData( entity, genOneSpring(bone,dRate,r) );
 					em.AddComponentData(entity, new Ptcl_V());
 					em.AddComponentData(entity, new Ptcl_DefState{
 						defRot = parent.localRotation,
@@ -78,6 +75,7 @@ namespace IzBone.PhysSpring.Core {
 							parent.localScale * (float3)child.localPosition
 						),
 					});
+					em.AddComponentData(entity, new Ptcl_ToChildWDist());
 					em.AddComponentData(entity, new Ptcl_LastWPos{value=child.position});
 					em.AddComponentData(entity, new Ptcl_R{value=bone.radius.evaluate(dRate)});
 					em.AddComponentData(entity, new Ptcl_RestoreHL{
@@ -140,11 +138,8 @@ namespace IzBone.PhysSpring.Core {
 			// 出来るものだけ同期を行う
 			if (em.HasComponent<Ptcl_M2D>(entity)) {
 				var m2d = em.GetComponentData<Ptcl_M2D>(entity);
-				em.SetComponentData(entity, genOneSpring(
-					m2d.boneAuth,
-					m2d.depthRate,
-					length( em.GetComponentData<Ptcl_DefState>(entity).childDefPos )
-				));
+				var r = length( em.GetComponentData<Ptcl_DefState>(entity).childDefPos );
+				em.SetComponentData(entity, genOneSpring(m2d.boneAuth, m2d.depthRate, r));
 				em.SetComponentData(entity, new Ptcl_R{value=m2d.boneAuth.radius.evaluate(m2d.depthRate)});
 				em.SetComponentData(entity, new Ptcl_RestoreHL{
 					value = HalfLifeDragAttribute.showValue2HalfLife(

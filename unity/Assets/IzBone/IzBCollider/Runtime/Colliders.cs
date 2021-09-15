@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !USE_ECS
+using System;
 using UnityEngine;
 
 using Unity.Mathematics;
@@ -127,3 +128,4 @@ namespace IzBone.IzBCollider {
 }
 
 
+#endif

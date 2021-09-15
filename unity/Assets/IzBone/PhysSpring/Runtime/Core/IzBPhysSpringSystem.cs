@@ -73,6 +73,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 
 			curTranss[entity] = new CurTrans{
 				lPos = transform.localPosition,
+				wPos = transform.position,
 				lRot = transform.localRotation,
 				lScl = transform.localScale,
 			};
@@ -195,6 +196,29 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 		}
 
 
+		// 子供のパーティクルまでの距離を計算する。
+		// これはスケールが変わったときにも変わらず動作するためで、毎フレーム行う必要がある
+	#if WITH_DEBUG
+		Entities.ForEach((
+	#else
+		Dependency = Entities.ForEach((
+	#endif
+			Entity entity,
+			in Ptcl_Child child
+		)=>{
+			var curTrans = GetComponent<CurTrans>(entity);
+			var childTrans = GetComponent<CurTrans>(child.value);
+
+			var toChildDist = length(childTrans.wPos - curTrans.wPos);
+			SetComponent(entity, new Ptcl_ToChildWDist{value=toChildDist});
+	#if WITH_DEBUG
+		}).WithoutBurst().Run();
+	#else
+		}).Schedule(Dependency);
+	#endif
+
+
+
 		// デフォルト姿勢等を更新する処理。
 		// 現在位置をデフォルト位置として再計算する必要がある場合は、
 		// このタイミングで再計算を行う
@@ -260,8 +284,8 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 	#else
 		Dependency = Entities.ForEach((
 	#endif
+			Entity entity,
 			ref Ptcl_LastWPos lastWPos,
-			in Ptcl_R r,
 			in Ptcl_Child child,
 			in Ptcl_Root root
 		)=>{
@@ -278,9 +302,11 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			var collider = GetComponent<Root_ColliderPack>(root.value).value;
 			if (collider != Entity.Null) {
 
+				var r = GetComponent<Ptcl_R>(entity).value;
+				r *= GetComponent<Ptcl_ToChildWDist>(entity).value;
+
 				// 前フレームにキャッシュされた位置にパーティクルが移動したとして、
 				// その位置でコライダとの衝突解決をしておく
-				var rVal = r.value;
 				for (
 					var e = collider;
 					e != Entity.Null;
@@ -288,7 +314,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 				) {
 					var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
 					var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
-					rc.solveCollision( st, ref lastWPos.value, rVal );
+					rc.solveCollision( st, ref lastWPos.value, r );
 				}
 			}
 	#if WITH_DEBUG

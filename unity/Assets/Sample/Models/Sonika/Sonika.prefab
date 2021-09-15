@@ -99,8 +99,8 @@ MonoBehaviour:
       curve: 0.5
       useCurve: 0
     radius:
-      start: 0.03
-      end: 0.03
+      start: 0.15
+      end: 0.15
       curve: 0.5
       useCurve: 0
     depth: 1
@@ -124,8 +124,8 @@ MonoBehaviour:
       curve: 0.5
       useCurve: 0
     shiftMax:
-      start: 0.7
-      end: 0.7
+      start: 0.28
+      end: 0.28
       curve: 0.5
       useCurve: 0
     shiftMargin:
@@ -145,25 +145,25 @@ MonoBehaviour:
       y: 0
       z: 0
     airDrag:
-      value: 0.15400924
+      value: 0.16388397
     springPow:
-      start: 0.69
-      end: 0.69
+      start: 0.72
+      end: 0.72
       curve: 0.5
       useCurve: 0
     maxV:
-      start: 0.51
-      end: 0.51
+      start: 0.74
+      end: 0.74
       curve: 0.5
       useCurve: 0
     restorePow:
-      start: 0.1
-      end: 0.1
+      start: 0
+      end: 0
       curve: 0.5
       useCurve: 0
     radius:
-      start: 0.03
-      end: 0.03
+      start: 0.15
+      end: 0.15
       curve: 0.5
       useCurve: 0
     depth: 1
@@ -223,8 +223,8 @@ MonoBehaviour:
       curve: 0.5
       useCurve: 0
     radius:
-      start: 0.03
-      end: 0.03
+      start: 0.11
+      end: 0.11
       curve: 0.5
       useCurve: 0
     depth: 1
@@ -377,8 +377,8 @@ MonoBehaviour:
       curve: 0.5
       useCurve: 0
     radius:
-      start: 0.03
-      end: 0.03
+      start: 0.15
+      end: 0.15
       curve: 0.5
       useCurve: 0
     depth: 1
@@ -440,8 +440,8 @@ MonoBehaviour:
       curve: 0.5
       useCurve: 0
     radius:
-      start: 0.03
-      end: 0.03
+      start: 0.16
+      end: 0.16
       curve: 0.5
       useCurve: 0
     depth: 2
@@ -515,10 +515,10 @@ MonoBehaviour:
       curve: 0.5
       useCurve: 0
     radius:
-      start: 0.03
-      end: 0.02
-      curve: 0.13529412
-      useCurve: 1
+      start: 0.31
+      end: 0.31
+      curve: 0.44499254
+      useCurve: 0
     depth: 4
     iterationNum: 3
     rotShiftRate: 0

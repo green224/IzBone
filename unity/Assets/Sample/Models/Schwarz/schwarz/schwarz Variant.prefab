@@ -205,8 +205,8 @@ MonoBehaviour:
       curve: 0.5
       useCurve: 0
     radius:
-      start: 0.01
-      end: 0.01
+      start: 0.14
+      end: 0.14
       curve: 0.5
       useCurve: 0
     depth: 1

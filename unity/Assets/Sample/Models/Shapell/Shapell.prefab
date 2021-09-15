@@ -397,8 +397,8 @@ MonoBehaviour:
       curve: 0.5
       useCurve: 1
     radius:
-      start: 0.02
-      end: 0.02
+      start: 0.32
+      end: 0.32
       curve: 0.5
       useCurve: 0
     depth: 2
@@ -458,8 +458,8 @@ MonoBehaviour:
       curve: 0.36960065
       useCurve: 1
     radius:
-      start: 0.02
-      end: 0.02
+      start: 0.33
+      end: 0.33
       curve: 0.5
       useCurve: 0
     depth: 6
@@ -613,10 +613,10 @@ MonoBehaviour:
       curve: 0.5
       useCurve: 0
     radius:
-      start: 0.015
-      end: 0.015
+      start: 0.3
+      end: 1
       curve: 0.5
-      useCurve: 0
+      useCurve: 1
     depth: 3
     iterationNum: 2
     rotShiftRate: 0.244

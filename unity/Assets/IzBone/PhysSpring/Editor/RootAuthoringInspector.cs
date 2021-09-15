@@ -52,11 +52,11 @@ sealed class RootAuthoringInspector : Editor
 				// パーティクル本体を描画
 				if ( Common.Windows.GizmoOptionsWindow.isShowPtclR ) {
 					Gizmos8.color = Gizmos8.Colors.JointMovable;
-					Gizmos8.drawSphere(trns.position, bone.radius.evaluate(iRate));
+					var r = length(trns.position - next.position);
+					Gizmos8.drawSphere(trns.position, bone.radius.evaluate(iRate) * r);
 					if (i == bone.depth-1) {
 						Gizmos8.color = Gizmos8.Colors.JointFixed;
-						var r = length(trns.position - next.position) * 0.15f;
-						Gizmos8.drawSphere(next.position, r);
+						Gizmos8.drawSphere(next.position, 0.15f * r);
 					}
 				}
 
