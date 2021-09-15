@@ -61,10 +61,9 @@ namespace IzBone.PhysSpring.Core {
 					}
 
 					// コンポーネントを割り当て
-					var r = length(child.localPosition);
 					var entity = em.CreateEntity();
 					em.AddComponentData(entity, new Ptcl());
-					em.AddComponentData( entity, genOneSpring(bone,dRate,r) );
+					em.AddComponentData( entity, genOneSpring(bone, dRate) );
 					em.AddComponentData(entity, new Ptcl_V());
 					em.AddComponentData(entity, new Ptcl_DefState{
 						defRot = parent.localRotation,
@@ -138,8 +137,7 @@ namespace IzBone.PhysSpring.Core {
 			// 出来るものだけ同期を行う
 			if (em.HasComponent<Ptcl_M2D>(entity)) {
 				var m2d = em.GetComponentData<Ptcl_M2D>(entity);
-				var r = length( em.GetComponentData<Ptcl_DefState>(entity).childDefPos );
-				em.SetComponentData(entity, genOneSpring(m2d.boneAuth, m2d.depthRate, r));
+				em.SetComponentData(entity, genOneSpring(m2d.boneAuth, m2d.depthRate));
 				em.SetComponentData(entity, new Ptcl_R{value=m2d.boneAuth.radius.evaluate(m2d.depthRate)});
 				em.SetComponentData(entity, new Ptcl_RestoreHL{
 					value = HalfLifeDragAttribute.showValue2HalfLife(
@@ -164,14 +162,10 @@ namespace IzBone.PhysSpring.Core {
 			}
 		}
 
-		static Ptcl_Spring genOneSpring(
-			RootAuthoring.Bone bone,
-			float dRate,
-			float toChildDist
-		) {
+		static Ptcl_Spring genOneSpring( RootAuthoring.Bone bone, float dRate ) {
 			var rotMax = radians( bone.angleMax.evaluate(dRate) );
 			var rotMargin = rotMax * bone.angleMargin.evaluate(dRate);
-			var shiftMax = bone.shiftMax.evaluate(dRate) * toChildDist;	// 子供までの距離までを移動距離の最大量とする
+			var shiftMax = bone.shiftMax.evaluate(dRate);
 			var shiftMargin = shiftMax * bone.shiftMargin.evaluate(dRate);
 
 			return new Ptcl_Spring{

@@ -401,6 +401,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 
 					// 前フレームにキャッシュされた位置を先端目標位置として、
 					// 先端目標位置へ移動した結果の移動・姿勢ベクトルを得る
+					var r = length( defState.childDefPos );
 					float3 sftVec, rotVec;
 					{
 						// ワールド座標をボーンローカル座標に変換する
@@ -421,10 +422,10 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 							sftVec = Unity.Mathematics.float3.zero;
 						} else if ( 0.999f < rsRate ) {
 							rotVec = Unity.Mathematics.float3.zero;
-							sftVec = spring.getPosRange().local2global(tgtBPos - cdpMPR);
+							sftVec = spring.getPosRange(r).local2global(tgtBPos - cdpMPR);
 						} else {
 							rotVec = getRotVecFromTgtBPos( tgtBPos, ref spring, cdpMPR ) * (1f - rsRate);
-							sftVec = spring.getPosRange().local2global((tgtBPos - cdpMPR) * rsRate);
+							sftVec = spring.getPosRange(r).local2global((tgtBPos - cdpMPR) * rsRate);
 						}
 					}
 
@@ -440,11 +441,10 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 						);
 					}
 					if ( 0.001f <= rsRate ) {
-						var r = length( defState.childDefPos );
 						updateSpring(
 							dt,
 							ref sftVec, ref v.v,
-							spring.posMax, spring.maxV * r,
+							spring.posMax * r, spring.maxV * r,
 							spring.springPow * r,
 							airResRateIntegral,
 							buf_restoreRate[i]

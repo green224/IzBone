@@ -52,9 +52,9 @@ namespace IzBone.PhysSpring.Core {
 			ret.reset(-aglMax, aglMax, aglMargin);
 			return ret;
 		}
-		public Math8.SmoothRange_Float3 getPosRange() {
+		public Math8.SmoothRange_Float3 getPosRange(float toChildDist) {
 			Math8.SmoothRange_Float3 ret = default;
-			ret.reset(-posMax, posMax, posMargin);
+			ret.reset(-posMax*toChildDist, posMax*toChildDist, posMargin*toChildDist);
 			return ret;
 		}
 	}

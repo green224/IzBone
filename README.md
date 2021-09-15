@@ -18,8 +18,7 @@ WebPlayerを含む全プラットフォームに対応(しているはず)
 ## Ver.1.0までのTODO
 
 * ドキュメントをまとめる
-* PhysSpringに重力/風の影響を追加
-* PhysSpringのSpringを自前で計算する形へ変更
+* PhysClothをスケール変更可能にする
 * PhysCloth/PhysSpringのインスペクタを改善
 * WithoutBurst.Runを一掃する
 * インスペクタを日/英対応
