@@ -91,14 +91,18 @@ namespace IzBone.PhysCloth.Core {
 						var dstMP = auth._particles[mc.dstPtclIdx];
 						if (srcMP.m < Ptcl_InvM.MinimumM && dstMP.m < Ptcl_InvM.MinimumM) break;
 
+						// DefaultLenをHeadToTailの割合で計算する
+						var defLen = mc.param.x / srcMP.headToTailWDist;
+						
 						// コンポーネントを割り当て
 						entity = em.CreateEntity();
 						em.AddComponentData(entity, new DistCstr());
 						var srcEnt = ptclEntities[mc.srcPtclIdx];
 						var dstEnt = ptclEntities[mc.dstPtclIdx];
+						
 						em.AddComponentData(entity, new Cstr_Target{src=srcEnt, dst=dstEnt});
 						em.AddComponentData(entity, new Cstr_Compliance{value = mc.compliance});
-						em.AddComponentData(entity, new Cstr_DefaultLen{value = mc.param.x});
+						em.AddComponentData(entity, new Cstr_DefaultLen{value = defLen});
 						em.AddComponentData(entity, new Cstr_Lmd());
 
 					} break;
@@ -188,7 +192,6 @@ namespace IzBone.PhysCloth.Core {
 				var mc = em.GetComponentData<Cstr_M2D>(entity).auth;
 				// とりあえず今は全部DistanceConstraintとして処理
 				em.SetComponentData(entity, new Cstr_Compliance{value = mc.compliance});
-				em.SetComponentData(entity, new Cstr_DefaultLen{value = mc.param.x});
 			}
 		}
 		

@@ -268,20 +268,30 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				// RootごとにRootから順番にParticleをたどって更新する
 				for (; entity!=Entity.Null; entity=GetComponent<Ptcl_Next>(entity).value) {
 					var invM = GetComponent<Ptcl_InvM>(entity).value;
-					if (invM == 0) continue;
+					if (invM == 0) {
+						// 固定パーティクルの場合はToChildWDistのみ更新する
+						var defHeadL2W = GetComponent<Ptcl_DefaultHeadL2W>(entity).value;
+						var defTailLPos = GetComponent<Ptcl_DefaultTailLPos>(entity).value;
+						var toChildDist =
+							length( mul((float3x3)defHeadL2W, defTailLPos) );
+						SetComponent(entity, new Ptcl_ToChildWDist{value = toChildDist});
 
-					var parent = GetComponent<Ptcl_Parent>(entity).value;
-					var defHeadL2W = mul(
-						GetComponent<Ptcl_DefaultHeadL2W>(parent).value,
-						GetComponent<Ptcl_DefaultHeadL2P>(entity).l2p
-					);
-					var defTailLPos = GetComponent<Ptcl_DefaultTailLPos>(entity).value;
-					var defTailWPos = Math8.trans(defHeadL2W, defTailLPos);
-					SetComponent(entity, new Ptcl_DefaultHeadL2W{value = defHeadL2W});
-					SetComponent(entity, new Ptcl_DefaultTailWPos{value = defTailWPos});
+					} else {
 
-					var toChildDist = length(defTailWPos - defHeadL2W.c3.xyz);
-					SetComponent(entity, new Ptcl_ToChildWDist{value = toChildDist});
+						// 固定パーティクル以外はL2W一式を更新
+						var parent = GetComponent<Ptcl_Parent>(entity).value;
+						var defHeadL2W = mul(
+							GetComponent<Ptcl_DefaultHeadL2W>(parent).value,
+							GetComponent<Ptcl_DefaultHeadL2P>(entity).l2p
+						);
+						var defTailLPos = GetComponent<Ptcl_DefaultTailLPos>(entity).value;
+						var defTailWPos = Math8.trans(defHeadL2W, defTailLPos);
+						SetComponent(entity, new Ptcl_DefaultHeadL2W{value = defHeadL2W});
+						SetComponent(entity, new Ptcl_DefaultTailWPos{value = defTailWPos});
+
+						var toChildDist = length(defTailWPos - defHeadL2W.c3.xyz);
+						SetComponent(entity, new Ptcl_ToChildWDist{value = toChildDist});
+					}
 				}
 		#if WITH_DEBUG
 			}).WithAll<Root>().WithoutBurst().Run();
@@ -617,6 +627,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				var tgt = GetComponent<Cstr_Target>(entity);
 				var compliance = GetComponent<Cstr_Compliance>(entity).value;
 				var defaultLen = GetComponent<Cstr_DefaultLen>(entity).value;
+				defaultLen *= GetComponent<Ptcl_ToChildWDist>(tgt.src).value;
 
 				var wPos0 = GetComponent<Ptcl_WPos>(tgt.src);
 				var wPos1 = GetComponent<Ptcl_WPos>(tgt.dst);

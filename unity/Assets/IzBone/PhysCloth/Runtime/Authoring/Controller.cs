@@ -24,6 +24,7 @@ namespace IzBone.PhysCloth.Authoring {
 		public float4x4 defaultHeadL2P;			// 初期L2P行列
 #endif
 		public readonly float3 defaultTailLPos;	// 初期先端ローカル位置。これは変更しない
+		public readonly float headToTailWDist;	// HeadからTailまでのワールド座標距離。これは変化するが、一旦登録したら変更しない
 
 		public ParticleMng parent, child, left, right;	// 上下左右のパーティクル。childは一番最初の子供
 		public float m;
@@ -51,6 +52,8 @@ namespace IzBone.PhysCloth.Authoring {
 			defaultTailLPos = default;
 			foreach (var i in transTail) defaultTailLPos += (float3)i.localPosition;
 			defaultTailLPos /= transTail.Length;
+			headToTailWDist = transTail[0].parent.localToWorldMatrix
+				.MultiplyVector(defaultTailLPos).magnitude;
 		}
 
 		// Headのみを指定して生成する
