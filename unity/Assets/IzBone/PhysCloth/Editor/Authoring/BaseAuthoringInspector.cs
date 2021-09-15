@@ -68,8 +68,14 @@ abstract class BaseAuthoringInspector : Editor
 #endif
 			var isFixed = i.m < 0.000001f;
 
+			// パーティクルスケールを得る
+			Vector3 tailPosCtr = default;
+			foreach (var j in i.transTail) tailPosCtr += j.position;
+			tailPosCtr /= i.transTail.Length;
+			var rScl = length(i.transTail[0].parent.position - tailPosCtr);
+
 			// パーティクル半径・移動可能距離を描画
-			drawPtcl(pos, quaternion(0,0,0,1), isFixed, r, maxMovableRange);
+			drawPtcl(pos, quaternion(0,0,0,1), isFixed, r, maxMovableRange, rScl);
 
 			// TODO : ここ、矢印にする
 			if ( !isFixed && Common.Windows.GizmoOptionsWindow.isShowPtclV ) {
@@ -103,16 +109,16 @@ abstract class BaseAuthoringInspector : Editor
 	}
 
 	// パーティクル部分を描画する処理
-	static protected void drawPtcl(Transform trans, bool isFixed, float r, float movRange)
-		=> drawPtcl( trans.position, trans.rotation, isFixed, r, movRange );
-	static protected void drawPtcl(float3 pos, quaternion rot, bool isFixed, float r, float movRange) {
+	static protected void drawPtcl(Transform trans, bool isFixed, float r, float movRange, float rScl)
+		=> drawPtcl( trans.position, trans.rotation, isFixed, r, movRange, rScl );
+	static protected void drawPtcl(float3 pos, quaternion rot, bool isFixed, float r, float movRange, float rScl) {
 		// パーティクル半径を描画
 		if ( Common.Windows.GizmoOptionsWindow.isShowPtclR ) {
 			Gizmos8.color = isFixed
 				? Gizmos8.Colors.JointFixed
 				: Gizmos8.Colors.JointMovable;
 
-			var viewR = r;
+			var viewR = r * rScl;
 			if (isFixed) viewR = HandleUtility.GetHandleSize(pos)*0.1f;
 
 			Gizmos8.drawSphere(pos, viewR);
@@ -120,9 +126,9 @@ abstract class BaseAuthoringInspector : Editor
 
 		// 移動可能距離を描画
 		if ( Common.Windows.GizmoOptionsWindow.isShowLimitPos ) {
-			if (!isFixed && 0 <= movRange) {
+			if (!isFixed && 0 < movRange) {
 				Gizmos8.color = Gizmos8.Colors.ShiftLimit;
-				Gizmos8.drawWireCube(pos, rot, movRange*2);
+				Gizmos8.drawWireCube(pos, rot, movRange*2*rScl);
 			}
 		}
 	}

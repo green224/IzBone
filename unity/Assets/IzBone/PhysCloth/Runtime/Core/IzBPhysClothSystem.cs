@@ -123,9 +123,6 @@ public sealed class IzBPhysClothSystem : SystemBase {
 			if (invMs[entity].value == 0) {
 				var headL2W = transform.localToWorldMatrix;
 				var tailLPos = defTailLPoss[entity].value;
-//UnityEngine.Debug.Log("aaa:"+transform.name);
-//UnityEngine.Debug.Log(headL2W);
-//UnityEngine.Debug.Log(tailLPos);
 				defHeadL2Ws[entity] = new Ptcl_DefaultHeadL2W{value = headL2W};
 				defTailWPoss[entity] =
 					new Ptcl_DefaultTailWPos{value = Math8.trans(headL2W, tailLPos)};
@@ -280,10 +277,11 @@ public sealed class IzBPhysClothSystem : SystemBase {
 					);
 					var defTailLPos = GetComponent<Ptcl_DefaultTailLPos>(entity).value;
 					var defTailWPos = Math8.trans(defHeadL2W, defTailLPos);
-//UnityEngine.Debug.Log("bbb:");
-//UnityEngine.Debug.Log(defTailWPos);
 					SetComponent(entity, new Ptcl_DefaultHeadL2W{value = defHeadL2W});
 					SetComponent(entity, new Ptcl_DefaultTailWPos{value = defTailWPos});
+
+					var toChildDist = length(defTailWPos - defHeadL2W.c3.xyz);
+					SetComponent(entity, new Ptcl_ToChildWDist{value = toChildDist});
 				}
 		#if WITH_DEBUG
 			}).WithAll<Root>().WithoutBurst().Run();
@@ -520,7 +518,8 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				if (invM == 0) return;
 
 				var maxMovableRange = GetComponent<Ptcl_MaxMovableRange>(entity).value;
-				if (maxMovableRange < 0) return;
+				if (maxMovableRange <= 0) return;
+				maxMovableRange *= GetComponent<Ptcl_ToChildWDist>(entity).value;
 
 				var cstr = new Constraint.MaxDistance{
 					compliance = DefPosMovRngCompliance,
@@ -550,8 +549,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 		#endif
 				Entity entity,
 				ref Ptcl_WPos wPos,
-				ref Ptcl_CldCstLmd lambda,
-				in Ptcl_R r
+				ref Ptcl_CldCstLmd lambda
 			)=>{
 				var mostParent = GetComponent<Ptcl_Root>(entity).value;
 
@@ -563,6 +561,10 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				var invM = GetComponent<Ptcl_InvM>(entity).value;
 				if (invM == 0) return;
 
+				// パーティクル半径
+				var r = GetComponent<Ptcl_R>(entity).value;
+				r *= GetComponent<Ptcl_ToChildWDist>(entity).value;
+
 				// コライダとの衝突解決
 				var pos = wPos.value;
 				var isCol = false;
@@ -573,7 +575,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				) {
 					var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
 					var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
-					isCol |= rc.solveCollision( st, ref pos, r.value );
+					isCol |= rc.solveCollision( st, ref pos, r );
 				}
 
 				// 何かしらに衝突している場合は、引き離し用拘束条件を適応

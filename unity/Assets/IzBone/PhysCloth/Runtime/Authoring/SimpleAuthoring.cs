@@ -19,12 +19,12 @@ public unsafe abstract class SimpleAuthoring : BaseAuthoring {
 	// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 	[Space]
-	[SerializeField][RangeSC(0)] SC _r = 1;						// パーティクルの半径
-	[SerializeField][RangeSC(0)] SC _m = 1;						// パーティクルの重さ
+	[SerializeField][RangeSC(0,1)] SC _r = 1;					// パーティクルの半径
+	[SerializeField][RangeSC(0,10)] SC _m = 1;					// パーティクルの重さ
 	[SerializeField][RangeSC(0,180)] SC _maxAngle = 60;			// 最大曲げ角度
 	[SerializeField][RangeSC(0,1)] SC _aglRestorePow = 0;		// 曲げ角度の復元力
 	[SerializeField][RangeSC(0,1)] SC _restorePow = 0;			// 初期位置への強制戻し力
-	[SerializeField]SC _maxMovableRange = -1;					// 移動可能距離
+	[SerializeField][RangeSC(0,10)] SC _maxMovableRange = 0;	// 移動可能距離。0で制限なし
 
 
 	// --------------------------------------- publicメンバ -------------------------------------

@@ -48,6 +48,7 @@ namespace IzBone.PhysCloth.Core {
 				em.AddComponentData(entity, new Ptcl_DefaultHeadL2P(mp.transHead));
 				em.AddComponentData(entity, new Ptcl_DefaultTailLPos{value = mp.defaultTailLPos});
 				em.AddComponentData(entity, new Ptcl_DefaultTailWPos());
+				em.AddComponentData(entity, new Ptcl_ToChildWDist());
 				em.AddComponentData(entity, new Ptcl_CurHeadTrans());
 				em.AddComponentData(entity, new Ptcl_WPos{value = mp.getTailWPos()});
 				em.AddComponentData(entity, new Ptcl_R{value = mp.r});

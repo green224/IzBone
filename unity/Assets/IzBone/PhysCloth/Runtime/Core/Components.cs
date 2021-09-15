@@ -70,6 +70,9 @@ namespace IzBone.PhysCloth.Core {
 	public struct Ptcl_DefaultTailLPos:ICD {public float3 value;}
 	public struct Ptcl_DefaultTailWPos:ICD {public float3 value;}
 
+	// 子の位置までのワールド座標での距離。これをもとにいくつかのパラメータが自動スケールされる
+	public struct Ptcl_ToChildWDist:ICD {public float value;}
+
 	// 位置・半径・速度・質量の逆数
 	public struct Ptcl_WPos:ICD {public float3 value;}
 	public struct Ptcl_R:ICD {public float value;}

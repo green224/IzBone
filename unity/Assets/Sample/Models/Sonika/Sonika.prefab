@@ -636,8 +636,8 @@ MonoBehaviour:
   maxSpeed: 100
   withAnimation: 1
   _r:
-    start: 0.015
-    end: 0.03
+    start: 0.15
+    end: 0.3
     curve: 0.59972084
     useCurve: 1
   _m:
@@ -661,8 +661,8 @@ MonoBehaviour:
     curve: 0.5
     useCurve: 0
   _maxMovableRange:
-    start: 0.05
-    end: 0.12
+    start: 0.5
+    end: 1.2
     curve: 0.5
     useCurve: 1
   _topOfBones:

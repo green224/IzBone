@@ -55,7 +55,7 @@ sealed class PlaneAuthoringInspector : BaseAuthoringInspector
 		}
 
 		{// ギズモを描画
-			drawPtcl( tob[0].parent, true, 0, 0 );
+			drawPtcl( tob[0].parent, true, 0, 0, 0 );
 			var tLst0 = tob.Select(i=>i.parent).ToArray();
 			var tLst1 = tob.ToArray();
 			for (int dIdx = 0;; ++dIdx) {
@@ -63,7 +63,8 @@ sealed class PlaneAuthoringInspector : BaseAuthoringInspector
 				for (int i=0; i<tLst0.Length; ++i) {
 					if (tLst1[i] == null) continue;
 
-					drawPtcl( tLst1[i], dIdx==0, tgt.getR(dIdx), tgt.getMaxMovableRange(dIdx) );
+					var rScl = length(tLst0[i].position - tLst1[i].position);
+					drawPtcl( tLst1[i], dIdx==0, tgt.getR(dIdx), tgt.getMaxMovableRange(dIdx), rScl );
 					drawConnection(tLst0[i], tLst1[i], dIdx==0);
 
 					Transform transL, transR;

@@ -63,14 +63,14 @@ sealed class TreePlaneAuthoringInspector : BaseAuthoringInspector
 
 			// ルートParticleを表示
 			var tLst0 = tob.Select(i=>i.parent).ToList();
-			foreach (var i in tLst0) drawPtcl( i, true, 0, 0 );
+			foreach (var i in tLst0) drawPtcl( i, true, 0, 0, 0 );
 
 			// TopParticleを表示
 			var tLst1 = tob.ToList();
 			for (int i=0; i<tLst0.Count; ++i) {
 				if (tLst1[i] == null) continue;
 
-				drawPtcl( tLst1[i], true, 0, 0 );
+				drawPtcl( tLst1[i], true, 0, 0, 0 );
 				drawConnection(tLst0[i], tLst1[i], true);
 
 				if (i != 0) drawConnection(tLst1[i-1], tLst1[i], true);
@@ -85,7 +85,8 @@ sealed class TreePlaneAuthoringInspector : BaseAuthoringInspector
 					for (int j=0; j<a.childCount; ++j) {
 						var b = a.GetChild(j);
 						tLst0.Add( b );
-						drawPtcl( b, false, tgt.getR(dIdx), tgt.getMaxMovableRange(dIdx) );
+						var rScl = length(a.position - b.position);
+						drawPtcl( b, false, tgt.getR(dIdx), tgt.getMaxMovableRange(dIdx), rScl );
 						drawConnection(a, b, false);
 					}
 				}

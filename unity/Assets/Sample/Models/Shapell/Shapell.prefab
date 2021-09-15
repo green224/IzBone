@@ -111,8 +111,8 @@ MonoBehaviour:
   maxSpeed: 100
   withAnimation: 0
   _r:
-    start: 0.02
-    end: 0.025
+    start: 0.2
+    end: 0.25
     curve: 0.47826087
     useCurve: 1
   _m:
@@ -136,8 +136,8 @@ MonoBehaviour:
     curve: 0.5
     useCurve: 0
   _maxMovableRange:
-    start: -1
-    end: -1
+    start: 0
+    end: 0
     curve: 0.5
     useCurve: 0
   _topOfBones:
@@ -211,8 +211,8 @@ MonoBehaviour:
   maxSpeed: 100
   withAnimation: 1
   _r:
-    start: 0.012
-    end: 0.02
+    start: 0.12
+    end: 0.2
     curve: 0.5217391
     useCurve: 1
   _m:
@@ -236,8 +236,8 @@ MonoBehaviour:
     curve: 0.5
     useCurve: 0
   _maxMovableRange:
-    start: 0.05
-    end: 0.1
+    start: 0.75
+    end: 1.5
     curve: 0.5
     useCurve: 1
   _topOfBones:
@@ -684,8 +684,8 @@ MonoBehaviour:
   maxSpeed: 100
   withAnimation: 0
   _r:
-    start: 0.02
-    end: 0.025
+    start: 0.2
+    end: 0.25
     curve: 0.47826087
     useCurve: 1
   _m:
@@ -709,8 +709,8 @@ MonoBehaviour:
     curve: 0.5
     useCurve: 0
   _maxMovableRange:
-    start: -1
-    end: -1
+    start: 0
+    end: 0
     curve: 0.5
     useCurve: 0
   _topOfBones:
@@ -833,8 +833,8 @@ MonoBehaviour:
   maxSpeed: 100
   withAnimation: 0
   _r:
-    start: 0.02
-    end: 0.02
+    start: 0.2
+    end: 0.2
     curve: 0.5
     useCurve: 0
   _m:
@@ -858,8 +858,8 @@ MonoBehaviour:
     curve: 0.28324428
     useCurve: 1
   _maxMovableRange:
-    start: -1
-    end: -1
+    start: 0
+    end: 0
     curve: 0.5
     useCurve: 0
   _topOfBones:
@@ -901,8 +901,8 @@ MonoBehaviour:
   maxSpeed: 100
   withAnimation: 0
   _r:
-    start: 0.01
-    end: 0.01
+    start: 0.1
+    end: 0.1
     curve: 0.5
     useCurve: 0
   _m:
@@ -926,8 +926,8 @@ MonoBehaviour:
     curve: 0.1882353
     useCurve: 1
   _maxMovableRange:
-    start: 0.1
-    end: -1
+    start: 1
+    end: 1
     curve: 0.5
     useCurve: 0
   _topOfBones:
