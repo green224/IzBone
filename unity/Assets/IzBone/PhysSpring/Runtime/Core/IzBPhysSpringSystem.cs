@@ -37,7 +37,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 			var e = etp.Entities[ etpIdx ];
 			var t = etp.Transforms[ etpIdx ];
 
-			SetComponent(e, new Ptcl_V());
+			SetComponent(e, new Ptcl_Velo());
 
 			var defState = GetComponent<Ptcl_DefState>(e);
 			var childWPos = t.localToWorldMatrix.MultiplyPoint(defState.childDefPos);
@@ -325,7 +325,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 
 
 		{// シミュレーションの本更新処理
-		var vs = GetComponentDataFromEntity<Ptcl_V>();
+		var vs = GetComponentDataFromEntity<Ptcl_Velo>();
 		var lastWPoss = GetComponentDataFromEntity<Ptcl_LastWPos>();
 		var curTranss = GetComponentDataFromEntity<CurTrans>();
 	#if WITH_DEBUG
@@ -345,7 +345,7 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 
 			// 一繋ぎ分のSpringの情報をまとめて取得しておく
 			var buf_spring    = new NativeArray<Ptcl_Spring>(root.depth, Allocator.Temp);
-			var buf_v         = new NativeArray<Ptcl_V>(root.depth, Allocator.Temp);
+			var buf_v         = new NativeArray<Ptcl_Velo>(root.depth, Allocator.Temp);
 			var buf_defState  = new NativeArray<Ptcl_DefState>(root.depth, Allocator.Temp);
 			var buf_lastWPos  = new NativeArray<Ptcl_LastWPos>(root.depth, Allocator.Temp);
 			var buf_curTrans  = new NativeArray<CurTrans>(root.depth, Allocator.Temp);

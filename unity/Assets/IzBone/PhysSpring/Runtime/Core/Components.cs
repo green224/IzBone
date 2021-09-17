@@ -58,7 +58,7 @@ namespace IzBone.PhysSpring.Core {
 			return ret;
 		}
 	}
-	public struct Ptcl_V:ICD {public float3 v; public float3 omg;}	// 速度・角速度
+	public struct Ptcl_Velo:ICD {public float3 v; public float3 omg;}	// 速度・角速度
 
 	public struct Ptcl_DefState:ICD {	// 関節ごとのデフォルト位置姿勢情報
 		public quaternion defRot;			// 親の初期姿勢
@@ -74,6 +74,7 @@ namespace IzBone.PhysSpring.Core {
 	public struct Ptcl_Root:ICD {public Entity value;}			// RootのEntity
 	public struct Ptcl_Child:ICD {public Entity value;}			// 子供側のEntity
 	public struct Ptcl_R:ICD {public float value;}				// 衝突判定用の半径
+	public struct Ptcl_InvM:ICD {public float value;}			// 質量の逆数
 	public struct Ptcl_RestoreHL:ICD {public HalfLife value;}	// Default位置への復元半減期
 
 

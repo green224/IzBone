@@ -64,7 +64,7 @@ namespace IzBone.PhysSpring.Core {
 					var entity = em.CreateEntity();
 					em.AddComponentData(entity, new Ptcl());
 					em.AddComponentData( entity, genOneSpring(bone, dRate) );
-					em.AddComponentData(entity, new Ptcl_V());
+					em.AddComponentData(entity, new Ptcl_Velo());
 					em.AddComponentData(entity, new Ptcl_DefState{
 						defRot = parent.localRotation,
 						defPos = parent.localPosition,
@@ -77,6 +77,7 @@ namespace IzBone.PhysSpring.Core {
 					em.AddComponentData(entity, new Ptcl_ToChildWDist());
 					em.AddComponentData(entity, new Ptcl_LastWPos{value=child.position});
 					em.AddComponentData(entity, new Ptcl_R{value=bone.radius.evaluate(dRate)});
+					em.AddComponentData(entity, new Ptcl_InvM{value=1/bone.mass.evaluate(dRate)});
 					em.AddComponentData(entity, new Ptcl_RestoreHL{
 						value = HalfLifeDragAttribute.showValue2HalfLife( bone.restorePow.evaluate(dRate) )
 					});

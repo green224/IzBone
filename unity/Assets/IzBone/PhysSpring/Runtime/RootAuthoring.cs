@@ -52,6 +52,7 @@ public sealed class RootAuthoring : MonoBehaviour {
 		[RangeSC(0,1)] public SC maxV = 0.5f;			// 最高速度のスケール値
 		[RangeSC(0,1)] public SC restorePow = 0.1f;		// 初期位置への強制戻し力
 		[RangeSC(0,1)] public SC radius = 0.15f;		// パーティクル半径
+		[RangeSC(0,10)] public SC mass = 1;				// パーティクルの重さ
 		[JointCount(1)] public int depth = 1;			// ボーン深度
 		[Range(1,10)] public int iterationNum = 1;		// 繰り返し計算回数
 

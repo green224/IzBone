@@ -19,8 +19,10 @@ public unsafe abstract class SimpleAuthoring : BaseAuthoring {
 	// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 	[Space]
-	[SerializeField][RangeSC(0,1)] SC _r = 1;					// パーティクルの半径
-	[SerializeField][RangeSC(0,10)] SC _m = 1;					// パーティクルの重さ
+	[UnityEngine.Serialization.FormerlySerializedAs("_r")]
+	[SerializeField][RangeSC(0,1)] SC _radius = 1;				// パーティクルの半径
+	[UnityEngine.Serialization.FormerlySerializedAs("_m")]
+	[SerializeField][RangeSC(0,10)] SC _mass = 1;				// パーティクルの重さ
 	[SerializeField][RangeSC(0,180)] SC _maxAngle = 60;			// 最大曲げ角度
 	[SerializeField][RangeSC(0,1)] SC _aglRestorePow = 0;		// 曲げ角度の復元力
 	[SerializeField][RangeSC(0,1)] SC _restorePow = 0;			// 初期位置への強制戻し力
@@ -74,7 +76,7 @@ public unsafe abstract class SimpleAuthoring : BaseAuthoring {
 
 			if (depth == -1) i.setParams(0,0,0,0,0,0);
 			else i.setParams(
-				getM( depth ),
+				getMass( depth ),
 				getRadius( depth ),
 				getMaxAgl( depth ),
 				getAglCompliance( depth ),
@@ -100,8 +102,8 @@ public unsafe abstract class SimpleAuthoring : BaseAuthoring {
 
 
 	// ジョイント位置の各種物理パラメータを得る処理
-	internal float getM(int idx) => idx<JointDepthFixCnt ? 0 : _m.evaluate( idx2rate(idx) );
-	internal float getRadius(int idx) => _r.evaluate( idx2rate(idx) );
+	internal float getMass(int idx) => idx<JointDepthFixCnt ? 0 : _mass.evaluate( idx2rate(idx) );
+	internal float getRadius(int idx) => _radius.evaluate( idx2rate(idx) );
 	internal float getMaxAgl(int idx) => _maxAngle.evaluate( idx2rate(idx) );
 	internal float getAglCompliance(int idx) =>
 		AngleComplianceAttribute.showValue2Compliance( _aglRestorePow.evaluate( idx2rate(idx) ) );
