@@ -56,7 +56,7 @@ abstract class BaseAuthoringInspector : Editor
 		if (tgt._particles != null) foreach (var i in tgt._particles) {
 #if USE_ECS
 			var pos = i.DEBUG_curPos;
-			var r = i.r;
+			var r = i.radius;
 			var v = i.DEBUG_curV;
 			var maxMovableRange = i.maxMovableRange;
 #else

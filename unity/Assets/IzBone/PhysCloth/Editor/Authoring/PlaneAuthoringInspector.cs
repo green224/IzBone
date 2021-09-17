@@ -64,7 +64,7 @@ sealed class PlaneAuthoringInspector : BaseAuthoringInspector
 					if (tLst1[i] == null) continue;
 
 					var rScl = length(tLst0[i].position - tLst1[i].position);
-					drawPtcl( tLst1[i], dIdx==0, tgt.getR(dIdx), tgt.getMaxMovableRange(dIdx), rScl );
+					drawPtcl( tLst1[i], dIdx==0, tgt.getRadius(dIdx), tgt.getMaxMovableRange(dIdx), rScl );
 					drawConnection(tLst0[i], tLst1[i], dIdx==0);
 
 					Transform transL, transR;

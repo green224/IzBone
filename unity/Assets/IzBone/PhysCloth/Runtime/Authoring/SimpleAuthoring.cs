@@ -75,7 +75,7 @@ public unsafe abstract class SimpleAuthoring : BaseAuthoring {
 			if (depth == -1) i.setParams(0,0,0,0,0,0);
 			else i.setParams(
 				getM( depth ),
-				getR( depth ),
+				getRadius( depth ),
 				getMaxAgl( depth ),
 				getAglCompliance( depth ),
 				getRestoreHL( depth ),
@@ -100,8 +100,8 @@ public unsafe abstract class SimpleAuthoring : BaseAuthoring {
 
 
 	// ジョイント位置の各種物理パラメータを得る処理
-	internal float getR(int idx) => _r.evaluate( idx2rate(idx) );
 	internal float getM(int idx) => idx<JointDepthFixCnt ? 0 : _m.evaluate( idx2rate(idx) );
+	internal float getRadius(int idx) => _r.evaluate( idx2rate(idx) );
 	internal float getMaxAgl(int idx) => _maxAngle.evaluate( idx2rate(idx) );
 	internal float getAglCompliance(int idx) =>
 		AngleComplianceAttribute.showValue2Compliance( _aglRestorePow.evaluate( idx2rate(idx) ) );

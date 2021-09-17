@@ -86,7 +86,7 @@ sealed class TreePlaneAuthoringInspector : BaseAuthoringInspector
 						var b = a.GetChild(j);
 						tLst0.Add( b );
 						var rScl = length(a.position - b.position);
-						drawPtcl( b, false, tgt.getR(dIdx), tgt.getMaxMovableRange(dIdx), rScl );
+						drawPtcl( b, false, tgt.getRadius(dIdx), tgt.getMaxMovableRange(dIdx), rScl );
 						drawConnection(a, b, false);
 					}
 				}

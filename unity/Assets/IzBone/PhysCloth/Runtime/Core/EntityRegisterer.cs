@@ -51,9 +51,9 @@ namespace IzBone.PhysCloth.Core {
 				em.AddComponentData(entity, new Ptcl_ToChildWDist());
 				em.AddComponentData(entity, new Ptcl_CurHeadTrans());
 				em.AddComponentData(entity, new Ptcl_WPos{value = mp.getTailWPos()});
-				em.AddComponentData(entity, new Ptcl_R{value = mp.r});
-				em.AddComponentData(entity, new Ptcl_V());
 				em.AddComponentData(entity, new Ptcl_InvM(mp.m));
+				em.AddComponentData(entity, new Ptcl_R{value = mp.radius});
+				em.AddComponentData(entity, new Ptcl_Velo());
 				em.AddComponentData(entity, new Ptcl_DWRot());
 				em.AddComponentData(entity, new Ptcl_MaxAngle{value = radians(mp.maxAngle)});
 				em.AddComponentData(entity, new Ptcl_AngleCompliance{value = mp.angleCompliance});
@@ -171,8 +171,8 @@ namespace IzBone.PhysCloth.Core {
 			if (em.HasComponent<Ptcl_M2D>(entity)) {
 
 				var mp = em.GetComponentData<Ptcl_M2D>(entity).auth;
-				em.SetComponentData(entity, new Ptcl_R{value = mp.r});
 				em.SetComponentData(entity, new Ptcl_InvM(mp.m));
+				em.SetComponentData(entity, new Ptcl_R{value = mp.radius});
 				em.SetComponentData(entity, new Ptcl_MaxAngle{value = radians(mp.maxAngle)});
 				em.SetComponentData(entity, new Ptcl_AngleCompliance{value = mp.angleCompliance});
 				em.SetComponentData(entity, new Ptcl_RestoreHL{value = mp.restoreHL});

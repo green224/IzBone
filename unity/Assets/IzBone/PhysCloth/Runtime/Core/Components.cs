@@ -76,8 +76,8 @@ namespace IzBone.PhysCloth.Core {
 	// 位置・半径・速度・質量の逆数
 	public struct Ptcl_WPos:ICD {public float3 value;}
 	public struct Ptcl_R:ICD {public float value;}
-	public struct Ptcl_V:ICD {public float3 value;}
 	public struct Ptcl_InvM:ICD {
+	public struct Ptcl_Velo:ICD {public float3 value;}
 		readonly public float value;
 		public const float MinimumM = 0.00000001f;
 		public Ptcl_InvM(float m) { value = m < MinimumM ? 0 : (1f/m); }

@@ -28,7 +28,7 @@ namespace IzBone.PhysCloth.Authoring {
 
 		public ParticleMng parent, child, left, right;	// 上下左右のパーティクル。childは一番最初の子供
 		public float m;
-		public float r;
+		public float radius;
 		public float maxAngle;
 		public float angleCompliance;
 		public HalfLife restoreHL;		// 初期位置への復元半減期
@@ -72,14 +72,14 @@ namespace IzBone.PhysCloth.Authoring {
 
 		public void setParams(
 			float m,
-			float r,
+			float radius,
 			float maxAngle,
 			float angleCompliance,
 			HalfLife restoreHL,
 			float maxMovableRange
 		) {
 			this.m = m;
-			this.r = r;
+			this.radius = radius;
 			this.angleCompliance = angleCompliance;
 			this.maxAngle = maxAngle;
 			this.restoreHL = restoreHL;

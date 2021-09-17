@@ -8,7 +8,6 @@ using Unity.Entities;
 using Unity.Collections;
 using Unity.Mathematics;
 using static Unity.Mathematics.math;
-using System.Runtime.CompilerServices;
 
 
 
@@ -46,7 +45,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 			var defTailLPos = GetComponent<Ptcl_DefaultTailLPos>(e).value;
 			var wPos = t.localToWorldMatrix.MultiplyPoint(defTailLPos);
 			
-			SetComponent(e, new Ptcl_V());
+			SetComponent(e, new Ptcl_Velo());
 			SetComponent(e, new Ptcl_WPos{value = wPos});
 		}
 	}
@@ -142,9 +141,9 @@ public sealed class IzBPhysClothSystem : SystemBase {
 		public void Execute(int index, TransformAccess transform)
 		{
 			var entity = entities[index];
-			var curTrans = curHeadTranss[entity];
 			var invM = invMs[entity].value;
 			if (invM != 0) {
+				var curTrans = curHeadTranss[entity];
 				transform.localPosition = curTrans.lPos;
 				transform.localRotation = curTrans.lRot;
 			}
@@ -175,7 +174,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 			Entities.ForEach((
 				Entity entity,
 				in Ptcl_M2D ptclM2D,
-				in Ptcl_V ptclV,
+				in Ptcl_Velo ptclV,
 				in Ptcl_WPos ptclWPos
 			)=>{
 				ptclM2D.auth.DEBUG_curV = ptclV.value;
@@ -309,7 +308,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 	#endif
 			Entity entity,
 			ref Ptcl_WPos wPos,
-			ref Ptcl_V v
+			ref Ptcl_Velo v
 	#if WITH_DEBUG
 			,in Ptcl_M2D m2d
 	#endif
@@ -360,9 +359,9 @@ public sealed class IzBPhysClothSystem : SystemBase {
 //UnityEngine.Debug.Log("ccc:"+(m2d.auth.transHead==null?"*":m2d.auth.transHead.name));
 //UnityEngine.Debug.Log(sphere.value);
 	#if WITH_DEBUG
-		}).WithAll<Ptcl>().WithoutBurst().Run();
+		}).WithoutBurst().Run();
 	#else
-		}).WithAll<Ptcl>().Schedule( Dependency );
+		}).ScheduleParallel( Dependency );
 	#endif
 
 
@@ -660,7 +659,7 @@ public sealed class IzBPhysClothSystem : SystemBase {
 		Dependency = Entities.ForEach((
 	#endif
 			Entity entity,
-			ref Ptcl_V v,
+			ref Ptcl_Velo v,
 			in Ptcl_WPos wPos
 		)=>{
 			v.value = (wPos.value - v.value) / deltaTime;
