@@ -39,33 +39,18 @@ abstract class BaseAuthoringInspector : Editor
 		// コンストレイントを描画
 		if ( Common.Windows.GizmoOptionsWindow.isShowConnections ) {
 			if (tgt._constraints != null) foreach (var i in tgt._constraints) {
-#if USE_ECS
-//				var p0 = tgt._particles[i.srcPtclIdx].getTailWPos();
-//				var p1 = tgt._particles[i.dstPtclIdx].getTailWPos();
 				var p0 = tgt._particles[i.srcPtclIdx].DEBUG_curPos;
 				var p1 = tgt._particles[i.dstPtclIdx].DEBUG_curPos;
-#else
-				var p0 = tgt._world.DEBUG_getPtcl( i.srcPtclIdx ).col.pos;
-				var p1 = tgt._world.DEBUG_getPtcl( i.dstPtclIdx ).col.pos;
-#endif
 				drawConnection(p0, p1, false);
 			}
 		}
 
 		// 質点を描画
 		if (tgt._particles != null) foreach (var i in tgt._particles) {
-#if USE_ECS
 			var pos = i.DEBUG_curPos;
 			var r = i.radius;
 			var v = i.DEBUG_curV;
 			var maxMovableRange = i.maxMovableRange;
-#else
-			var ptcl = tgt._world.DEBUG_getPtcl( i.idx );
-			var pos = ptcl.col.pos;
-			var v = ptcl.v;
-			var r = ptcl.col.r;
-			var maxMovableRange = ptcl.maxMovableRange;
-#endif
 			var isFixed = i.m < 0.000001f;
 
 			// パーティクルスケールを得る
@@ -90,21 +75,11 @@ abstract class BaseAuthoringInspector : Editor
 //			}
 
 			// Fixedな親との接続を表示
-#if USE_ECS
 			if (isFixed) {
 				if (i.parent != null && i.parent.m < 0.000001f) {
 					drawConnection(i.parent.DEBUG_curPos, pos, true);
 				}
 			}
-#else
-			if (isFixed && ptcl.parentIdx != -1) {
-				var a = tgt._particles[ptcl.parentIdx];
-				if (a != null && a.m < 0.000001f) {
-					var b = tgt._world.DEBUG_getPtcl(a.idx);
-					drawConnection(b.col.pos, pos, true);
-				}
-			}
-#endif
 		}
 	}
 

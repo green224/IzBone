@@ -18,11 +18,6 @@ namespace IzBone.PhysCloth.Authoring {
 		public readonly Transform transHead;
 		public readonly Transform[] transTail;
 
-#if USE_ECS
-#else
-		public quaternion defaultHeadRot;		// 初期姿勢
-		public float4x4 defaultHeadL2P;			// 初期L2P行列
-#endif
 		public readonly float3 defaultTailLPos;	// 初期先端ローカル位置。これは変更しない
 		public readonly float headToTailWDist;	// HeadからTailまでのワールド座標距離。これは変化するが、一旦登録したら変更しない
 
@@ -45,10 +40,6 @@ namespace IzBone.PhysCloth.Authoring {
 			this.idx = idx;
 			this.transHead = transHead;
 			this.transTail = transTail;
-#if USE_ECS
-#else
-			resetDefaultPose();
-#endif
 			defaultTailLPos = default;
 			foreach (var i in transTail) defaultTailLPos += (float3)i.localPosition;
 			defaultTailLPos /= transTail.Length;
@@ -85,24 +76,6 @@ namespace IzBone.PhysCloth.Authoring {
 			this.restoreHL = restoreHL;
 			this.maxMovableRange = maxMovableRange;
 		}
-
-#if USE_ECS
-#else
-		public void resetDefaultPose() {
-			if (transHead==null) {
-				defaultHeadRot = default;
-				defaultHeadL2P = default;
-//				defaultTailLPos = 0;
-			} else {
-				defaultHeadRot = transHead.localRotation;
-				defaultHeadL2P = Unity.Mathematics.float4x4.TRS(
-					transHead.localPosition,
-					transHead.localRotation,
-					transHead.localScale
-				);
-			}
-		}
-#endif
 
 		public float3 getTailWPos() {
 			if (transHead == null) {

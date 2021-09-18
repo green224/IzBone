@@ -46,44 +46,4 @@ namespace IzBone.PhysCloth.Core.Constraint {
 		const float MinimumM = 0.00000001f;
 	}
 
-
-#if !USE_ECS
-	public unsafe struct DistanceOld : IConstraint {
-		public Particle* ptcl0, ptcl1;
-		public float compliance;
-		public float defLen;
-
-		public bool isValid() => MinimumM < ptcl0->invM + ptcl1->invM;
-		public float solve(float sqDt, float lambda) {
-			var sumInvM = ptcl0->invM + ptcl1->invM;
-
-			// XPBDでの拘束条件の解決
-			// 参考:
-			//		http://matthias-mueller-fischer.ch/publications/XPBD.pdf
-			//		https://ipsj.ixsq.nii.ac.jp/ej/index.php?active_action=repository_view_main_item_detail&page_id=13&block_id=8&item_id=183598&item_no=1
-			//		https://github.com/nobuo-nakagawa/xpbd
-			var at = compliance / sqDt;    // a~
-			//   P = (x,y,z)
-			// とすると、
-			//   Cj = |P| - d
-			// であるので、
-			//   ∇Cj = (x,y,z) / √ x^2 + y^2 + z^2  =  P / |P|
-			// また
-			//   ∇Cj・∇Cj = 1
-			var p = ptcl0->col.pos - ptcl1->col.pos;
-			var pLen = length(p);
-
-			var dlambda = (defLen - pLen - at * lambda) / (sumInvM + at);	// eq.18
-			var correction = p * (dlambda / (pLen+0.0000001f));				// eq.17
-
-			ptcl0->col.pos += +ptcl0->invM * correction;
-			ptcl1->col.pos += -ptcl1->invM * correction;
-
-			return dlambda;
-		}
-
-		const float MinimumM = 0.00000001f;
-	}
-#endif
-
 }

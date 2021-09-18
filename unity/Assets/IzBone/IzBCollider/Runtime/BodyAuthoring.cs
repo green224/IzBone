@@ -37,12 +37,6 @@ namespace IzBone.IzBCollider {
 		[NonSerialized] internal float4x4 l2wMtx;
 		[NonSerialized] internal float3 l2wMtxClmNorm;
 
-#if !USE_ECS
-		/** 更新処理。l2gMtx等を呼ぶ前に必ずこれを読んで更新すること */
-		internal void update_phase0() { checkRebuildL2GMat(); }
-		internal void update_phase1() { _transform.hasChanged = false; }
-#endif
-
 		new Transform transform {get{
 			if (_transform == null) _transform = ((MonoBehaviour)this).transform;
 			return _transform;

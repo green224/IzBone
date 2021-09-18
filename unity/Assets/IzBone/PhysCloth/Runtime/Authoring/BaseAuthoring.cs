@@ -39,22 +39,14 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 	/** 物理状態をリセットする */
 	[ContextMenu("reset")]
 	public void reset() {
-#if USE_ECS
 		GetSys().reset(_erRegLink);
-#else
-#endif
 	}
 
 
 	// ----------------------------------- private/protected メンバ -------------------------------
 
-#if USE_ECS
 	/** ECSで得た結果をマネージドTransformに反映するためのバッファのリンク情報。System側から設定・参照される */
 	Core.EntityRegisterer.RegLink _erRegLink = new Core.EntityRegisterer.RegLink();
-#else
-	internal Core.World _world;
-	protected IzBCollider.Colliders _coreColliders;
-#endif
 	internal ConstraintMng[] _constraints;
 	internal ParticleMng[] _particles;
 	internal Entity _rootEntity = Entity.Null;
@@ -71,60 +63,14 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 		buildBuffers();
 		rebuildParameters();
 
-#if USE_ECS
 		var sys = GetSys();
 		if (sys != null) sys.register(this, _erRegLink);
-#else
-		_coreColliders = new IzBCollider.Colliders(
-			_collider==null ? null : _collider.Bodies
-		);
-		_world = new Core.World( _particles, _constraints );
-#endif
 	}
 
 	virtual protected void OnDisable() {
-#if USE_ECS
 		var sys = GetSys();
 		if (sys != null) sys.unregister(this, _erRegLink);
-#else
-		_coreColliders?.Dispose();
-		_coreColliders = null;
-		_world?.Dispose();
-		_world = null;
-#endif
 	}
-
-#if !USE_ECS
-//	virtual protected void FixedUpdate() {
-	virtual protected void LateUpdate() {
-		if (withAnimation)
-			foreach (var i in _particles) i.resetDefaultPose();
-
-	#if UNITY_EDITOR
-		// インスペクタが更新された場合は同期を行う
-		if (__need2syncManage) {
-			rebuildParameters();
-			_world.syncWithManage(_particles, _constraints);
-			__need2syncManage = false;
-		}
-	#endif
-		var dt = Time.smoothDeltaTime;
-		_world.g = g.evaluate();
-		_world.windSpeed = windSpeed;
-		_world.airHL = airDrag;		// これは計算負荷削減のためにカーブではなくスカラーで持つ
-		_world.maxSpeed = maxSpeed;
-		if (0.000001f < dt) {		// とりあえずdt=0のときはやらないでおく。TODO: あとで何とかする
-			_coreColliders.update();
-			_world.update(
-				dt,
-				useSimulation ? iterationNum : 0,
-				_particles,
-				_coreColliders
-			);
-			_world.applyToBone(_particles);
-		}
-	}
-#endif
 
 
 	/** ParticlesとConstraintsのバッファをビルドする処理。派生先で実装すること */
@@ -142,7 +88,6 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 //		_izColliders = GetComponentsInChildren< IzBCollider.BodyAuthoring >();
 //	}
 
-#	if USE_ECS
 	void LateUpdate() {
 		if (__need2syncManage) {
 			rebuildParameters();
@@ -151,7 +96,6 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 			__need2syncManage = false;
 		}
 	}
-#	endif
 	// 実行中にプロパティが変更された場合は、次回Update時に同期を行う
 	bool __need2syncManage = false;
 	virtual protected void OnValidate() {
