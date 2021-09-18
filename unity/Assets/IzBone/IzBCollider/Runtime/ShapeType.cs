@@ -12,7 +12,14 @@ using UnityEditor;
 namespace IzBone.IzBCollider {
 
 	/** 形状タイプ */
-	public enum ShapeType { Sphere, Capsule, Box, Plane, }
+	public enum ShapeType {
+		Sphere=0,
+		Capsule,
+		Box,
+		Plane,
+
+		MAX_COUNT
+	}
 
 }
 

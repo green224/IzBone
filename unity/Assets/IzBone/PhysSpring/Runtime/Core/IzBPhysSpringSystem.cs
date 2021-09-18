@@ -307,15 +307,58 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 
 				// 前フレームにキャッシュされた位置にパーティクルが移動したとして、
 				// その位置でコライダとの衝突解決をしておく
-				for (
-					var e = collider;
-					e != Entity.Null;
-					e = GetComponent<IzBCollider.Core.Body_Next>(e).value
-				) {
-					var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
-					var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
-					rc.solveCollision( st, ref lastWPos.value, r );
+				var isCol = false;
+				var bp = GetComponent<IzBCollider.Core.BodiesPack>(collider);
+				var sp = new IzBCollider.RawCollider.Sphere{pos=lastWPos.value, r=r};
+				unsafe {
+					float3 n=0; float d=0;
+					for (
+						var e = bp.firstSphere;
+						e != Entity.Null;
+						e = GetComponent<IzBCollider.Core.Body_Next>(e).value
+					) {
+						var rc = GetComponent<IzBCollider.Core.Body_Raw_Sphere>(e);
+						if ( rc.value.solve(&sp,&n,&d) ) {
+							isCol |= true;
+							sp.pos += n * d;
+						}
+					}
+					for (
+						var e = bp.firstCapsule;
+						e != Entity.Null;
+						e = GetComponent<IzBCollider.Core.Body_Next>(e).value
+					) {
+						var rc = GetComponent<IzBCollider.Core.Body_Raw_Capsule>(e);
+						if ( rc.value.solve(&sp,&n,&d) ) {
+							isCol |= true;
+							sp.pos += n * d;
+						}
+					}
+					for (
+						var e = bp.firstBox;
+						e != Entity.Null;
+						e = GetComponent<IzBCollider.Core.Body_Next>(e).value
+					) {
+						var rc = GetComponent<IzBCollider.Core.Body_Raw_Box>(e);
+						if ( rc.value.solve(&sp,&n,&d) ) {
+							isCol |= true;
+							sp.pos += n * d;
+						}
+					}
+					for (
+						var e = bp.firstPlane;
+						e != Entity.Null;
+						e = GetComponent<IzBCollider.Core.Body_Next>(e).value
+					) {
+						var rc = GetComponent<IzBCollider.Core.Body_Raw_Plane>(e);
+						if ( rc.value.solve(&sp,&n,&d) ) {
+							isCol |= true;
+							sp.pos += n * d;
+						}
+					}
 				}
+				if (isCol) {lastWPos.value = sp.pos;}
+
 			}
 	#if WITH_DEBUG
 		}).WithoutBurst().Run();

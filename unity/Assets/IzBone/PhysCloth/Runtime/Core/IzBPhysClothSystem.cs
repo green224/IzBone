@@ -575,21 +575,60 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				r *= GetComponent<Ptcl_ToChildWDist>(entity).value;
 
 				// コライダとの衝突解決
-				var pos = wPos.value;
 				var isCol = false;
-				for (
-					var e = colliderPack;
-					e != Entity.Null;
-					e = GetComponent<IzBCollider.Core.Body_Next>(e).value
-				) {
-					var rc = GetComponent<IzBCollider.Core.Body_RawCollider>(e);
-					var st = GetComponent<IzBCollider.Core.Body_ShapeType>(e).value;
-					isCol |= rc.solveCollision( st, ref pos, r );
+				var bp = GetComponent<IzBCollider.Core.BodiesPack>(colliderPack);
+				var sp = new IzBCollider.RawCollider.Sphere{pos=wPos.value, r=r};
+				unsafe {
+					float3 n=0; float d=0;
+					for (
+						var e = bp.firstSphere;
+						e != Entity.Null;
+						e = GetComponent<IzBCollider.Core.Body_Next>(e).value
+					) {
+						var rc = GetComponent<IzBCollider.Core.Body_Raw_Sphere>(e);
+						if ( rc.value.solve(&sp,&n,&d) ) {
+							isCol |= true;
+							sp.pos += n * d;
+						}
+					}
+					for (
+						var e = bp.firstCapsule;
+						e != Entity.Null;
+						e = GetComponent<IzBCollider.Core.Body_Next>(e).value
+					) {
+						var rc = GetComponent<IzBCollider.Core.Body_Raw_Capsule>(e);
+						if ( rc.value.solve(&sp,&n,&d) ) {
+							isCol |= true;
+							sp.pos += n * d;
+						}
+					}
+					for (
+						var e = bp.firstBox;
+						e != Entity.Null;
+						e = GetComponent<IzBCollider.Core.Body_Next>(e).value
+					) {
+						var rc = GetComponent<IzBCollider.Core.Body_Raw_Box>(e);
+						if ( rc.value.solve(&sp,&n,&d) ) {
+							isCol |= true;
+							sp.pos += n * d;
+						}
+					}
+					for (
+						var e = bp.firstPlane;
+						e != Entity.Null;
+						e = GetComponent<IzBCollider.Core.Body_Next>(e).value
+					) {
+						var rc = GetComponent<IzBCollider.Core.Body_Raw_Plane>(e);
+						if ( rc.value.solve(&sp,&n,&d) ) {
+							isCol |= true;
+							sp.pos += n * d;
+						}
+					}
 				}
 
 				// 何かしらに衝突している場合は、引き離し用拘束条件を適応
 				if (isCol) {
-					var dPos = pos - wPos.value;
+					var dPos = sp.pos - wPos.value;
 					var dPosLen = length(dPos);
 					var dPosN = dPos / (dPosLen + 0.0000001f);
 
