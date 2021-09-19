@@ -563,8 +563,8 @@ public sealed class IzBPhysClothSystem : SystemBase {
 				var mostParent = GetComponent<Ptcl_Root>(entity).value;
 
 				// コライダが未設定の場合は何もしない
-				var colliderPack = GetComponent<Root_ColliderPack>(mostParent).value;
-				if (colliderPack == Entity.Null) return;
+				var collider = GetComponent<Root_ColliderPack>(mostParent).value;
+				if (collider == Entity.Null) return;
 
 				// 固定Particleに対しては何もする必要なし
 				var invM = GetComponent<Ptcl_InvM>(entity).value;
@@ -576,9 +576,10 @@ public sealed class IzBPhysClothSystem : SystemBase {
 
 				// コライダとの衝突解決
 				var isCol = false;
-				var bp = GetComponent<IzBCollider.Core.BodiesPack>(colliderPack);
 				var sp = new IzBCollider.RawCollider.Sphere{pos=wPos.value, r=r};
-				unsafe {
+				unsafe { do {
+					var bp = GetComponent<IzBCollider.Core.BodiesPack>(collider);
+
 					float3 n=0; float d=0;
 					for (
 						var e = bp.firstSphere;
@@ -624,7 +625,9 @@ public sealed class IzBPhysClothSystem : SystemBase {
 							sp.pos += n * d;
 						}
 					}
-				}
+
+					collider = bp.next;
+				} while(collider != Entity.Null); }
 
 				// 何かしらに衝突している場合は、引き離し用拘束条件を適応
 				if (isCol) {

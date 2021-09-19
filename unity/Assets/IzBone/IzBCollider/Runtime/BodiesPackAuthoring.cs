@@ -13,6 +13,7 @@ namespace IzBone.IzBCollider {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
 		[SerializeField] BodyAuthoring[] _bodies = new BodyAuthoring[0];
+		[SerializeField] internal UniColCollectorAuthoring _uniColCollector = null;
 
 
 		// --------------------------------------- publicメンバ -------------------------------------
@@ -41,6 +42,8 @@ namespace IzBone.IzBCollider {
 		Entity _rootEntity = Entity.Null;		// このBodiesPackの対応するルートのEntity
 		event Action< EntityManager, Entity > _onSetRootEntity;		// RootEntityが設定されたときのコールバック
 
+
+
 		/** RootEntityを設定する処理。EntityRegistererから呼ばれる */
 		internal void setRootEntity(Entity entity, EntityManager em) {
 			if (_rootEntity != Entity.Null) throw new InvalidProgramException();
@@ -56,8 +59,7 @@ namespace IzBone.IzBCollider {
 			return w.GetOrCreateSystem<Core.IzBColliderSystem>();
 		}
 
-		void OnEnable()
-		{
+		void OnEnable() {
 			var sys = GetSys();
 			if (sys != null) sys.register(this, _erRegLink);
 
@@ -66,8 +68,7 @@ namespace IzBone.IzBCollider {
 #endif
 		}
 
-		void OnDisable()
-		{
+		void OnDisable() {
 			var sys = GetSys();
 			if (sys != null) sys.unregister(this, _erRegLink);
 			_rootEntity = Entity.Null;

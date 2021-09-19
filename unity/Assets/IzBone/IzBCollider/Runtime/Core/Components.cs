@@ -14,6 +14,8 @@ namespace IzBone.IzBCollider.Core {
 		public Entity firstCapsule;
 		public Entity firstBox;
 		public Entity firstPlane;
+
+		public Entity next;
 	}
 
 
@@ -25,6 +27,7 @@ namespace IzBone.IzBCollider.Core {
 	public struct Body_R:IComponentData {public float3 value;}
 	public struct Body_Rot:IComponentData {public quaternion value;}
 	public struct Body_CurL2W:IComponentData {public float4x4 value;}
+	public struct Body_UniCol:IComponentData {}		// UnityCollider用のコライダーEntityに対して付けるコンポーネント
 
 	public struct Body_Raw_Sphere:IComponentData {public RawCollider.Sphere value;}
 	public struct Body_Raw_Capsule:IComponentData {public RawCollider.Capsule value;}
@@ -36,6 +39,9 @@ namespace IzBone.IzBCollider.Core {
 	// BodyとBodyAuthoringとの橋渡し役を行うためのマネージドコンポーネント
 	public sealed class Body_M2D:IComponentData {
 		public BodyAuthoring bodyAuth;				//!< 生成元
+	}
+	public sealed class BodiesPack_UniCol_M2D:IComponentData {
+		public UniColCollectorAuthoring auth;		//!< 生成元
 	}
 
 }

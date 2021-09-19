@@ -308,9 +308,10 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 				// 前フレームにキャッシュされた位置にパーティクルが移動したとして、
 				// その位置でコライダとの衝突解決をしておく
 				var isCol = false;
-				var bp = GetComponent<IzBCollider.Core.BodiesPack>(collider);
 				var sp = new IzBCollider.RawCollider.Sphere{pos=lastWPos.value, r=r};
-				unsafe {
+				unsafe { do {
+					var bp = GetComponent<IzBCollider.Core.BodiesPack>(collider);
+
 					float3 n=0; float d=0;
 					for (
 						var e = bp.firstSphere;
@@ -356,7 +357,10 @@ public sealed class IzBPhysSpringSystem : SystemBase {
 							sp.pos += n * d;
 						}
 					}
-				}
+
+					collider = bp.next;
+				} while(collider != Entity.Null); }
+
 				if (isCol) {lastWPos.value = sp.pos;}
 
 			}

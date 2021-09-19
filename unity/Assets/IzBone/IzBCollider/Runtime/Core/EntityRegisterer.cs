@@ -24,6 +24,9 @@ namespace IzBone.IzBCollider.Core {
 			(em,entity) => em.AddComponentData(entity, new Body_Raw_Plane()),
 		};
 
+		Entity[] _firstBody = new Entity[(int)ShapeType.MAX_COUNT];
+		Entity[] _lastBody = new Entity[(int)ShapeType.MAX_COUNT];
+
 		/** Auth1つ分の変換処理 */
 		override protected void convertOne(
 			BodiesPackAuthoring auth,
@@ -31,11 +34,9 @@ namespace IzBone.IzBCollider.Core {
 			EntityManager em
 		) {
 
-			var firstBody = new Entity[(int)ShapeType.MAX_COUNT];
-			var lastBody = new Entity[(int)ShapeType.MAX_COUNT];
-			for (int i=0; i<firstBody.Length; ++i) {
-				firstBody[i] = Entity.Null;
-				lastBody[i] = Entity.Null;
+			for (int i=0; i<_firstBody.Length; ++i) {
+				_firstBody[i] = Entity.Null;
+				_lastBody[i] = Entity.Null;
 			}
 
 			// 参照先のBodyをECSへ変換
@@ -47,9 +48,9 @@ namespace IzBone.IzBCollider.Core {
 					// コンポーネントを割り当て
 					var entity = em.CreateEntity();
 
-					if (firstBody[shapeId] == Entity.Null) firstBody[shapeId] = entity;
-					if (lastBody[shapeId] != Entity.Null)
-						em.AddComponentData(lastBody[shapeId], new Body_Next{value=entity});
+					if (_firstBody[shapeId] == Entity.Null) _firstBody[shapeId] = entity;
+					if (_lastBody[shapeId] != Entity.Null)
+						em.AddComponentData(_lastBody[shapeId], new Body_Next{value=entity});
 					em.AddComponentData(entity, new Body());
 					em.AddComponentData(entity, new Body_Center{value=i.center});
 					em.AddComponentData(entity, new Body_R{value=i.r});
@@ -63,20 +64,23 @@ namespace IzBone.IzBCollider.Core {
 					addEntityCore(entity, regLink);
 					addETPCore(entity, i.transform, regLink);
 
-					lastBody[shapeId] = entity;
+					_lastBody[shapeId] = entity;
 				}
-				foreach (var i in lastBody)
+				foreach (var i in _lastBody)
 					if (i != Entity.Null) em.AddComponentData(i, new Body_Next());
 			}
 
 
 			{// BodiesPackをECSへ変換
 				var entity = em.CreateEntity();
+				var nextEnt = Entity.Null;
+				if (auth._uniColCollector != null) nextEnt = auth._uniColCollector._entity;
 				em.AddComponentData(entity, new BodiesPack{
-					firstSphere  = firstBody[0],
-					firstCapsule = firstBody[1],
-					firstBox     = firstBody[2],
-					firstPlane   = firstBody[3],
+					firstSphere  = _firstBody[0],
+					firstCapsule = _firstBody[1],
+					firstBox     = _firstBody[2],
+					firstPlane   = _firstBody[3],
+					next = nextEnt
 				});
 				auth.setRootEntity( entity, em );
 			}

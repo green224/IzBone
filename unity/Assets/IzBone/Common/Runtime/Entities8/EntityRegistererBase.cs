@@ -35,7 +35,7 @@ namespace IzBone.Common.Entities8 {
 		public void resetParameters(RegLink regLink) => _need2resetList.Add(regLink);
 
 		/** 追加・削除されたAuthの情報をECSへ反映させる */
-		public void apply(EntityManager em) {
+		virtual public void apply(EntityManager em) {
 
 			// 再コンバートが予約されているものを処理
 			foreach (var i in _need2resetList)

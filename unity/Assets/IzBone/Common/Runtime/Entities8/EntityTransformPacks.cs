@@ -45,6 +45,14 @@ namespace IzBone.Common.Entities8 {
 			_transforms.RemoveAtSwapBack(index);
 		}
 
+		/** 要素を全削除する */
+		public void clear() {
+			_entities.Clear();
+			var cap = _transforms.capacity;
+			_transforms.Dispose();
+			_transforms = new TransformAccessArray(cap);
+		}
+
 		public void Dispose() {
 			_entities.Dispose();
 			_transforms.Dispose();
