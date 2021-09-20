@@ -11,7 +11,8 @@
         "IzBone.IzBCollider",
         "IzBone.IzBCollider.Editor",
         "IzBone.Common",
-        "IzBone.Common.Editor"
+        "IzBone.Common.Editor",
+        "IzBone.PhysBone"
     ],
     "includePlatforms": [
         "Editor"

@@ -19,7 +19,7 @@ sealed class RootAuthoringInspector : Editor
 
 		// 登録されているコライダを表示
 		if ( Common.Windows.GizmoOptionsWindow.isShowCollider ) {
-			if (tgt._collider!=null) foreach (var i in tgt._collider.Bodies) {
+			if (tgt.Collider!=null) foreach (var i in tgt.Collider.Bodies) {
 				if (i == null) continue;
 				i.DEBUG_drawGizmos();
 			}

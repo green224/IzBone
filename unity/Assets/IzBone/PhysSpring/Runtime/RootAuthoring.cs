@@ -22,7 +22,9 @@ using SC = Common.Field.SimpleCurve;
 [AddComponentMenu("IzBone/IzBone_PhysSpring")]
 //[UnityEngine.Animations.NotKeyable]
 //[DisallowMultipleComponent]
-public sealed class RootAuthoring : MonoBehaviour {
+public sealed class RootAuthoring
+: PhysBone.Body.BaseAuthoringT<RootAuthoring, Core.IzBPhysSpringSystem>
+{
 	// --------------------------- インスペクタに公開しているフィールド -----------------------------
 
 	[Serializable] public sealed class Bone {
@@ -62,47 +64,15 @@ public sealed class RootAuthoring : MonoBehaviour {
 
 	[SerializeField] internal Bone[] _bones = new []{new Bone()};
 
-	// 衝突検出を行う対象のコライダー
-	[SerializeField] internal IzBCollider.BodiesPackAuthoring _collider = null;
-
 
 	// ------------------------------------- public メンバ ----------------------------------------
 
-	/** 物理状態をリセットする */
-	[ContextMenu("reset")]
-	public void reset() {
-		GetSys().reset(_erRegLink);
-	}
-
-
 	// --------------------------------- private / protected メンバ -------------------------------
-
-	/** ECSで得た結果をマネージドTransformに反映するためのバッファのリンク情報。System側から設定・参照される */
-	Core.EntityRegisterer.RegLink _erRegLink = new Core.EntityRegisterer.RegLink();
-
-	/** メインのシステムを取得する */
-	Core.IzBPhysSpringSystem GetSys() {
-		var w = World.DefaultGameObjectInjectionWorld;
-		if (w == null) return null;
-		return w.GetOrCreateSystem<Core.IzBPhysSpringSystem>();
-	}
-
-	void OnEnable()
-	{
-		var sys = GetSys();
-		if (sys != null) sys.register(this, _erRegLink);
-	}
-
-	void OnDisable()
-	{
-		var sys = GetSys();
-		if (sys != null) sys.unregister(this, _erRegLink);
-	}
 
 
 	// --------------------------------------------------------------------------------------------
 #if UNITY_EDITOR
-	void OnValidate() {
+	override protected void OnValidate() {
 		if (_bones == null) return;
 		foreach ( var i in _bones ) {
 			// Depthを有効範囲に丸める
@@ -119,11 +89,7 @@ public sealed class RootAuthoring : MonoBehaviour {
 			i.depth = clamp(i.depth, 1, depthMax);
 		}
 
-		// 実行時はインスペクタ変更時にパラメータを同期
-		if (Application.isPlaying) {
-			var sys = GetSys();
-			if (sys != null) sys.resetParameters(_erRegLink);
-		}
+		base.OnValidate();
 	}
 #endif
 }

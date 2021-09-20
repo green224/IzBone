@@ -18,7 +18,7 @@ namespace IzBone.PhysBone.Body {
 		// --------------------------- インスペクタに公開しているフィールド -----------------------------
 
 		// 衝突検出を行う対象のコライダー
-		[SerializeField] internal IzBCollider.BodiesPackAuthoring _collider = null;
+		[SerializeField] IzBCollider.BodiesPackAuthoring _collider = null;
 
 
 		// ------------------------------------- public メンバ ----------------------------------------
@@ -30,6 +30,10 @@ namespace IzBone.PhysBone.Body {
 
 		// --------------------------------- private / protected メンバ -------------------------------
 
+		// 衝突検出を行う対象のコライダー
+		public IzBCollider.BodiesPackAuthoring Collider => _collider;
+
+
 		// --------------------------------------------------------------------------------------------
 	}
 
@@ -39,12 +43,17 @@ namespace IzBone.PhysBone.Body {
 	 */
 	public abstract class BaseAuthoringT<Impl, ImplSystem> : BaseAuthoring
 	where Impl : BaseAuthoringT<Impl, ImplSystem>
-	where ImplSystem : SystemBase, Core.IBodySystem<Impl>
+	where ImplSystem : Core.BodySystemBase<Impl>
 	{
 		// --------------------------- インスペクタに公開しているフィールド -----------------------------
 
 
 		// ------------------------------------- public メンバ ----------------------------------------
+
+		/** 物理状態をリセットする */
+		override public void reset() {
+			GetSys().reset(_erRegLink);
+		}
 
 
 		// --------------------------------- private / protected メンバ -------------------------------

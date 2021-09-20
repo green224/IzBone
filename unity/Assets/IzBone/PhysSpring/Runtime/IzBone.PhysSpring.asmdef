@@ -8,7 +8,8 @@
         "Unity.Collections",
         "Unity.Entities",
         "IzBone.IzBCollider",
-        "IzBone.Common"
+        "IzBone.Common",
+        "IzBone.PhysBone"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

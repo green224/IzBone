@@ -18,22 +18,17 @@ using Common.Field;
 [UpdateInGroup(typeof(IzBoneSystemGroup))]
 [UpdateAfter(typeof(IzBCollider.Core.IzBColliderSystem))]
 [AlwaysUpdateSystem]
-public sealed class IzBPhysClothSystem : SystemBase {
+public sealed class IzBPhysClothSystem
+: PhysBone.Body.Core.BodySystemBase<Authoring.BaseAuthoring>
+{
 
 	// フィッティングループのイテレーションカウント
 	const int ITERATION_NUM = 5;
 
-	// Authoringを登録・登録解除する処理
-	internal void register(Authoring.BaseAuthoring auth, EntityRegisterer.RegLink regLink)
-		=> _entityReg.register(auth, regLink);
-	internal void unregister(Authoring.BaseAuthoring auth, EntityRegisterer.RegLink regLink)
-		=> _entityReg.unregister(auth, regLink);
-	internal void resetParameters(EntityRegisterer.RegLink regLink)
-		=> _entityReg.resetParameters(regLink);
-	EntityRegisterer _entityReg;
-
 	/** 指定のAuthの物理状態をリセットする */
-	internal void reset(EntityRegisterer.RegLink regLink) {
+	override public void reset(
+		Common.Entities8.EntityRegistererBase<Authoring.BaseAuthoring>.RegLink regLink
+	) {
 		var etp = _entityReg.etPacks;
 		for (int i=0; i<regLink.etpIdxs.Count; ++i) {
 			var etpIdx = regLink.etpIdxs[i];

@@ -11,12 +11,10 @@ using Common;
 using Common.Field;
 
 /** IzBoneを使用するオブジェクトにつけるコンポーネントの基底クラス */
-public unsafe abstract class BaseAuthoring : MonoBehaviour {
+public unsafe abstract class BaseAuthoring
+: PhysBone.Body.BaseAuthoringT<BaseAuthoring, Core.IzBPhysClothSystem>
+{
 	// ------------------------------- inspectorに公開しているフィールド ------------------------
-
-	// 衝突検出を行う対象のコライダー一覧
-	[SerializeField] internal IzBCollider.BodiesPackAuthoring _collider = null;
-
 
 	// --------------------------------------- publicメンバ -------------------------------------
 
@@ -36,40 +34,18 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 	public bool withAnimation = false;
 
 
-	/** 物理状態をリセットする */
-	[ContextMenu("reset")]
-	public void reset() {
-		GetSys().reset(_erRegLink);
-	}
-
-
 	// ----------------------------------- private/protected メンバ -------------------------------
 
-	/** ECSで得た結果をマネージドTransformに反映するためのバッファのリンク情報。System側から設定・参照される */
-	Core.EntityRegisterer.RegLink _erRegLink = new Core.EntityRegisterer.RegLink();
 	internal ConstraintMng[] _constraints;
 	internal ParticleMng[] _particles;
 	internal Entity _rootEntity = Entity.Null;
 
 
-	/** メインのシステムを取得する */
-	Core.IzBPhysClothSystem GetSys() {
-		var w = World.DefaultGameObjectInjectionWorld;
-		if (w == null) return null;
-		return w.GetOrCreateSystem<Core.IzBPhysClothSystem>();
-	}
-
-	virtual protected void OnEnable() {
+	override protected void OnEnable() {
 		buildBuffers();
 		rebuildParameters();
 
-		var sys = GetSys();
-		if (sys != null) sys.register(this, _erRegLink);
-	}
-
-	virtual protected void OnDisable() {
-		var sys = GetSys();
-		if (sys != null) sys.unregister(this, _erRegLink);
+		base.OnEnable();
 	}
 
 
@@ -80,28 +56,14 @@ public unsafe abstract class BaseAuthoring : MonoBehaviour {
 	abstract protected void rebuildParameters();
 
 
-	// --------------------------------------------------------------------------------------------
-#if UNITY_EDITOR
-//	/** 配下のIzColliderを全登録する */
-//	[ContextMenu("Collect child IzColliders")]
-//	void __collectChildIzCol() {
-//		_izColliders = GetComponentsInChildren< IzBCollider.BodyAuthoring >();
-//	}
+	/** パラメータをリビルドして、システムへパラメータ同期を通知する */
+	override protected void rebuildAndResetParam() {
+		rebuildParameters();
+		base.rebuildAndResetParam();
+	}
 
-	void LateUpdate() {
-		if (__need2syncManage) {
-			rebuildParameters();
-			var sys = GetSys();
-			if (sys != null) sys.resetParameters(_erRegLink);
-			__need2syncManage = false;
-		}
-	}
-	// 実行中にプロパティが変更された場合は、次回Update時に同期を行う
-	bool __need2syncManage = false;
-	virtual protected void OnValidate() {
-		if (Application.isPlaying) __need2syncManage = true;
-	}
-#endif
+
+	// --------------------------------------------------------------------------------------------
 }
 
 }

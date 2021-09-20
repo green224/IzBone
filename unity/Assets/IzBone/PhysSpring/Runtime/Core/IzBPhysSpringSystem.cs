@@ -18,19 +18,14 @@ using Common.Field;
 [UpdateInGroup(typeof(IzBoneSystemGroup))]
 [UpdateAfter(typeof(IzBCollider.Core.IzBColliderSystem))]
 [AlwaysUpdateSystem]
-public sealed class IzBPhysSpringSystem : SystemBase {
-
-	// BodyAuthoringを登録・登録解除する処理
-	internal void register(RootAuthoring auth, EntityRegisterer.RegLink regLink)
-		=> _entityReg.register(auth, regLink);
-	internal void unregister(RootAuthoring auth, EntityRegisterer.RegLink regLink)
-		=> _entityReg.unregister(auth, regLink);
-	internal void resetParameters(EntityRegisterer.RegLink regLink)
-		=> _entityReg.resetParameters(regLink);
-	EntityRegisterer _entityReg;
+public sealed class IzBPhysSpringSystem
+: PhysBone.Body.Core.BodySystemBase<RootAuthoring>
+{
 
 	/** 指定のRootAuthの物理状態をリセットする */
-	internal void reset(EntityRegisterer.RegLink regLink) {
+	override public void reset(
+		Common.Entities8.EntityRegistererBase<RootAuthoring>.RegLink regLink
+	) {
 		var etp = _entityReg.etPacks;
 		for (int i=0; i<regLink.etpIdxs.Count; ++i) {
 			var etpIdx = regLink.etpIdxs[i];

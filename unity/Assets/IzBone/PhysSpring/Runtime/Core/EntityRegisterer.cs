@@ -121,8 +121,8 @@ namespace IzBone.PhysSpring.Core {
 					addETPCore(rootEntity, child.parent, regLink);
 
 					// ColliderPackを設定する処理。これは遅延して実行される可能性もある
-					if (auth._collider != null) {
-						auth._collider.getRootEntity( em, (em, cpEnt)=>
+					if (auth.Collider != null) {
+						auth.Collider.getRootEntity( em, (em, cpEnt)=>
 							em.SetComponentData(
 								rootEntity,
 								new Root_ColliderPack{value=cpEnt}
