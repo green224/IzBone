@@ -37,7 +37,7 @@ namespace IzBone.Common.Field {
 	 * 
 	 * 属性を使わずに、直接処理を使用することがあるので、EditorOnlyにはしていない。
 	 */
-	internal sealed class HalfLifeDragAttribute : PropertyAttribute
+	public sealed class HalfLifeDragAttribute : PropertyAttribute
 	{
 		public const float LEFT_VAL = 5;
 		public const float RIGHT_VAL = 0.01f;

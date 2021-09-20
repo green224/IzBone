@@ -18,11 +18,9 @@ WebPlayerを含む全プラットフォームに対応(しているはず)
 ## Ver.1.0までのTODO
 
 * ドキュメントをまとめる
-* PhysClothをスケール変更可能にする
 * PhysCloth/PhysSpringのインスペクタを改善
 * WithoutBurst.Runを一掃する
 * インスペクタを日/英対応
-* Unity標準のColliderに対応
 * ECS部分のヒープアロケーションを何とかする
 * 重力・風をリアルタイムに設定するためのシステムを追加
 * DeltaTimeのスムース化

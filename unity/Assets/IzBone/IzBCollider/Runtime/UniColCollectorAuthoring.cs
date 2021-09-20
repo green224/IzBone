@@ -11,7 +11,7 @@ namespace IzBone.IzBCollider {
 	public sealed class UniColCollectorAuthoring : MonoBehaviour {
 		// ------------------------------- inspectorに公開しているフィールド ------------------------
 
-		[SerializeField] float _r = 1;
+		[SerializeField][Min(0)]  float _r = 1;
 		[SerializeField] LayerMask _targetLayerMask = default;
 
 
