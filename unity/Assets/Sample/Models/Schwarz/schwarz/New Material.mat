@@ -76,6 +76,7 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
     - _AlphaClip: 0
     - _Blend: 0
@@ -114,7 +115,7 @@ Material:
     m_Colors:
     - _BaseColor: {r: 0.88699996, g: 0.88699996, b: 0.88699996, a: 1}
     - _BodyColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 0.88699996, g: 0.88699996, b: 0.88699996, a: 1}
     - _EmissionColor: {r: 0.78699994, g: 0.78699994, b: 0.78699994, a: 1}
     - _LineColor: {r: 0.16981131, g: 0.09211463, b: 0.11801349, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
@@ -131,4 +132,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  version: 4
+  version: 5
