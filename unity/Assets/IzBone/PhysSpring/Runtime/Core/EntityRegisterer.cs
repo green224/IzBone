@@ -29,8 +29,7 @@ namespace IzBone.PhysSpring.Core {
 			foreach (var j in bone.targets) {
 
 				// 最も末端のTransformを得る
-				var child = j.topOfBone;
-				for (int i=0; i<bone.depth; ++i) child = child.GetChild(0);
+				var child = j.getEndOfBone(bone.depth);
 
 				// 最も末端のTransformに対応するEntityを生成
 				var childEntity = em.CreateEntity();

@@ -52,14 +52,20 @@ public unsafe abstract class BaseAuthoring
 	/** ParticlesとConstraintsのバッファをビルドする処理。派生先で実装すること */
 	abstract protected void buildBuffers();
 
-	/** ParticlesとConstraintsのパラメータを再構築する処理。派生先で実装すること */
-	abstract protected void rebuildParameters();
+	/**
+	 * パラメータを再構築する処理。
+	 * この中でバウンダリー級の半径も計算する。
+	 */
+	override protected void rebuildParameters() {
 
-
-	/** パラメータをリビルドして、システムへパラメータ同期を通知する */
-	override protected void rebuildAndResetParam() {
-		rebuildParameters();
-		base.rebuildAndResetParam();
+		// バウンダリー球の半径を計算
+		var w2l = transform.worldToLocalMatrix;
+		var maxDist = 0f;
+		foreach (var i in _particles) {
+			foreach (var j in i.transTail)
+				maxDist = max( maxDist, w2l.MultiplyPoint(j.position).magnitude );
+		}
+		BoundaryR = maxDist * 1.5f;		// 適当に1.5倍にする
 	}
 
 

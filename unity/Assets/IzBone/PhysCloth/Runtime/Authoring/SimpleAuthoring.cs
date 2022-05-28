@@ -95,6 +95,8 @@ public unsafe abstract class SimpleAuthoring : BaseAuthoring {
 				}
 			);
 		}
+
+		base.rebuildParameters();
 	}
 
 	/** 全ボーンに対して、ConstraintMng羅列する処理。派生先で実装すること */

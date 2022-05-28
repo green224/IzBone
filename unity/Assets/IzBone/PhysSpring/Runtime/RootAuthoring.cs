@@ -34,6 +34,14 @@ public sealed class RootAuthoring
 		[Serializable] public sealed class OneTrnasParam {			// 目標の1Transformごとのパラメータ
 			public Transform topOfBone = null;									// 再親のTransform
 			[UseEuler] public Quaternion defaultRot = Quaternion.identity;		// 根元の初期姿勢
+
+			// 最も末端のTransformを得る
+			public Transform getEndOfBone(int depth) {
+				var child = topOfBone;
+				for (int i=0; i<depth && child.childCount!=0; ++i)
+					child = child.GetChild(0);
+				return child;
+			}
 		}
 		[Space]
 		public OneTrnasParam[] targets = null;			// 目標のTransformたち
@@ -68,6 +76,24 @@ public sealed class RootAuthoring
 	// ------------------------------------- public メンバ ----------------------------------------
 
 	// --------------------------------- private / protected メンバ -------------------------------
+
+	/**
+	 * パラメータを再構築する処理。
+	 * この中でバウンダリー級の半径も計算する。
+	 */
+	override protected void rebuildParameters() {
+
+		// バウンダリー球の半径を計算
+		var w2l = transform.worldToLocalMatrix;
+		var maxDist = 0f;
+		foreach (var i in _bones) {
+			foreach (var j in i.targets) {
+				var eob = j.getEndOfBone(i.depth);
+				maxDist = max( maxDist, w2l.MultiplyPoint(eob.position).magnitude );
+			}
+		}
+		BoundaryR = maxDist * 1.5f;		// 適当に1.5倍にする
+	}
 
 
 	// --------------------------------------------------------------------------------------------

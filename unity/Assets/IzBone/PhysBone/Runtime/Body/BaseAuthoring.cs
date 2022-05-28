@@ -23,6 +23,12 @@ namespace IzBone.PhysBone.Body {
 
 		// ------------------------------------- public メンバ ----------------------------------------
 
+		// 衝突検出を行う対象のコライダー
+		public IzBCollider.BodiesPackAuthoring Collider => _collider;
+
+		// バウンダリー球の半径
+		public float BoundaryR {get; protected set;}
+
 		/** 物理状態をリセットする */
 		[ContextMenu("reset")]
 		abstract public void reset();
@@ -30,8 +36,12 @@ namespace IzBone.PhysBone.Body {
 
 		// --------------------------------- private / protected メンバ -------------------------------
 
-		// 衝突検出を行う対象のコライダー
-		public IzBCollider.BodiesPackAuthoring Collider => _collider;
+		/**
+		 * パラメータを再構築する処理。派生先で実装すること。
+		 * この中でバウンダリー級の半径も計算する。
+		 */
+		abstract protected void rebuildParameters();
+
 
 
 		// --------------------------------------------------------------------------------------------
@@ -69,22 +79,14 @@ namespace IzBone.PhysBone.Body {
 			return w.GetOrCreateSystem<ImplSystem>();
 		}
 
-		virtual protected void OnEnable()
-		{
+		virtual protected void OnEnable() {
 			var sys = GetSys();
 			if (sys != null) sys.register((Impl)this, _erRegLink);
 		}
 
-		virtual protected void OnDisable()
-		{
+		virtual protected void OnDisable() {
 			var sys = GetSys();
 			if (sys != null) sys.unregister((Impl)this, _erRegLink);
-		}
-
-		/** パラメータをリビルドして、システムへパラメータ同期を通知する */
-		virtual protected void rebuildAndResetParam() {
-			var sys = GetSys();
-			if (sys != null) sys.resetParameters(_erRegLink);
 		}
 
 
@@ -93,7 +95,9 @@ namespace IzBone.PhysBone.Body {
 		virtual protected void LateUpdate() {
 			if (__need2syncManage) {
 				__need2syncManage = false;
-				rebuildAndResetParam();
+				rebuildParameters();
+				var sys = GetSys();
+				if (sys != null) sys.resetParameters(_erRegLink);
 			}
 		}
 
