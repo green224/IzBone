@@ -14,7 +14,7 @@ using Common;
 
 [UpdateInGroup(typeof(IzBoneSystemGroup))]
 [AlwaysUpdateSystem]
-public sealed class IzBEnvironmentSystem : SystemBase {
+public sealed partial class IzBEnvironmentSystem : SystemBase {
 
 
 

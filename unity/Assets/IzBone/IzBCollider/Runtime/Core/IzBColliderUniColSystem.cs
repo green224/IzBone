@@ -15,7 +15,7 @@ using Common;
 [UpdateInGroup(typeof(IzBoneSystemGroup))]
 [AlwaysUpdateSystem]
 [UpdateBefore(typeof(IzBColliderSystem))]
-public sealed class IzBColliderUniColSystem: SystemBase {
+public sealed partial class IzBColliderUniColSystem: SystemBase {
 
 
 

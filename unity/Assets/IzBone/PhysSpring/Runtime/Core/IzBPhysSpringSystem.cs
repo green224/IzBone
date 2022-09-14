@@ -18,7 +18,7 @@ using Common.Field;
 [UpdateInGroup(typeof(IzBoneSystemGroup))]
 [UpdateAfter(typeof(IzBCollider.Core.IzBColliderSystem))]
 [AlwaysUpdateSystem]
-public sealed class IzBPhysSpringSystem
+public sealed partial class IzBPhysSpringSystem
 : PhysBone.Body.Core.BodySystemBase<RootAuthoring>
 {
 

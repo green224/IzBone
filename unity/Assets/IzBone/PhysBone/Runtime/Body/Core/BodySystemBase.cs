@@ -17,7 +17,7 @@ namespace IzBone.PhysBone.Body.Core {
 
 	/** Bodyが実装すべきSystemの基底クラス */
 //	public interface IBodySystem<Authoring>
-	public abstract class BodySystemBase<Authoring> : SystemBase
+	public abstract partial class BodySystemBase<Authoring> : SystemBase
 	where Authoring : BaseAuthoring
 	{
 

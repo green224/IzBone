@@ -6,6 +6,7 @@
 /Library/
 /Logs/
 /obj/
+/UserSettings/
 /*.csproj
 /*.sln
 
