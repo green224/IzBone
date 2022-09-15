@@ -3,7 +3,7 @@ using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
 using static Unity.Mathematics.math;
-
+using System.Collections.Generic;
 
 namespace IzBone.IzBCollider {
 
@@ -87,6 +87,23 @@ namespace IzBone.IzBCollider {
 				var sys = GetSys();
 				if (sys != null) sys.resetParameters(_erRegLink);
 			}
+		}
+
+		[ContextMenu("配下のコライダを自動収集する")]
+		void autoCollect() {
+
+			static void collectChildren(Transform trans, List<BodyAuthoring> result) {
+				for (int i=0; i<trans.childCount; ++i)
+					collectChildren( trans.GetChild(i), result );
+
+				var a = trans.GetComponents<BodyAuthoring>();
+				foreach (var i in a) result.Add(i);
+			}
+
+			var ret = new List<BodyAuthoring>();
+			collectChildren(transform, ret);
+
+			_bodies = ret.ToArray();
 		}
 #endif
 	}
